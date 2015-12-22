@@ -1,51 +1,79 @@
 <?php
 
+use yii\helpers\Html;
+use kartik\grid\GridView;
+
+
+//use robregonm\rgraph\RGraphBarAsset;
+//use app\assets\RGraphBarAsset;
+use klikar3\rgraph\RGraph;
+use klikar3\rgraph\RGraphBar;
+
+
+//RGraphBar::register($this);
+
 /* @var $this yii\web\View */
 
-$this->title = 'My Yii Application';
+$this->title = 'BaseLine';
 ?>
 <div class="site-index">
 
-    <div class="jumbotron">
-        <h1>Congratulations!</h1>
-
-        <p class="lead">You have successfully created your Yii-powered application.</p>
-
-        <p><a class="btn btn-lg btn-success" href="http://www.yiiframework.com">Get started with Yii</a></p>
-    </div>
 
     <div class="body-content">
-
-        <div class="row">
+       <div class="row">
+          <?= GridView::widget([
+              'dataProvider' => $dataProvider,
+              'filterModel' => $searchModel,
+              'condensed' => true,
+              'columns' => [
+                  [ 'class' => 'yii\grid\DataColumn',
+                    'value' => 'id',
+                    'options' => [ 'width' => '50px;']
+                  ],
+                  [ 'class' => 'yii\grid\DataColumn',
+                    'attribute' => 'Server',
+                    'format' => 'raw',
+                    'value' => function ($data) {
+                         return Html::a($data->Server, ['/server-view/index', 'id' => $data->id]);
+                     },
+                    'options' => [ 'width' => '200px;']
+                  ],
+                  'usertyp',
+                  [ 'class' => 'yii\grid\ActionColumn',
+                    'options' => [ 'width' => '80px;']
+                  ],
+              ],
+          ]); ?>
+       </div>
+       <div class="row">
             <div class="col-lg-4">
                 <h2>Heading</h2>
 
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/doc/">Yii Documentation &raquo;</a></p>
+				<?= 
+				   RGraphBar::widget([
+					    'data' => [1, 3, 5, 7, 2, 4, 6, 10, 8, 9, 12, 11],
+					    'options' => [
+        'height' => 400,
+        'width' => 800,
+					        'chart' => [
+					            'gutter' => [
+					                'left' => 35,
+					            ],
+					            'colors' => ['red'],
+					            'title' => 'A basic chart',
+					            'labels' => [
+					                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+					            ],
+					        ]
+					    ]
+					]);
+				?>
             </div>
             <div class="col-lg-4">
                 <h2>Heading</h2>
 
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
+                <p></p>
 
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/forum/">Yii Forum &raquo;</a></p>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et
-                    dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip
-                    ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-                    fugiat nulla pariatur.</p>
-
-                <p><a class="btn btn-default" href="http://www.yiiframework.com/extensions/">Yii Extensions &raquo;</a></p>
             </div>
         </div>
 

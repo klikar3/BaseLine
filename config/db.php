@@ -2,8 +2,8 @@
 
 return [
     'class' => 'yii\db\Connection',
-    'dsn' => 'mysql:host=localhost;dbname=yii2basic',
-    'username' => 'root',
-    'password' => '',
+    'dsn' => 'sqlsrv:server=ipsqlstdby01-1\sql2014;database=BaselineData',
+    'username' => 'ignite',
+    'password' => 'ignite4vsa!',
     'charset' => 'utf8',
 ];

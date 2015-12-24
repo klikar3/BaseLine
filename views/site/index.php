@@ -3,15 +3,6 @@
 use yii\helpers\Html;
 use kartik\grid\GridView;
 
-
-//use robregonm\rgraph\RGraphBarAsset;
-//use app\assets\RGraphBarAsset;
-use klikar3\rgraph\RGraph;
-use klikar3\rgraph\RGraphBar;
-
-
-//RGraphBar::register($this);
-
 /* @var $this yii\web\View */
 
 $this->title = 'BaseLine';
@@ -45,37 +36,5 @@ $this->title = 'BaseLine';
               ],
           ]); ?>
        </div>
-       <div class="row">
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-				<?= 
-				   RGraphBar::widget([
-					    'data' => [1, 3, 5, 7, 2, 4, 6, 10, 8, 9, 12, 11],
-					    'options' => [
-        'height' => 400,
-        'width' => 800,
-					        'chart' => [
-					            'gutter' => [
-					                'left' => 35,
-					            ],
-					            'colors' => ['red'],
-					            'title' => 'A basic chart',
-					            'labels' => [
-					                'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-					            ],
-					        ]
-					    ]
-					]);
-				?>
-            </div>
-            <div class="col-lg-4">
-                <h2>Heading</h2>
-
-                <p></p>
-
-            </div>
-        </div>
-
-    </div>
+     </div>
 </div>

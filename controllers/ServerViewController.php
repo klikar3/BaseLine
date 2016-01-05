@@ -63,20 +63,11 @@ class ServerViewController extends \yii\web\Controller
           array('srvr' => $servername, 'cntr' => '%:Buffer Manager:Page life expectancy:', 'dt' => $dt ))
           ->all();
 //        \yii\helpers\VarDumper::dump($datasets, 10, true);
-        $dataset_cpu = (new \yii\db\Query())
-          ->select('value, CaptureDate')->from('PerfMonData')->where('Server=:srvr AND Counter=:cntr AND CaptureDate>:dt',
-          array('srvr' => $servername, 'cntr' => 'OS: Cpu Utilization %', 'dt' => $dt ))
-          ->all();
+        $dataset_cpu = $this->getPerfmonDataset($servername,'Cpu Utilization %',$dt);
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
-        $dataset_pps = (new \yii\db\Query())
-          ->select('value, CaptureDate')->from('PerfMonData')->where('Server=:srvr AND Counter=:cntr AND CaptureDate>:dt',
-          array('srvr' => $servername, 'cntr' => 'OS: Pages/sec', 'dt' => $dt ))
-          ->all();
+        $dataset_pps = $this->getPerfmonDataset($servername,'Pages/sec', $dt );
 //        \yii\helpers\VarDumper::dump($dataset_pps, 10, true);
-        $dataset_dql = (new \yii\db\Query())
-          ->select('value, CaptureDate')->from('PerfMonData')->where('Server=:srvr AND Counter=:cntr AND CaptureDate>:dt',
-          array('srvr' => $servername, 'cntr' => 'OS: Disk Queue Length Total', 'dt' => $dt ))
-          ->all();
+        $dataset_dql = $this->getPerfmonDataset($servername,'Disk Queue Length', $dt );
 //        \yii\helpers\VarDumper::dump($dataset_pps, 10, true);
         
         
@@ -103,17 +94,35 @@ class ServerViewController extends \yii\web\Controller
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
+        $cntrs = array( 0 => '',1 => 'Cpu Utilization %', 2 => '', 3 => '');
 
-        $dataset_cpu = (new \yii\db\Query())
-        ->select('value, CaptureDate')->from('PerfMonData')->where('Server=:srvr AND Counter=:cntr AND CaptureDate>:dt',
-        array('srvr' => $servername, 'cntr' => 'OS: Cpu Utilization %', 'dt' => $dt ))
-        ->all();
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
 
         return $this->render('res_cpu', [
             'id' => $id,
+            'cntrs' => $cntrs,
             'servername' => $servername,
-            'dataset_cpu' => $dataset_cpu,
+            'dataset_cpu' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
+//            'dataset_pps' => $dataset_pps,
+//            'dataset_dql' => $dataset_dql,
+        ]);
+    }
+
+    public function actionDetail($cntr,$id,$days)
+    {
+
+        $servername = $this->getServername($id);
+
+        date_default_timezone_set('Europe/Berlin'); 
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
+//        $dataset = $this->getPerfmonDataset($servername,$cntr,$dt);
+//        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
+
+        return $this->render('detail', [
+            'id' => $id,
+            'cntr' => $cntr,
+            'servername' => $servername,
+            'dataset' => $this->getPerfmonDataset($servername,$cntr,$dt),
 //            'dataset_pps' => $dataset_pps,
 //            'dataset_dql' => $dataset_dql,
         ]);
@@ -128,6 +137,22 @@ class ServerViewController extends \yii\web\Controller
         $servername = $cmd->queryScalar();
         
         return $servername;
+
+    }
+
+    public function getPerfmonDataset($srvr,$cntr,$dt)
+    {
+        $pcid = (new \yii\db\Query())
+        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr',
+        array('cntr' => $cntr))
+        ->scalar();
+        
+        $dataset = (new \yii\db\Query())
+        ->select('value, CaptureDate')->from('PerfMonData')->where('Server=:srvr AND Counter_id=:pcid AND CaptureDate>:dt',
+        array('srvr' => $srvr, 'pcid' => $pcid, 'dt' => $dt ))
+        ->all();
+        
+        return $dataset;
 
     }
 

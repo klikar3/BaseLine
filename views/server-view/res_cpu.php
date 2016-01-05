@@ -31,7 +31,7 @@ $this->title = 'BaseLine';
   
 <?php
 
-$cont_cpu = $this->render('_cpu', [ 'dataset_cpu' => $dataset_cpu,
+$cont_cpu = $this->render('_cpu', [ 'dataset_cpu' => $dataset_cpu, 'cntrs' => $cntrs, 'id' => $id,
                                    ]);  
 
 echo TabsX::widget([

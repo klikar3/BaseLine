@@ -41,8 +41,9 @@ AppAsset::register($this);
             ['label' => 'Home', 'url' => ['/site/index']],
             ['label' => 'Stammdaten', 'items' => [['label' => 'Server', 'url' => ['/server-data/index']],
                                                   ['label' => 'Config', 'url' => ['/config-data/index']],
-                                                  ['label' => 'Server', 'url' => ['/server-data/index']]
-                                                ]
+                                                  ['label' => 'PerfMon-Defaults', 'url' => ['/perf-counter-default/index']],
+                                                  ['label' => 'Server', 'url' => ['/server-data/index']]                                                
+                                                  ]
             ],
             ['label' => 'Contact', 'url' => ['/site/contact']],
             Yii::$app->user->isGuest ?

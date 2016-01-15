@@ -27,18 +27,20 @@ $this->title = 'BaseLine';
 
     <div class="body-content">
 
-<h3><?php echo 'Server: '.$servername ?></h3>
+<h3><?php echo Html::a('Server: '.$servername, ['/server-view/index', 'id' => $id]); ?></h3>
   
 <?php
 
-$cont_cpu = $this->render('_cpu', [ 'dataset_cpu' => $dataset_cpu, 'cntrs' => $cntrs, 'id' => $id,
+$cont = $this->render('_cpu', [ 'dataset_0' => $dataset_0, 'dataset_1' => $dataset_1, 
+                                'dataset_2' => $dataset_2, 'dataset_3' => $dataset_3, 'cntrs' => $cntrs, 'id' => $id,
                                    ]);  
+//        \yii\helpers\VarDumper::dump($dataset_2, 10, true);
 
 echo TabsX::widget([
     'items'=> [
         [
             'label'=>'<i class="glyphicon glyphicon-flash"></i> Cpu',
-            'content'=> $cont_cpu,
+            'content'=> $cont,
             'url'=>\yii\helpers\Url::toRoute(['res_cpu', 'id' => $id]),
             'active'=>true
         ],

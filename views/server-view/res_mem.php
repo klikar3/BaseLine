@@ -27,23 +27,23 @@ $this->title = 'BaseLine';
 
     <div class="body-content">
 
-<h3><?php echo 'Server: '.$servername ?></h3>
+<h3><?php echo Html::a('Server: '.$servername, ['/server-view/index', 'id' => $id]); ?></h3>
   
 <?php
 
-$cont_cpu = $this->render('_cpu', [ 'dataset_cpu' => $dataset_cpu,
+$cont = $this->render('_mem', [ 'dataset_1' => $dataset_1, 'cntrs' => $cntrs, 'id' => $id,
                                    ]);  
 
 echo TabsX::widget([
     'items'=> [
         [
             'label'=>'<i class="glyphicon glyphicon-flash"></i> Cpu',
-            'content'=> $cont_cpu,
+            'content'=> '',
             'url'=>\yii\helpers\Url::toRoute(['res_cpu', 'id' => $id]),
         ],
         [
             'label'=>'<i class="glyphicon glyphicon-oil"></i> Memory',
-            'content'=>'',
+            'content'=>$cont,
             'url'=>\yii\helpers\Url::toRoute(['res_mem', 'id' => $id]),
             'active'=>true
         ],

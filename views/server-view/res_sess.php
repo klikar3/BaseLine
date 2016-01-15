@@ -27,11 +27,11 @@ $this->title = 'BaseLine';
 
     <div class="body-content">
 
-<h3><?php echo 'Server: '.$servername ?></h3>
+<h3><?php echo Html::a('Server: '.$servername, ['/server-view/index', 'id' => $id]); ?></h3>
   
 <?php
 
-$cont_cpu = $this->render('_cpu', [ 'dataset_cpu' => $dataset_cpu,
+$cont_cpu = $this->render('_sess', [ 'dataset_cpu' => $dataset_cpu, 'cntrs' => $cntrs, 'id' => $id,
                                    ]);  
 
 echo TabsX::widget([

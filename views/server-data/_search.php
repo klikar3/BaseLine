@@ -29,6 +29,18 @@ use yii\widgets\ActiveForm;
 
     <?php // echo $form->field($model, 'typ') ?>
 
+    <?php // echo $form->field($model, 'stat_wait') ?>
+
+    <?php // echo $form->field($model, 'stat_queries') ?>
+
+    <?php // echo $form->field($model, 'stat_cpu') ?>
+
+    <?php // echo $form->field($model, 'stat_mem') ?>
+
+    <?php // echo $form->field($model, 'stat_disk') ?>
+
+    <?php // echo $form->field($model, 'stat_sess') ?>
+
     <div class="form-group">
         <?= Html::submitButton(Yii::t('app', 'Search'), ['class' => 'btn btn-primary']) ?>
         <?= Html::resetButton(Yii::t('app', 'Reset'), ['class' => 'btn btn-default']) ?>

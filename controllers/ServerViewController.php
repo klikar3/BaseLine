@@ -3,10 +3,15 @@
 namespace app\controllers;
 
 //use Yii;
+use yii\data\ActiveDataProvider;
 use yii\db\Query;
 use yii\db\ActiveQuery;
-use yii\data\ActiveDataProvider;
+use yii\helpers\Html;
+use yii\helpers\ArrayHelper;
+use yii\helpers\Url;
+use yii\web\JsExpression;
 
+use klikar3\rgraph\RGraphLine;
 
 use app\models\ConfigData;
 use app\models\ConfigDataSearch;
@@ -94,11 +99,100 @@ class ServerViewController extends \yii\web\Controller
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
-        $cntrs = array( 0 => '',1 => 'Cpu Utilization %', 2 => '', 3 => '');
+        $cntrs = array( 0 => '',1 => 'Cpu Utilization %', 2 => 'CPU Queue Length', 3 => '');
 
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
 
         return $this->render('res_cpu', [
+            'id' => $id,
+            'cntrs' => $cntrs,
+            'servername' => $servername,
+            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
+            'dataset_1' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
+            'dataset_2' => $this->getPerfmonDataset($servername,$cntrs[2],$dt),
+            'dataset_3' => $this->getPerfmonDataset($servername,$cntrs[3],$dt),
+        ]);
+    }
+
+    public function actionRes_mem($id)
+    {
+
+        $servername = $this->getServername($id);
+        $connection = \Yii::$app->db;        
+
+        date_default_timezone_set('Europe/Berlin'); 
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60);
+        $cntrs = array( 0 => '',1 => 'Cpu Utilization %', 2 => '', 3 => '');
+
+//        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
+
+        return $this->render('res_mem', [
+            'id' => $id,
+            'cntrs' => $cntrs,
+            'servername' => $servername,
+            'dataset_1' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
+//            'dataset_pps' => $dataset_pps,
+//            'dataset_dql' => $dataset_dql,
+        ]);
+    }
+
+    public function actionRes_disk($id)
+    {
+
+        $servername = $this->getServername($id);
+        $connection = \Yii::$app->db;        
+
+        date_default_timezone_set('Europe/Berlin'); 
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60);
+        $cntrs = array( 0 => '',1 => 'Cpu Utilization %', 2 => '', 3 => '');
+
+//        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
+
+        return $this->render('res_disk', [
+            'id' => $id,
+            'cntrs' => $cntrs,
+            'servername' => $servername,
+            'dataset_cpu' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
+//            'dataset_pps' => $dataset_pps,
+//            'dataset_dql' => $dataset_dql,
+        ]);
+    }
+
+    public function actionRes_net($id)
+    {
+
+        $servername = $this->getServername($id);
+        $connection = \Yii::$app->db;        
+
+        date_default_timezone_set('Europe/Berlin'); 
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60);
+        $cntrs = array( 0 => '',1 => 'Cpu Utilization %', 2 => '', 3 => '');
+
+//        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
+
+        return $this->render('res_net', [
+            'id' => $id,
+            'cntrs' => $cntrs,
+            'servername' => $servername,
+            'dataset_cpu' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
+//            'dataset_pps' => $dataset_pps,
+//            'dataset_dql' => $dataset_dql,
+        ]);
+    }
+
+    public function actionRes_sess($id)
+    {
+
+        $servername = $this->getServername($id);
+        $connection = \Yii::$app->db;        
+
+        date_default_timezone_set('Europe/Berlin'); 
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60);
+        $cntrs = array( 0 => '',1 => 'Cpu Utilization %', 2 => '', 3 => '');
+
+//        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
+
+        return $this->render('res_sess', [
             'id' => $id,
             'cntrs' => $cntrs,
             'servername' => $servername,
@@ -143,8 +237,7 @@ class ServerViewController extends \yii\web\Controller
     public function getPerfmonDataset($srvr,$cntr,$dt)
     {
         $pcid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr',
-        array('cntr' => $cntr))
+        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', array('cntr' => $cntr))
         ->scalar();
         
         $dataset = (new \yii\db\Query())
@@ -152,9 +245,76 @@ class ServerViewController extends \yii\web\Controller
         array('srvr' => $srvr, 'pcid' => $pcid, 'dt' => $dt ))
         ->all();
         
-        return $dataset;
+        return !empty($dataset) ? $dataset : [ 0 ];
 
     }
 
+    public static function getStatusimage ($status,$id,$ziel) {
+//        \yii\helpers\VarDumper::dump($status, 10, true);
+        switch ($status) {
+          case 'unknown':
+              return Html::a(Html::img('@web/images/alarm_unknown.png', ['alt' => 'unknown']), [$ziel, 'id' => $id]);
+          case 'green':
+              return Html::a(Html::img('@web/images/check_16.png', ['alt' => 'green']), [$ziel, 'id' => $id]);
+          case 'yellow':
+              return Html::a(Html::img('@web/images/warning_16.png', ['alt' => 'yellow']), [$ziel, 'id' => $id]);
+          case 'red':
+              return Html::a(Html::img('@web/images/delete_angled_16.png', ['alt' => 'red']), [$ziel, 'id' => $id]);
+        }
+        return Html::a(Html::img('@web/images/delete_angled_16.png', ['alt' => 'red']), [$ziel, 'id' => $id]);
+   }
+   
+    public static function getWaitimage ($status,$id,$ziel) {
+//        \yii\helpers\VarDumper::dump($status, 10, true);
+        switch ($status) {
+          case 'unknown':
+              return Html::a(Html::img('@web/images/WaitTimeMeter_3.png', ['alt' => 'unknown']), [$ziel, 'id' => $id]);
+          case 'green':
+              return Html::a(Html::img('@web/images/WaitTimeMeter_3.png', ['alt' => 'green']), [$ziel, 'id' => $id]);
+          case 'yellow':
+              return Html::a(Html::img('@web/images/WaitTimeMeter_3.png', ['alt' => 'yellow']), [$ziel, 'id' => $id]);
+          case 'red':
+              return Html::a(Html::img('@web/images/WaitTimeMeter_3.png', ['alt' => 'red']), [$ziel, 'id' => $id]);
+        }
+        return Html::a(Html::img('@web/images/WaitTimeMeter_3.png', ['alt' => 'red']), [$ziel, 'id' => $id]);
+   }
 
+    public static function getPaintLine($dataset,$cntr,$id) {
+      return RGraphLine::widget([
+          'data' => !empty($dataset) ? array_map('floatval',ArrayHelper::getColumn($dataset,'value')) : [ 0 ],
+          'allowDynamic' => true,
+          'allowTooltips' => true,//          'link' => Url::to(['/test']),
+          'allowContext' => true,
+          'options' => [
+//              'height' => '100px',
+              'width' => '225px',
+              'colors' => ['blue'],
+//              'filled' => true,
+              'clearto' => ['white'],
+              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,11,5);},
+                                    ArrayHelper::getColumn($dataset,'CaptureDate')
+                          ) : [ 'No Data' ],
+              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
+//              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
+  //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
+  //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',
+              'textAngle' => 45,
+              'textSize' => 8,
+              'gutter' => ['left' => 20, 'bottom' => 50, 'top' => 50],
+              'title' => $cntr,
+              'titleSize' => 12,
+              'titleBold' => false,
+              'tickmarks' => 'circle',
+//              'ymax' => 100,
+              'backgroundColor' => 'Gradient(green:lightgreen:white)',
+              'contextmenu' => [
+                  ['24h', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => $cntr, 'id' => $id, 'days' => 1 ])."\");}") ],
+                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => $cntr, 'id' => $id, 'days' => 7 ])."\");}") ],
+                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => $cntr, 'id' => $id, 'days' => 32 ])."\");}") ],
+                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => $cntr, 'id' => $id, 'days' => 366 ])."\");}") ],
+                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => $cntr, 'id' => $id, 'days' => 9999 ])."\");}") ],
+              ],
+          ]
+      ]);    
+  }
 }

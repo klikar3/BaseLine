@@ -33,7 +33,12 @@ $this->params['breadcrumbs'][] = $this->title;
             'password',
             'snmp_pw',
             'typ',
-
+            'stat_wait',
+		        'stat_queries',
+		        'stat_cpu',
+		        'stat_mem',
+		        'stat_disk',
+		        'stat_sess',	
             ['class' => 'yii\grid\ActionColumn',
               'options' => [ 'width' => '80px;']
             ],

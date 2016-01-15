@@ -19,7 +19,7 @@ class ServerDataSearch extends ServerData
     {
         return [
             [['id'], 'integer'],
-            [['Server', 'usertyp', 'user', 'password', 'snmp_pw', 'typ'], 'safe'],
+            [['Server', 'usertyp', 'user', 'password', 'snmp_pw', 'typ', 'stat_wait', 'stat_queries', 'stat_cpu', 'stat_mem', 'stat_disk', 'stat_sess'], 'safe'],
         ];
     }
 
@@ -64,7 +64,13 @@ class ServerDataSearch extends ServerData
             ->andFilterWhere(['like', 'user', $this->user])
             ->andFilterWhere(['like', 'password', $this->password])
             ->andFilterWhere(['like', 'snmp_pw', $this->snmp_pw])
-            ->andFilterWhere(['like', 'typ', $this->typ]);
+            ->andFilterWhere(['like', 'typ', $this->typ])
+            ->andFilterWhere(['like', 'stat_wait', $this->stat_wait])
+            ->andFilterWhere(['like', 'stat_queries', $this->stat_queries])
+            ->andFilterWhere(['like', 'stat_cpu', $this->stat_cpu])
+            ->andFilterWhere(['like', 'stat_mem', $this->stat_mem])
+            ->andFilterWhere(['like', 'stat_disk', $this->stat_disk])
+            ->andFilterWhere(['like', 'stat_sess', $this->stat_sess]);
 
         return $dataProvider;
     }

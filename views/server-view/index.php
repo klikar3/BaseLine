@@ -28,7 +28,9 @@ $this->title = 'BaseLine';
 
     <div class="body-content">
 
-<h3><?php echo 'Server: '.$servername ?></h3> <?=Html::a('Ressources',Url::toRoute(['res_cpu', 'id' => $id]));?>
+<h3><?php echo Html::a('Server: '.$servername, ['/server-view/index', 'id' => $id]);?></h3> 
+<?=Html::a('Ressources',Url::toRoute(['res_cpu', 'id' => $id])); ?>
+
   
 <?php
 

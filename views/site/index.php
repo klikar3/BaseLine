@@ -3,6 +3,8 @@
 use yii\helpers\Html;
 use kartik\grid\GridView;
 
+use app\controllers\ServerViewController;
+
 /* @var $this yii\web\View */
 
 $this->title = 'BaseLine';
@@ -30,6 +32,52 @@ $this->title = 'BaseLine';
                     'options' => [ 'width' => '200px;']
                   ],
                   'usertyp',
+                  [ 'class' => 'yii\grid\DataColumn',
+                    'attribute' => 'stat_wait',
+                    'format' => 'raw',
+                    'value' => function ($data) { return app\controllers\ServerViewController::getWaitimage($data->stat_wait, $data->id,'/server-view/index'); },
+                    'options' => [ 'width' => '50px;']
+                  ],
+                  [ 'class' => 'yii\grid\DataColumn',
+                    'attribute' => 'stat_queries',
+                    'format' => 'raw',
+                    'value' => function ($data) {
+                         return app\controllers\ServerViewController::getStatusimage($data->stat_queries, $data->id, '/server-view/index');
+                     },
+                    'options' => [ 'width' => '20px;']
+                  ],
+                  [ 'class' => 'yii\grid\DataColumn',
+                    'attribute' => 'stat_cpu',
+                    'format' => 'raw',
+                    'value' => function ($data) {
+                         return app\controllers\ServerViewController::getStatusimage($data->stat_cpu, $data->id, '/server-view/res_cpu');
+                     },
+                    'options' => [ 'width' => '20px;']
+                  ],
+                  [ 'class' => 'yii\grid\DataColumn',
+                    'attribute' => 'stat_mem',
+                    'format' => 'raw',
+                    'value' => function ($data) {
+                         return app\controllers\ServerViewController::getStatusimage($data->stat_mem, $data->id, '/server-view/res_mem');
+                     },
+                    'options' => [ 'width' => '20px;']
+                  ],
+                  [ 'class' => 'yii\grid\DataColumn',
+                    'attribute' => 'stat_disk',
+                    'format' => 'raw',
+                    'value' => function ($data) {
+                         return app\controllers\ServerViewController::getStatusimage($data->stat_disk, $data->id, '/server-view/res_disk');
+                     },
+                    'options' => [ 'width' => '20px;']
+                  ],
+                  [ 'class' => 'yii\grid\DataColumn',
+                    'attribute' => 'stat_sess',
+                    'format' => 'raw',
+                    'value' => function ($data) {
+                         return app\controllers\ServerViewController::getStatusimage($data->stat_sess, $data->id, '/server-view/res_sess');
+                     },
+                    'options' => [ 'width' => '20px;']
+                  ],
                   [ 'class' => 'yii\grid\ActionColumn',
                     'options' => [ 'width' => '80px;']
                   ],

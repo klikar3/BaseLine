@@ -24,6 +24,18 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'typ')->textInput() ?>
 
+    <?= $form->field($model, 'stat_wait')->textInput() ?>
+
+    <?= $form->field($model, 'stat_queries')->textInput() ?>
+
+    <?= $form->field($model, 'stat_cpu')->textInput() ?>
+
+    <?= $form->field($model, 'stat_mem')->textInput() ?>
+
+    <?= $form->field($model, 'stat_disk')->textInput() ?>
+
+    <?= $form->field($model, 'stat_sess')->textInput() ?>
+
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? Yii::t('app', 'Create') : Yii::t('app', 'Update'), ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
     </div>

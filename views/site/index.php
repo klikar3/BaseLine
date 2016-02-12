@@ -9,10 +9,23 @@ use app\controllers\ServerViewController;
 
 $this->title = 'BaseLine';
 ?>
+<?php
+
+    $this->registerJs(
+       'var autoRefresh = setInterval( function ()
+    {
+       window.location.reload();
+    }, 60000); // this will reload page after every 1 minute.
+'
+    );
+    date_default_timezone_set('Europe/Berlin'); 
+
+?>
 <div class="site-index">
 
 
     <div class="body-content">
+<div style="text-align: right"><?= 'Refreshed on '.date('d.m.Y H:i:s'); ?></div>
        <div class="row">
           <?= GridView::widget([
               'dataProvider' => $dataProvider,

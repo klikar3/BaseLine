@@ -42,7 +42,7 @@ AppAsset::register($this);
             ['label' => 'Stammdaten', 'items' => [['label' => 'Server', 'url' => ['/server-data/index']],
                                                   ['label' => 'Config', 'url' => ['/config-data/index']],
                                                   ['label' => 'PerfMon-Defaults', 'url' => ['/perf-counter-default/index']],
-                                                  ['label' => 'Server', 'url' => ['/server-data/index']]                                                
+                                                  ['label' => 'PerfMon-Defaults per Server', 'url' => ['/perf-counter-per-server/index']]                                                
                                                   ]
             ],
             ['label' => 'Contact', 'url' => ['/site/contact']],

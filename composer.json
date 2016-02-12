@@ -18,9 +18,11 @@
         "yiisoft/yii2": ">=2.0.5",
         "yiisoft/yii2-bootstrap": "*",
         "yiisoft/yii2-swiftmailer": "*",
-		"kartik-v/yii2-grid": "@dev",
-		"kartik-v/yii2-tabs-x": "*",
-		"kartik-v/yii2-mpdf": "@dev",
+		    "kartik-v/yii2-grid": "@dev",
+		    "kartik-v/yii2-tabs-x": "*",
+		    "kartik-v/yii2-mpdf": "@dev",
+        "kartik-v/yii2-dropdown-x": "*",
+        "kartik-v/yii2-krajee-base": "@dev",
         "klikar3/rgraph": "*@dev"
     },
     "require-dev": {
@@ -30,7 +32,8 @@
         "yiisoft/yii2-faker": "*"
     },
     "config": {
-        "process-timeout": 1800
+        "process-timeout": 1800,
+        "github-protocols": ["https"]
     },
     "scripts": {
         "post-create-project-cmd": [
@@ -54,5 +57,37 @@
             "npm-asset-library": "vendor/npm",
             "bower-asset-library": "vendor/bower"
         }
-    }
+    },
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "kartik-v/yii2-grid",
+                "version": "master",
+                "dist": {
+                    "type": "zip",
+                    "url": "file://D:/prog/git/BaseLine/vendor/kartik-v/yii2-grid-master.zip",
+                    "reference": "master"
+                },
+                "autoload": {
+                    "classmap": ["."]
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "klikar3/rgraph",
+                "version": "master",
+                "dist": {
+                    "type": "zip",
+                    "url": "file://D:/prog/git/BaseLine/vendor/klikar3/yii2-RGraph-master.zip",
+                    "reference": "master"
+                },
+                "autoload": {
+                    "classmap": ["."]
+                }
+            }
+        }
+  ]
 }

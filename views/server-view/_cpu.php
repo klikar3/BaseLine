@@ -23,22 +23,16 @@ use klikar3\rgraph\RGraphLine;
     {
        window.location.reload();
     }, 60000); // this will reload page after every 1 minute.
-    
-    var go = function go(where) {
-      window.location.assign(where);
-    }
-    '
+'
     );
     date_default_timezone_set('Europe/Berlin'); 
 
 ?>
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>
 <div class="row">
-  <a href="<?= Url::toRoute(['detail','cntr' => $cntrs[0], 'id' => $id])?>">
-  <?= app\controllers\ServerViewController::getPaintLine($dataset_0, $cntrs[0], $id); ?>
-  </a>
-  <?= app\controllers\ServerViewController::getPaintLine($dataset_1, $cntrs[1], $id); ?>
-  <?=  app\controllers\ServerViewController::getPaintLine($dataset_2, $cntrs[2], $id);  ?>
-  <?=  app\controllers\ServerViewController::getPaintLine($dataset_3, $cntrs[3], $id);  ?>
+  <?= app\controllers\ServerViewController::getPaintLine($servername, $dataset_0, $cntrs[0], $id, 0); ?>
+  <?php  echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_1, $cntrs[1], $id, 0); ?>
+  <?php  echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_2, $cntrs[2], $id, 0); ?>
+  <?php  echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_3, $cntrs[3], $id, 0); ?>
 
 </div>

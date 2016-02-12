@@ -51,7 +51,9 @@ $this->title = 'BaseLine';
           ,10);
       \yii\helpers\VarDumper::dump($test, 10, true);
 */  ?>
-  <?= RGraphLine::widget([
+  <?=  app\controllers\ServerViewController::getPaintLine($servername, $dataset, $cntr, $id, 1);  ?>
+
+  <?php /* echo RGraphLine::widget([
           'data' => !empty($dataset) ? array_map('intval',ArrayHelper::getColumn($dataset,'value')) : [ 0 ],
           'allowDynamic' => true,
           'allowTooltips' => true,
@@ -84,7 +86,7 @@ $this->title = 'BaseLine';
                   ['242h',"myClick('".Url::toRoute(['res_cpu','cntr' => $cntr, 'id' => $id])."');"],
               ],
           ]
-  ]);
+  ]); */
   ?>
 <?php
 

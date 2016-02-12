@@ -2,8 +2,10 @@
 
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\widgets\ListView;
 
+use kartik\dropdown\DropdownX;
 use kartik\grid\GridView;
 use kartik\tabs\TabsX;
 
@@ -20,19 +22,30 @@ use klikar3\rgraph\RGraphBar;
 
 $this->title = 'BaseLine';
 
+$items = app\controllers\ServerViewController::getServersMenu("/index.php?r=server-view%2Fres_cpu&id=",$id);
+//\yii\helpers\VarDumper::dump($items, 10, true);
 
 ?>
 <div class="site-index">
 
 
     <div class="body-content">
-
-<h3><?php echo Html::a('Server: '.$servername, ['/server-view/index', 'id' => $id]); ?></h3>
-  
+<?php echo Html::beginTag('div', ['class'=>'dropdown']); ?>
+<h4>Server:&nbsp; <?php
+echo Html::button($servername.'&nbsp;<span class="caret"></span></button>', 
+    ['type'=>'button', 'class'=>'btn btn-default', 'data-toggle'=>'dropdown']);
+echo DropdownX::widget([ 'items' => $items,]); 
+echo Html::endTag('div');
+?> </h4>
+<?php echo Html::beginTag('div', ['style'=>'text-align: right;']); 
+echo Html::a('&Uuml;bersicht',Url::toRoute(['/server-view/index', 'id' => $id])); 
+echo Html::endTag('div');
+?>   
 <?php
 
 $cont = $this->render('_cpu', [ 'dataset_0' => $dataset_0, 'dataset_1' => $dataset_1, 
-                                'dataset_2' => $dataset_2, 'dataset_3' => $dataset_3, 'cntrs' => $cntrs, 'id' => $id,
+                                'dataset_2' => $dataset_2, 'dataset_3' => $dataset_3, 'cntrs' => $cntrs, 
+                                'id' => $id, 'servername' => $servername,
                                    ]);  
 //        \yii\helpers\VarDumper::dump($dataset_2, 10, true);
 

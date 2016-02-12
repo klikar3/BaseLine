@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4e6578a79131119e92af883c4741868b",
-    "content-hash": "f19bebc80d1363455998756e7b6ea0bf",
+    "hash": "6c1f3c6b1d9b83ee5faa5703caa1ca25",
+    "content-hash": "832b7672a63678c74e121410dc6b2e0a",
     "packages": [
         {
             "name": "bower-asset/bootstrap",
@@ -405,31 +405,31 @@
             "time": "2015-05-05 07:34:49"
         },
         {
-            "name": "kartik-v/yii2-grid",
-            "version": "dev-master",
+            "name": "kartik-v/yii2-dropdown-x",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/kartik-v/yii2-grid.git",
-                "reference": "9b41c992b445557a2475af2d29cafab80c45540a"
+                "url": "https://github.com/kartik-v/yii2-dropdown-x.git",
+                "reference": "4689a7635e290ef1b71eb4f0962e3b77e347b6fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kartik-v/yii2-grid/zipball/9b41c992b445557a2475af2d29cafab80c45540a",
-                "reference": "9b41c992b445557a2475af2d29cafab80c45540a",
+                "url": "https://api.github.com/repos/kartik-v/yii2-dropdown-x/zipball/4689a7635e290ef1b71eb4f0962e3b77e347b6fe",
+                "reference": "4689a7635e290ef1b71eb4f0962e3b77e347b6fe",
                 "shasum": ""
             },
             "require": {
-                "kartik-v/yii2-krajee-base": "~1.7"
+                "kartik-v/yii2-krajee-base": "*"
             },
             "type": "yii2-extension",
             "autoload": {
                 "psr-4": {
-                    "kartik\\grid\\": ""
+                    "kartik\\dropdown\\": ""
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "BSD-3-Clause"
+                "BSD 3-Clause"
             ],
             "authors": [
                 {
@@ -438,28 +438,47 @@
                     "homepage": "http://www.krajee.com/"
                 }
             ],
-            "description": "Yii 2 GridView on steroids. Various enhancements and utilities for the Yii 2.0 GridView widget.",
-            "homepage": "https://github.com/kartik-v/yii2-grid",
+            "description": "An extended bootstrap dropdown widget for Yii 2 with submenu drilldown.",
+            "homepage": "https://github.com/kartik-v/yii2-dropdown-x",
             "keywords": [
+                "Context",
+                "click",
                 "extension",
-                "grid",
+                "menu",
+                "mouse",
                 "widget",
                 "yii2"
             ],
-            "time": "2015-12-09 13:34:33"
+            "time": "2014-12-08 04:31:32"
+        },
+        {
+            "name": "kartik-v/yii2-grid",
+            "version": "master",
+            "dist": {
+                "type": "zip",
+                "url": "file://D:/prog/git/BaseLine/vendor/kartik-v/yii2-grid-master.zip",
+                "reference": "master",
+                "shasum": null
+            },
+            "type": "library",
+            "autoload": {
+                "classmap": [
+                    "."
+                ]
+            }
         },
         {
             "name": "kartik-v/yii2-krajee-base",
-            "version": "v1.8.0",
+            "version": "1.8.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kartik-v/yii2-krajee-base.git",
-                "reference": "602e7203680642ac4a2a5f9355316eaa9939b6ff"
+                "reference": "0c274e31e4392cbafc5fe158eae81738794e02ce"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kartik-v/yii2-krajee-base/zipball/602e7203680642ac4a2a5f9355316eaa9939b6ff",
-                "reference": "602e7203680642ac4a2a5f9355316eaa9939b6ff",
+                "url": "https://api.github.com/repos/kartik-v/yii2-krajee-base/zipball/0c274e31e4392cbafc5fe158eae81738794e02ce",
+                "reference": "0c274e31e4392cbafc5fe158eae81738794e02ce",
                 "shasum": ""
             },
             "require": {
@@ -492,7 +511,7 @@
                 "widget",
                 "yii2"
             ],
-            "time": "2015-12-11 19:01:49"
+            "time": "2016-01-10 12:26:29"
         },
         {
             "name": "kartik-v/yii2-mpdf",
@@ -543,16 +562,16 @@
         },
         {
             "name": "kartik-v/yii2-tabs-x",
-            "version": "v1.2.1",
+            "version": "v1.2.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kartik-v/yii2-tabs-x.git",
-                "reference": "03eb6dbc5c27e2a81bca7ca6ac9cc63a35b018d7"
+                "reference": "3c53773bf463a0e3f3d9eadd0231bf58f3ae08b3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kartik-v/yii2-tabs-x/zipball/03eb6dbc5c27e2a81bca7ca6ac9cc63a35b018d7",
-                "reference": "03eb6dbc5c27e2a81bca7ca6ac9cc63a35b018d7",
+                "url": "https://api.github.com/repos/kartik-v/yii2-tabs-x/zipball/3c53773bf463a0e3f3d9eadd0231bf58f3ae08b3",
+                "reference": "3c53773bf463a0e3f3d9eadd0231bf58f3ae08b3",
                 "shasum": ""
             },
             "require": {
@@ -587,49 +606,23 @@
                 "tabs",
                 "tabs-x"
             ],
-            "time": "2015-06-27 03:18:13"
+            "time": "2016-01-12 07:59:30"
         },
         {
             "name": "klikar3/rgraph",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/klikar3/yii2-RGraph.git",
-                "reference": "4a61719da50b72a8d94dc05cb7139a30822dcc39"
-            },
+            "version": "master",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/klikar3/yii2-RGraph/zipball/4a61719da50b72a8d94dc05cb7139a30822dcc39",
-                "reference": "4a61719da50b72a8d94dc05cb7139a30822dcc39",
-                "shasum": ""
+                "url": "file://D:/prog/git/BaseLine/vendor/klikar3/yii2-RGraph-master.zip",
+                "reference": "master",
+                "shasum": null
             },
-            "require": {
-                "php": ">=5.4.0",
-                "yiisoft/yii2": ">=2.0.5"
-            },
-            "require-dev": {
-                "phploc/phploc": "*",
-                "phpunit/php-code-coverage": ">=1.2.10,<1.3.0",
-                "phpunit/phpunit": "3.7.*",
-                "sebastian/phpcpd": "*"
-            },
-            "type": "yii2-extension",
+            "type": "library",
             "autoload": {
-                "psr-4": {
-                    "klikar3\\rgraph\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "GNU General Public License"
-            ],
-            "description": "Graphing with RGraph",
-            "homepage": "http://github.com/klikar3/yii2-rgraph",
-            "keywords": [
-                "rgraph",
-                "yii2"
-            ],
-            "time": "2015-12-21 16:58:35"
+                "classmap": [
+                    "."
+                ]
+            }
         },
         {
             "name": "swiftmailer/swiftmailer",
@@ -824,20 +817,20 @@
         },
         {
             "name": "yiisoft/yii2-composer",
-            "version": "2.0.3",
+            "version": "2.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/yiisoft/yii2-composer.git",
-                "reference": "ca8d23707ae47d20b0454e4b135c156f6da6d7be"
+                "reference": "7452fd908a5023b8bb5ea1b123a174ca080de464"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/yii2-composer/zipball/ca8d23707ae47d20b0454e4b135c156f6da6d7be",
-                "reference": "ca8d23707ae47d20b0454e4b135c156f6da6d7be",
+                "url": "https://api.github.com/repos/yiisoft/yii2-composer/zipball/7452fd908a5023b8bb5ea1b123a174ca080de464",
+                "reference": "7452fd908a5023b8bb5ea1b123a174ca080de464",
                 "shasum": ""
             },
             "require": {
-                "composer-plugin-api": "1.0.0"
+                "composer-plugin-api": "^1.0"
             },
             "type": "composer-plugin",
             "extra": {
@@ -867,7 +860,7 @@
                 "extension installer",
                 "yii2"
             ],
-            "time": "2015-03-01 06:22:44"
+            "time": "2016-02-06 00:49:24"
         },
         {
             "name": "yiisoft/yii2-swiftmailer",
@@ -1232,6 +1225,7 @@
     "stability-flags": {
         "kartik-v/yii2-grid": 20,
         "kartik-v/yii2-mpdf": 20,
+        "kartik-v/yii2-krajee-base": 20,
         "klikar3/rgraph": 20
     },
     "prefer-stable": false,

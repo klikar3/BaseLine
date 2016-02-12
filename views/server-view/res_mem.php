@@ -2,11 +2,12 @@
 
 use yii\helpers\ArrayHelper;
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\widgets\ListView;
 
+use kartik\dropdown\DropdownX;
 use kartik\grid\GridView;
 use kartik\tabs\TabsX;
-
 
 //use robregonm\rgraph\RGraphBarAsset;
 //use app\assets\RGraphBarAsset;
@@ -19,19 +20,33 @@ use klikar3\rgraph\RGraphBar;
 /* @var $this yii\web\View */
 
 $this->title = 'BaseLine';
-
+$items = app\controllers\ServerViewController::getServersMenu("/index.php?r=server-view%2Fres_mem&id=",$id);
 
 ?>
 <div class="site-index">
 
 
     <div class="body-content">
+<?php echo Html::beginTag('div', ['class'=>'dropdown']); ?>
+<h4>Server:&nbsp; <?php
+echo Html::button($servername.'&nbsp;<span class="caret"></span></button>', 
+    ['type'=>'button', 'class'=>'btn btn-default', 'data-toggle'=>'dropdown']);
+echo DropdownX::widget([ 'items' => $items,]); 
+echo Html::endTag('div');
+?> </h4>
+<?php echo Html::beginTag('div', ['style'=>'text-align: right;']); 
+echo Html::a('&Uuml;bersicht',Url::toRoute(['/server-view/index', 'id' => $id])); 
+echo Html::endTag('div');
+?><?php
 
-<h3><?php echo Html::a('Server: '.$servername, ['/server-view/index', 'id' => $id]); ?></h3>
-  
-<?php
-
-$cont = $this->render('_mem', [ 'dataset_1' => $dataset_1, 'cntrs' => $cntrs, 'id' => $id,
+$cont = $this->render('_mem', [ 'dataset_0' => $dataset_0, 'dataset_1' => $dataset_1, 
+                                'dataset_2' => $dataset_2, 'dataset_3' => $dataset_3, 
+                                'dataset_4' => $dataset_4, 'dataset_5' => $dataset_5, 
+                                'dataset_6' => $dataset_6, 'dataset_7' => $dataset_7, 
+                                'dataset_8' => $dataset_8, 'dataset_9' => $dataset_9, 
+                                'dataset_10' => $dataset_10, 'dataset_11' => $dataset_11, 
+                                'cntrs' => $cntrs, 
+                                'id' => $id, 'servername' => $servername,
                                    ]);  
 
 echo TabsX::widget([

@@ -5,6 +5,7 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\widgets\ListView;
 
+use kartik\dropdown\DropdownX;
 use kartik\grid\GridView;
 use kartik\tabs\TabsX;
 
@@ -20,21 +21,28 @@ use klikar3\rgraph\RGraphBar;
 /* @var $this yii\web\View */
 
 $this->title = 'BaseLine';
-
-
+$items = app\controllers\ServerViewController::getServersMenu("/index.php?r=server-view%2Findex&id=",$id);
 ?>
 <div class="site-index">
 
 
     <div class="body-content">
-
-<h3><?php echo Html::a('Server: '.$servername, ['/server-view/index', 'id' => $id]);?></h3> 
-<?=Html::a('Ressources',Url::toRoute(['res_cpu', 'id' => $id])); ?>
-
-  
+<?php echo Html::beginTag('div', ['class'=>'dropdown']); ?>
+<h4>Server:&nbsp; <?php
+echo Html::button($servername.'&nbsp;<span class="caret"></span></button>', 
+    ['type'=>'button', 'class'=>'btn btn-default', 'data-toggle'=>'dropdown']);
+echo DropdownX::widget([ 'items' => $items,]); 
+echo Html::endTag('div');
+?></h4> 
+<?php echo Html::beginTag('div', ['style'=>'text-align: right;']); 
+echo Html::a('Ressourcen',Url::toRoute(['res_cpu', 'id' => $id])); 
+echo Html::endTag('div');
+?>  
 <?php
 
-$overview = $this->render('_overview', ['datasets' => $datasets,
+$overview = $this->render('_overview', ['id' => $id,
+                                        'servername' => $servername,
+                                        'datasets' => $datasets,
                                         'dataset_cpu' => $dataset_cpu,
                                         'dataset_pps' => $dataset_pps,
                                         'dataset_dql' => $dataset_dql]);  

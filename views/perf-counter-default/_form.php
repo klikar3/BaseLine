@@ -14,9 +14,19 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'counter_name')->textInput() ?>
 
-    <?= $form->field($model, 'MinValue')->textInput() ?>
+    <?= $form->field($model, 'AvgValue')->textInput() ?>
 
-    <?= $form->field($model, 'MaxValue')->textInput() ?>
+    <?= $form->field($model, 'StdDefValue')->textInput() ?>
+
+    <?= $form->field($model, 'WarnValue')->textInput() ?>
+
+    <?= $form->field($model, 'AlertValue')->textInput() ?>
+
+    <?= $form->field($model, 'is_perfmon')->textInput() ?>
+
+    <?= $form->field($model, 'direction')->textInput() ?>
+
+    <?= $form->field($model, 'belongsto')->textInput() ?>
 
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? Yii::t('app', 'Create') : Yii::t('app', 'Update'), ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>

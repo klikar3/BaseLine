@@ -30,8 +30,13 @@ $this->params['breadcrumbs'][] = $this->title;
         'attributes' => [
             'id',
             'counter_name',
-            'MinValue',
-            'MaxValue',
+            'AvgValue',
+            'StdDefValue',
+            'WarnValue',
+            'AlertValue',
+            'is_perfmon',
+            'direction',
+            'belongsto',
         ],
     ]) ?>
 

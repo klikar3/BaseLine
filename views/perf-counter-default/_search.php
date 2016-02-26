@@ -19,9 +19,19 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'counter_name') ?>
 
-    <?= $form->field($model, 'MinValue') ?>
+    <?= $form->field($model, 'AvgValue') ?>
 
-    <?= $form->field($model, 'MaxValue') ?>
+    <?= $form->field($model, 'StdDefValue') ?>
+
+    <?= $form->field($model, 'WarnValue') ?>
+
+    <?php // echo $form->field($model, 'AlertValue') ?>
+
+    <?php // echo $form->field($model, 'is_perfmon') ?>
+
+    <?php // echo $form->field($model, 'direction') ?>
+
+    <?php // echo $form->field($model, 'belongsto') ?>
 
     <div class="form-group">
         <?= Html::submitButton(Yii::t('app', 'Search'), ['class' => 'btn btn-primary']) ?>

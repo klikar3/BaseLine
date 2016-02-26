@@ -18,9 +18,9 @@ class PerfCounterDefaultSearch extends PerfCounterDefault
     public function rules()
     {
         return [
-            [['id'], 'integer'],
-            [['counter_name'], 'safe'],
-            [['MinValue', 'MaxValue'], 'number'],
+            [['id', 'is_perfmon'], 'integer'],
+            [['counter_name', 'direction', 'belongsto'], 'safe'],
+            [['AvgValue', 'StdDefValue', 'WarnValue', 'AlertValue'], 'number'],
         ];
     }
 
@@ -58,11 +58,16 @@ class PerfCounterDefaultSearch extends PerfCounterDefault
 
         $query->andFilterWhere([
             'id' => $this->id,
-            'MinValue' => $this->MinValue,
-            'MaxValue' => $this->MaxValue,
+            'AvgValue' => $this->AvgValue,
+            'StdDefValue' => $this->StdDefValue,
+            'WarnValue' => $this->WarnValue,
+            'AlertValue' => $this->AlertValue,
+            'is_perfmon' => $this->is_perfmon,
         ]);
 
-        $query->andFilterWhere(['like', 'counter_name', $this->counter_name]);
+        $query->andFilterWhere(['like', 'counter_name', $this->counter_name])
+            ->andFilterWhere(['like', 'direction', $this->direction])
+            ->andFilterWhere(['like', 'belongsto', $this->belongsto]);
 
         return $dataProvider;
     }

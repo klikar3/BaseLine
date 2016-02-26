@@ -9,8 +9,13 @@ use Yii;
  *
  * @property integer $id
  * @property string $counter_name
- * @property string $MinValue
- * @property string $MaxValue
+ * @property string $AvgValue
+ * @property string $StdDefValue
+ * @property string $WarnValue
+ * @property string $AlertValue
+ * @property integer $is_perfmon
+ * @property string $direction
+ * @property string $belongsto
  */
 class PerfCounterDefault extends \yii\db\ActiveRecord
 {
@@ -29,8 +34,9 @@ class PerfCounterDefault extends \yii\db\ActiveRecord
     {
         return [
             [['counter_name'], 'required'],
-            [['counter_name'], 'string'],
-            [['MinValue', 'MaxValue'], 'number'],
+            [['counter_name', 'direction', 'belongsto'], 'string'],
+            [['AvgValue', 'StdDefValue', 'WarnValue', 'AlertValue'], 'number'],
+            [['is_perfmon'], 'integer'],
             [['counter_name'], 'unique']
         ];
     }
@@ -43,8 +49,13 @@ class PerfCounterDefault extends \yii\db\ActiveRecord
         return [
             'id' => Yii::t('app', 'ID'),
             'counter_name' => Yii::t('app', 'Counter Name'),
-            'MinValue' => Yii::t('app', 'Min Value'),
-            'MaxValue' => Yii::t('app', 'Max Value'),
+            'AvgValue' => Yii::t('app', 'Avg Value'),
+            'StdDefValue' => Yii::t('app', 'Std Def Value'),
+            'WarnValue' => Yii::t('app', 'Warn Value'),
+            'AlertValue' => Yii::t('app', 'Alert Value'),
+            'is_perfmon' => Yii::t('app', 'Is Perfmon'),
+            'direction' => Yii::t('app', 'Direction'),
+            'belongsto' => Yii::t('app', 'Belongsto'),
         ];
     }
 }

@@ -39,14 +39,22 @@ echo Html::a('&Uuml;bersicht',Url::toRoute(['/server-view/index', 'id' => $id]))
 echo Html::endTag('div');
 ?><?php
 
-$cont_cpu = $this->render('_disk', [ 'dataset_cpu' => $dataset_cpu, 'cntrs' => $cntrs, 'id' => $id,
-                                   ]);  
+$cont = $this->render('_disk', [ 'dataset_0' => $dataset_0, 'dataset_1' => $dataset_1, 
+                                'dataset_2' => $dataset_2, 'dataset_3' => $dataset_3, 
+                                'dataset_4' => $dataset_4, 'dataset_5' => $dataset_5, 
+                                'dataset_6' => $dataset_6, 
+                                'dataset_7' => $dataset_7, 
+//                                'dataset_8' => $dataset_8, 'dataset_9' => $dataset_9, 
+//                                'dataset_10' => $dataset_10, 'dataset_11' => $dataset_11, 
+                                'cntrs' => $cntrs, 
+                                'id' => $id, 'servername' => $servername,
+                                ]);  
 
 echo TabsX::widget([
     'items'=> [
         [
             'label'=>'<i class="glyphicon glyphicon-flash"></i> Cpu',
-            'content'=> $cont_cpu,
+            'content'=> '',
             'url'=>\yii\helpers\Url::toRoute(['res_cpu', 'id' => $id]),
         ],
         [
@@ -56,7 +64,7 @@ echo TabsX::widget([
         ],
         [
             'label'=>'<i class="glyphicon glyphicon-floppy-disk"></i> Disk',
-            'content'=>'',
+            'content'=>$cont,
             'url'=>\yii\helpers\Url::toRoute(['res_disk', 'id' => $id]),
             'active'=>true
         ],

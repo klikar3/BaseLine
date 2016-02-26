@@ -27,8 +27,13 @@ $this->params['breadcrumbs'][] = $this->title;
 
             'id',
             'counter_name',
-            'MinValue',
-            'MaxValue',
+            'AvgValue',
+            'StdDefValue',
+            'WarnValue',
+            'AlertValue',
+            'is_perfmon',
+            'direction',
+            'belongsto',
 
             ['class' => 'yii\grid\ActionColumn'],
         ],

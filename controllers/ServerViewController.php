@@ -103,10 +103,10 @@ class ServerViewController extends \yii\web\Controller
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
         $cntrs = array( 0 => ['Page Life Expectancy',''],1 => ['Memory Utilization %','_Total'], 
                         2 => ['Plan Cache Size (MB)','_Total'], 3 => ['Buffer cache hit ratio',''], 
-                        4 => '', 5 => '',
-                        6 => 'Pages/Sec', 7 => '',
-                        8 => '', 9 => '',
-                        10 => '', 11 => '',
+                        4 => 'Buffer Cache Size (MB)', 5 => ['Cache Hit Ratio','_Total'],
+                        6 => 'Pages/Sec', 7 => 'Log Bytes Flushed/sec',
+                        8 => 'Log Flushes/sec', 9 => ['SQL Compilations/sec',''],
+                        10 => ['SQL Re-Compilations/sec',''], 11 => '',
                         );
 
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
@@ -137,14 +137,27 @@ class ServerViewController extends \yii\web\Controller
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
-        $cntrs = array( 0 => '',1 => 'Cpu Utilization %', 2 => '', 3 => '');
+        $cntrs = array( 0 => 'I/O Wait Time',1 => 'I/O Read Wait Time', 2 => 'I/O Write Wait Time', 3 => 'Disk Queue Length',
+                        4 => 'Physical I/O Rate (Kb/sec)', 5 => 'Physical Read I/O Rate (Kb/sec)', 
+                        6 => 'Physical Write I/O Rate (Kb/sec)', 7 => 'Physical Transfers Per Sec');
 
         return $this->render('res_disk', [
             'id' => $id,
             'cntrs' => $cntrs,
             'servername' => $servername,
-            'dataset_cpu' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
-        ]);
+            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
+            'dataset_1' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
+            'dataset_2' => $this->getPerfmonDataset($servername,$cntrs[2],$dt),
+            'dataset_3' => $this->getPerfmonDataset($servername,$cntrs[3],$dt),
+            'dataset_4' => $this->getPerfmonDataset($servername,$cntrs[4],$dt),
+            'dataset_5' => $this->getPerfmonDataset($servername,$cntrs[5],$dt),
+            'dataset_6' => $this->getPerfmonDataset($servername,$cntrs[6],$dt),
+            'dataset_7' => $this->getPerfmonDataset($servername,$cntrs[7],$dt),
+/*            'dataset_8' => $this->getPerfmonDataset($servername,$cntrs[8],$dt),
+            'dataset_9' => $this->getPerfmonDataset($servername,$cntrs[9],$dt),
+            'dataset_10' => $this->getPerfmonDataset($servername,$cntrs[10],$dt),
+            'dataset_11' => $this->getPerfmonDataset($servername,$cntrs[11],$dt),
+*/        ]);
     }
 
     public function actionRes_net($id)
@@ -264,7 +277,7 @@ class ServerViewController extends \yii\web\Controller
         return Html::a(Html::img('@web/images/WaitTimeMeter_3.png', ['alt' => 'red']), [$ziel, 'id' => $id]);
    }
 
-    public static function getPaintLine($srvr,$dataset,$cntr,$id,$detail=0) {
+    public static function getPaintLine($srvr,$dataset,$cntr,$id,$detail=0,$title='') {
         
         $output = true;
         
@@ -274,6 +287,11 @@ class ServerViewController extends \yii\web\Controller
         
         $pcid = (new \yii\db\Query())
         ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', ['cntr' => $counter])
+        ->scalar();
+        
+        $pcsid = (new \yii\db\Query())
+        ->select('id')->from('PerfCounterPerServer')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
+          ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
         ->scalar();
         
         $stat = 'unknown';        
@@ -327,7 +345,7 @@ class ServerViewController extends \yii\web\Controller
               'textSize' => 8,
 //              'gutter' => ['left' => 50, 'bottom' => 80, 'top' => 50],
               'gutter' => ['left' => ($detail==0) ? 50 : 50, 'bottom' => ($detail==0) ? 50 : 80, 'top' => 50],
-              'title' => $counter,
+              'title' => !empty($title) ? $title : $counter,
               'titleSize' => 12,
               'titleBold' => false,
               'tickmarks' => 'circle',
@@ -339,9 +357,11 @@ class ServerViewController extends \yii\web\Controller
                   ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
                   ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
                   ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
               ],
           ]
-      ]);    
+      ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
+      ;    
   }
   
     public static function getServersMenu($target,$id) {

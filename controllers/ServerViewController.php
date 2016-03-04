@@ -186,7 +186,7 @@ class ServerViewController extends \yii\web\Controller
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
-        $cntrs = array( 0 => '',1 => 'Cpu Utilization %', 2 => '', 3 => '');
+        $cntrs = array( 0 => 'Active Session Count',1 => '', 2 => '', 3 => '');
 
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
 
@@ -194,8 +194,19 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntrs' => $cntrs,
             'servername' => $servername,
-            'dataset_cpu' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
-        ]);
+            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
+            'dataset_1' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
+            'dataset_2' => $this->getPerfmonDataset($servername,$cntrs[2],$dt),
+            'dataset_3' => $this->getPerfmonDataset($servername,$cntrs[3],$dt),
+/*            'dataset_4' => $this->getPerfmonDataset($servername,$cntrs[4],$dt),
+            'dataset_5' => $this->getPerfmonDataset($servername,$cntrs[5],$dt),
+            'dataset_6' => $this->getPerfmonDataset($servername,$cntrs[6],$dt),
+            'dataset_7' => $this->getPerfmonDataset($servername,$cntrs[7],$dt),
+            'dataset_8' => $this->getPerfmonDataset($servername,$cntrs[8],$dt),
+            'dataset_9' => $this->getPerfmonDataset($servername,$cntrs[9],$dt),
+            'dataset_10' => $this->getPerfmonDataset($servername,$cntrs[10],$dt),
+            'dataset_11' => $this->getPerfmonDataset($servername,$cntrs[11],$dt),
+*/        ]);
     }
 
     public function actionDetail($cntr,$id,$days)

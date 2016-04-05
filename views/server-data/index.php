@@ -10,6 +10,18 @@ use yii\grid\GridView;
 $this->title = Yii::t('app', 'Server Datas');
 $this->params['breadcrumbs'][] = $this->title;
 ?>
+<?php
+
+    $this->registerJs(
+       'var autoRefresh = setInterval( function ()
+    {
+       window.location.reload();
+    }, 20000); // this will reload page after every 1 minute.
+'
+    );
+    date_default_timezone_set('Europe/Berlin'); 
+
+?>
 <div class="server-data-index">
 
     <h1><?= Html::encode($this->title) ?></h1>

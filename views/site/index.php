@@ -15,7 +15,7 @@ $this->title = 'BaseLine';
        'var autoRefresh = setInterval( function ()
     {
        window.location.reload();
-    }, 60000); // this will reload page after every 1 minute.
+    }, 20000); // this will reload page after every 1 minute.
 '
     );
     date_default_timezone_set('Europe/Berlin'); 

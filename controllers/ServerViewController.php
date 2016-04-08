@@ -328,7 +328,12 @@ class ServerViewController extends \yii\web\Controller
       $avgvals = ArrayHelper::getColumn($dataset,'AvgValue');
       $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
       $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
-      $daten = [$values, $avgvals];     
+      $daten = [$values, $avgvals]; 
+      $tooltips = $values + $zeiten;
+
+      for ($i = 0; $i < count($zeiten); ++$i) {
+        $tooltips[$i] = $tooltips[$i] . '<br>'. substr($zeiten[$i],0,16);     
+      }    
 //      \yii\helpers\VarDumper::dump('Counter: '.$counter, 10, true);
         
       if ($output) return RGraphLine::widget([
@@ -338,11 +343,11 @@ class ServerViewController extends \yii\web\Controller
           'allowContext' => true,
 //          'id' => 'rgline_'.$pcid,
           'htmlOptions' => [
-              'height' => ($detail==0) ? '180px' : '500px',
+              'height' => ($detail==0) ? '180px' : '600px',
               'width' => ($detail==0) ? '280px' : '800px',
           ],
           'options' => [
-              'height' => ($detail==0) ? '180px' : '500px',
+              'height' => ($detail==0) ? '180px' : '600px',
               'width' => ($detail==0) ? '280px' : '800px',
 //              'id' => 'rgline_'.$pcid,
               'colors' => ['blue','green'],
@@ -354,7 +359,8 @@ class ServerViewController extends \yii\web\Controller
 */             'labels' => !empty($dataset) ? array_map(function($val) use ($detail){return substr($val,0,16);},
                                     array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),$anzahl),0)
                           ) : [ 'No Data' ],
-              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
+              'tooltips' => $tooltips,
+//              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
 //              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
   //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
   //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',

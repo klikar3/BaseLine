@@ -336,9 +336,15 @@ class ServerViewController extends \yii\web\Controller
           'allowDynamic' => true,
           'allowTooltips' => true,
           'allowContext' => true,
+//          'id' => 'rgline_'.$pcid,
+          'htmlOptions' => [
+              'height' => ($detail==0) ? '180px' : '500px',
+              'width' => ($detail==0) ? '280px' : '800px',
+          ],
           'options' => [
               'height' => ($detail==0) ? '180px' : '500px',
               'width' => ($detail==0) ? '280px' : '800px',
+//              'id' => 'rgline_'.$pcid,
               'colors' => ['blue','green'],
 //              'filled' => true,
               'clearto' => ['white'],
@@ -363,7 +369,7 @@ class ServerViewController extends \yii\web\Controller
 //              'ymax' => 100,
               'backgroundColor' => $bg,
               'contextmenu' => [
-                  ['24h', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ])."\");}") ],
+                  ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
                   ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
                   ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
                   ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],

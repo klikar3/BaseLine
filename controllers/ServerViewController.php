@@ -69,6 +69,8 @@ class ServerViewController extends \yii\web\Controller
             'dataset_cpu' => $this->getPerfmonDataset($servername,'Cpu Utilization %',$dt),
             'dataset_pps' => $this->getPerfmonDataset($servername,'Pages/sec', $dt ),
             'dataset_dql' => $this->getPerfmonDataset($servername,'Disk Queue Length', $dt ),
+            'dataset_net' => $this->getNetPerfDataset($servername,'BytesTotalPersec',$dt),
+
         ]);
     }
 
@@ -167,7 +169,7 @@ class ServerViewController extends \yii\web\Controller
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
-        $cntrs = array( 0 => '',1 => 'Cpu Utilization %', 2 => '', 3 => '');
+        $cntrs = array( 0 => 'BytesTotalPersec',1 => 'BytesReceivedPersec', 2 => 'BytesSentPersec');
 
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
 
@@ -175,7 +177,9 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntrs' => $cntrs,
             'servername' => $servername,
-            'dataset_cpu' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
+            'dataset_0' => $this->getNetPerfDataset($servername, $cntrs[0], $dt),
+            'dataset_1' => $this->getNetPerfDataset($servername, $cntrs[1], $dt),
+            'dataset_2' => $this->getNetPerfDataset($servername, $cntrs[2], $dt),
         ]);
     }
 
@@ -222,6 +226,22 @@ class ServerViewController extends \yii\web\Controller
             'cntr' => $cntr,
             'servername' => $servername,
             'dataset' => $this->getPerfmonDataset($servername,$cntr,$dt),
+        ]);
+    }
+    
+    public function actionDetail_net($cntr,$id,$days)
+    {
+        $cntr = json_decode($cntr);
+        $servername = $this->getServername($id);
+
+        date_default_timezone_set('Europe/Berlin'); 
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
+
+        return $this->render('detail_net', [
+            'id' => $id,
+            'cntr' => $cntr,
+            'servername' => $servername,
+            'dataset' => $this->getNetPerfDataset($servername,$cntr,$dt),
         ]);
     }
     
@@ -385,7 +405,7 @@ class ServerViewController extends \yii\web\Controller
           ]
       ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
       ;    
-  }
+    }
   
     public static function getServersMenu($target,$id) {
               
@@ -400,4 +420,128 @@ class ServerViewController extends \yii\web\Controller
 
         return $items;
     }
+    
+    public function getNetPerfDataset($srvr,$cntr,$dt,$adapter='_Total')
+    {
+/*        $instance='_Total';
+        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
+        else $counter = $cntr;
+        
+        $pcid = (new \yii\db\Query())
+        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', array('cntr' => $counter))
+        ->scalar();
+*/      
+        $machine = (new \yii\db\Query())
+        ->select('Value')->from('ServerConfig')->where('server=:sr AND Property=:prop', 
+            array('sr' => $srvr, 'prop' => 'MachineName'))
+        ->orderBy('CaptureDate desc')  
+        ->limit(1)  
+        ->scalar();
+  
+        if ($cntr == 'BytesTotalPersec') $fields = 'CaptureDate, BytesTotalPersec/(1024) AS Value, AvgBytesTotalPersec/(1024) AS AvgValue, CurrentBandwidth/(1024) AS CurrentBandwidth';
+        if ($cntr == 'BytesReceivedPersec') $fields = 'CaptureDate, BytesReceivedPersec/(1024) AS Value, AvgBytesReceivedPersec/(1024) AS AvgValue, CurrentBandwidth/(1024) AS CurrentBandwidth';
+        if ($cntr == 'BytesSentPersec') $fields = 'CaptureDate, BytesSentPersec/(1024) AS Value, AvgBytesSentPersec/(1024) AS AvgValue, CurrentBandwidth/(1024) AS CurrentBandwidth';        
+        $dataset = (new \yii\db\Query())
+        ->select($fields)->from('NetMonData')->where('Server=:srvr AND CaptureDate>:dt AND wmiNetAdapterName = :adapter',
+        array('srvr' => $machine, 'dt' => $dt, 'adapter' => $adapter ))
+        ->orderBy('CaptureDate')
+        ->all();
+//        \yii\helpers\VarDumper::dump($dataset, 10, true);
+        
+        return !empty($dataset) ? $dataset : [ [0, 0] ];
+
+    }
+
+    public static function getNetLine($srvr,$dataset,$cntr,$id,$detail=0,$title='') {
+        
+        $output = true;
+        
+/*        $instance='_Total';
+        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
+        else $counter = $cntr;
+        
+        $pcid = (new \yii\db\Query())
+        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', ['cntr' => $counter])
+        ->scalar();
+        
+        $pcsid = (new \yii\db\Query())
+        ->select('id')->from('PerfCounterPerServer')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
+          ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
+        ->scalar();
+*/        
+        $stat = 'unknown';        
+/*        if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData')
+        ->where('Server=:srvr AND Counter_id=:pcid AND instance=:inst', array('srvr' => $srvr, 'pcid' => $pcid, 'inst' => $instance ))
+        ->orderBy('CaptureDate desc')->limit(1)->scalar();
+*/
+        switch ($stat) {
+          case 'unknown':
+              $bg = 'Gradient(lightgrey:white)'; break;
+          case 'green':
+              $bg = 'Gradient(lightgreen:white)'; break;
+          case 'yellow':
+              $bg = 'Gradient(yellow:white)'; break;
+          case 'red':
+              $bg = 'Gradient(orange:white)'; break;
+          default:
+              $bg = 'Gradient(lightgrey:white)';
+       }
+//      \yii\helpers\VarDumper::dump($dataset, 10, true);
+      if (empty($dataset)) return '';
+      $values = ArrayHelper::getColumn($dataset,'Value');
+      $avgvals = ArrayHelper::getColumn($dataset,'AvgValue');
+      $bandWidth = ArrayHelper::getColumn($dataset,'CurrentBandwidth');
+      $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
+      $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
+      $daten = [$values, $avgvals];  //   , $bandWidth
+      $tooltips = $values + $zeiten;
+
+      for ($i = 0; $i < count($zeiten); ++$i) {
+        $tooltips[$i] = $tooltips[$i] . '<br>'. substr($zeiten[$i],0,16);     
+      }    
+//      \yii\helpers\VarDumper::dump('Counter: '.$counter, 10, true);
+        
+      if ($output) return RGraphLine::widget([
+          'data' => !empty($daten) ? $daten : [ [0,0] ],
+          'allowDynamic' => true,
+          'allowTooltips' => true,
+          'allowContext' => true,
+//          'id' => 'rgline_'.$pcid,
+          'htmlOptions' => [
+              'height' => ($detail==0) ? '180px' : '600px',
+              'width' => ($detail==0) ? '280px' : '800px',
+          ],
+          'options' => [
+              'height' => ($detail==0) ? '180px' : '600px',
+              'width' => ($detail==0) ? '280px' : '800px',
+//              'id' => 'rgline_'.$pcid,
+              'colors' => ['blue','green'], //    ,'orange'
+//              'filled' => true,
+              'clearto' => ['white'],
+             'labels' => !empty($dataset) ? array_map(function($val) use ($detail){return substr($val,0,16);},
+                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),$anzahl),0)
+                          ) : [ 'No Data' ],
+              'tooltips' => $tooltips,
+              'textAngle' => 45,
+              'textSize' => 8,
+              'gutter' => ['left' => ($detail==0) ? 60 : 60, 'bottom' => ($detail==0) ? 60 : 80, 'top' => 50],
+              'title' => !empty($title) ? $title : 'Net k'.$cntr,
+              'titleSize' => 12,
+              'titleBold' => false,
+              'tickmarks' => 'circle',
+//              'ymax' => 100,
+              'backgroundColor' => $bg,
+              'contextmenu' => [
+                  ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail_net','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
+                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_net','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
+                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_net','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
+                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_net','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_net','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+//                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
+              ],
+          ]
+      ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
+      ;    
+  }
+    
 }

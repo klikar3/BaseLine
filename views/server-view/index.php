@@ -45,7 +45,8 @@ $overview = $this->render('_overview', ['id' => $id,
                                         'datasets' => $datasets,
                                         'dataset_cpu' => $dataset_cpu,
                                         'dataset_pps' => $dataset_pps,
-                                        'dataset_dql' => $dataset_dql]);  
+                                        'dataset_dql' => $dataset_dql,
+                                        'dataset_net' => $dataset_net]);  
 $content1 = $this->render('_config', ['servername' => $servername,
                                                   'dataProvider' => $dataProvider]);
 $content_sc = $this->render('_sconfig', ['servername' => $servername,

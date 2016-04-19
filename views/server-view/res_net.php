@@ -39,35 +39,36 @@ echo Html::a('&Uuml;bersicht',Url::toRoute(['/server-view/index', 'id' => $id]))
 echo Html::endTag('div');
 ?><?php
 
-$cont_cpu = $this->render('_net', [ 'dataset_cpu' => $dataset_cpu, 'cntrs' => $cntrs, 'id' => $id,
-                                   ]);  
+$cont = $this->render('_net', [ 'dataset_0' => $dataset_0, 'dataset_1' => $dataset_1,
+                                'dataset_2' => $dataset_2, 'cntrs' => $cntrs, 'id' => $id,
+                                'servername' => $servername,   ]);  
 
 echo TabsX::widget([
     'items'=> [
         [
             'label'=>'<i class="glyphicon glyphicon-flash"></i> Cpu',
-            'content'=> $cont_cpu,
+            'content'=> '',
             'url'=>\yii\helpers\Url::toRoute(['res_cpu', 'id' => $id]),
         ],
         [
             'label'=>'<i class="glyphicon glyphicon-oil"></i> Memory',
-            'content'=>'',
+            'content' => '',
             'url'=>\yii\helpers\Url::toRoute(['res_mem', 'id' => $id]),
         ],
         [
             'label'=>'<i class="glyphicon glyphicon-floppy-disk"></i> Disk',
-            'content'=>'',
+            'content' => '',
             'url'=>\yii\helpers\Url::toRoute(['res_disk', 'id' => $id]),
         ],
         [
             'label'=>'<i class="glyphicon glyphicon-transfer"></i> Network',
-            'content'=>'',
+            'content' => $cont,
             'url'=>\yii\helpers\Url::toRoute(['res_net', 'id' => $id]),
             'active'=>true
         ],
         [
             'label'=>'<i class="glyphicon glyphicon-king"></i> Sessions',
-            'content'=>'',
+            'content' => '',
             'url'=>\yii\helpers\Url::toRoute(['res_sess', 'id' => $id]),
 //            'headerOptions' => ['class'=>'disabled']
         ],

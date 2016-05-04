@@ -21,7 +21,7 @@ use klikar3\rgraph\RGraphLine;
        'var autoRefresh = setInterval( function ()
     {
        window.location.reload();
-    }, 60000); // this will reload page after every 1 minute.
+    }, 150000); // this will reload page after every 2,5 minutes.
     '
     );
     date_default_timezone_set('Europe/Berlin'); 

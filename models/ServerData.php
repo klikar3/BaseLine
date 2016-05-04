@@ -20,6 +20,7 @@ use Yii;
  * @property string $stat_mem
  * @property string $stat_disk
  * @property string $stat_sess
+ * @property string $stat_net
  */
 class ServerData extends \yii\db\ActiveRecord
 {
@@ -61,6 +62,7 @@ class ServerData extends \yii\db\ActiveRecord
             'stat_mem' => Yii::t('app', 'Mem'),
             'stat_disk' => Yii::t('app', 'Disk'),
             'stat_sess' => Yii::t('app', 'Sess'),
+            'stat_net' => Yii::t('app', 'Net'),
         ];
     }
 }

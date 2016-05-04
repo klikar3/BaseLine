@@ -15,6 +15,7 @@ use klikar3\rgraph\RGraphLine;
 
 use app\models\ConfigData;
 use app\models\ConfigDataSearch;
+use app\models\DbData;
 use app\models\ServerConfig;
 use app\models\ServerData;
 
@@ -41,7 +42,7 @@ class ServerViewController extends \yii\web\Controller
 //            ],
         ]);
         // get the posts in the current page
-        $posts = $dataProvider->getModels();
+////        $posts = $dataProvider->getModels();
 //        \yii\helpers\VarDumper::dump($dataProvider, 10, true);
 
         // -- ServerConfig
@@ -52,7 +53,14 @@ class ServerViewController extends \yii\web\Controller
         $dataProvider_sc = new ActiveDataProvider([
             'query' => ServerConfig::find()->where(['Server' => $servername])->andWhere(['CaptureDate' => $datum]),
         ]);
-        $posts_sc = $dataProvider_sc->getModels();
+////        $posts_sc = $dataProvider_sc->getModels();
+
+        // -- Datenbank-Daten
+        $datum = DbData::find()->select(['CaptureDate'])->where(['Server' => $servername])
+                  ->orderBy(['CaptureDate' => SORT_DESC])->scalar();
+        $dataProvider_db = new ActiveDataProvider([
+            'query' => DbData::find()->where(['Server' => $servername, 'physicalFileName' => "_Total"])->andWhere(['CaptureDate' => $datum]),
+        ]);
 
         // -- Datasets
         date_default_timezone_set('Europe/Berlin'); 
@@ -65,6 +73,7 @@ class ServerViewController extends \yii\web\Controller
             'servername' => $servername,
             'dataProvider' => $dataProvider,
             'dataProvider_sc' => $dataProvider_sc,
+            'dataProvider_db' => $dataProvider_db,
             'datasets' => $this->getPerfmonDataset($servername,['Page Life Expectancy',''], $dt ),
             'dataset_cpu' => $this->getPerfmonDataset($servername,'Cpu Utilization %',$dt),
             'dataset_pps' => $this->getPerfmonDataset($servername,'Pages/sec', $dt ),
@@ -455,25 +464,26 @@ class ServerViewController extends \yii\web\Controller
     public static function getNetLine($srvr,$dataset,$cntr,$id,$detail=0,$title='') {
         
         $output = true;
-        
-/*        $instance='_Total';
+
+        $instance='_Total';
         if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
         else $counter = $cntr;
         
-        $pcid = (new \yii\db\Query())
+/*        $pcid = (new \yii\db\Query())
         ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', ['cntr' => $counter])
         ->scalar();
         
         $pcsid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterPerServer')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
-          ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
+        ->select('status')->from('PerfCounterPerServer')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
+          ['srvr' => $srvr, 'cntr' => $cntr, 'inst' => $instance])
         ->scalar();
 */        
         $stat = 'unknown';        
-/*        if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData')
-        ->where('Server=:srvr AND Counter_id=:pcid AND instance=:inst', array('srvr' => $srvr, 'pcid' => $pcid, 'inst' => $instance ))
-        ->orderBy('CaptureDate desc')->limit(1)->scalar();
-*/
+        $stat = (new \yii\db\Query())
+                ->select('status')->from('PerfCounterPerServer')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
+          ['srvr' => $srvr, 'cntr' => "Network Utilization", 'inst' => $instance])
+        ->scalar();
+
         switch ($stat) {
           case 'unknown':
               $bg = 'Gradient(lightgrey:white)'; break;
@@ -486,7 +496,8 @@ class ServerViewController extends \yii\web\Controller
           default:
               $bg = 'Gradient(lightgrey:white)';
        }
-//      \yii\helpers\VarDumper::dump($dataset, 10, true);
+//      \yii\helpers\VarDumper::dump($stat, 10, true);
+
       if (empty($dataset)) return '';
       $values = ArrayHelper::getColumn($dataset,'Value');
       $avgvals = ArrayHelper::getColumn($dataset,'AvgValue');
@@ -528,7 +539,7 @@ class ServerViewController extends \yii\web\Controller
               'title' => !empty($title) ? $title : 'Net k'.$cntr,
               'titleSize' => 12,
               'titleBold' => false,
-              'tickmarks' => 'circle',
+              'tickmarks' => 'none', //'circle',
 //              'ymax' => 100,
               'backgroundColor' => $bg,
               'contextmenu' => [

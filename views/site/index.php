@@ -93,7 +93,15 @@ $this->title = 'BaseLine';
                      },
                     'options' => [ 'width' => '20px;']
                   ],
-                  [ 'class' => 'yii\grid\ActionColumn',
+                   [ 'class' => 'yii\grid\DataColumn',
+                      'attribute' => 'stat_net',
+                      'format' => 'raw',
+                      'value' => function ($data) {
+                           return app\controllers\ServerViewController::getStatusimage($data->stat_net, $data->id, '/server-view/res_net');
+                       },
+                      'options' => [ 'width' => '20px;']
+                    ],
+                   [ 'class' => 'yii\grid\ActionColumn',
                     'options' => [ 'width' => '80px;']
                   ],
               ],

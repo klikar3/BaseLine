@@ -51,6 +51,8 @@ $content1 = $this->render('_config', ['servername' => $servername,
                                                   'dataProvider' => $dataProvider]);
 $content_sc = $this->render('_sconfig', ['servername' => $servername,
                                                   'dataProvider_sc' => $dataProvider_sc]);
+$content_db = $this->render('_dbconfig', ['servername' => $servername,
+                                                  'dataProvider_db' => $dataProvider_db]);
                                                   
 
 echo TabsX::widget([
@@ -69,12 +71,12 @@ echo TabsX::widget([
             'content'=>$content_sc
         ],
         [
-            'label'=>'<i class="glyphicon glyphicon-list-alt"></i> Dropdown',
+            'label'=>'<i class="glyphicon glyphicon-list-alt"></i> Weiteres',
             'items'=>[
                  [
-                     'label'=>'<i class="glyphicon glyphicon-chevron-right"></i> Option 1',
+                     'label'=>'<i class="glyphicon glyphicon-chevron-right"></i> Datenbanken',
                      'encode'=>false,
-                     'content'=>$content1,
+                     'content'=>$content_db,
                  ],
                  [
                      'label'=>'<i class="glyphicon glyphicon-chevron-right"></i> Option 2',

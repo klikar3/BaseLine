@@ -120,7 +120,7 @@ class ServerViewController extends \yii\web\Controller
                         6 => 'Pages/Sec', 7 => 'Log Bytes Flushed/sec',
                         8 => 'Log Flushes/sec', 9 => ['SQL Compilations/sec',''],
                         10 => ['SQL Re-Compilations/sec',''], 11 => 'Cache hit ratio',
-                        12 => 'Pages/sec', 13 => ['Target Server Memory (KB)','']
+                        12 => ['Target Server Memory (KB)','']
                         );
 
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
@@ -142,7 +142,7 @@ class ServerViewController extends \yii\web\Controller
             'dataset_10' => $this->getPerfmonDataset($servername,$cntrs[10],$dt),
             'dataset_11' => $this->getPerfmonDataset($servername,$cntrs[11],$dt),
             'dataset_12' => $this->getPerfmonDataset($servername,$cntrs[12],$dt),
-            'dataset_13' => $this->getPerfmonDataset($servername,$cntrs[13],$dt),
+//            'dataset_13' => $this->getPerfmonDataset($servername,$cntrs[13],$dt),
         ]);
     }
 

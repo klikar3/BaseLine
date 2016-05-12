@@ -19,7 +19,10 @@ use kartik\grid\GridView;
 //    'filterModel' => $searchModel,
     'columns' => ['db', 'Description', 'LogicalFileName', 'PhysicalFileName', 'sizeMB','CaptureDate'],
     'responsive'=>true,
-    'hover'=>true
+    'hover'=>true,
+    'rowOptions'=>function ($model, $key, $index, $grid){
+           return ['class'=>$index%2 ? 'normal' : 'info'];
+		},
 ]);
 ?>
 

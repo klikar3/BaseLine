@@ -37,9 +37,9 @@ class ServerViewController extends \yii\web\Controller
 //            'query' => $query->select('server')->from('ConfigData')->andFilterWhere([
 //                        'server' => $servername]),
             'query' => ConfigData::find()->where(['Server' => $servername])->andWhere(['CaptureDate' => $datum]),
-//            'pagination' => [
-//                'pageSize' => 20,
-//            ],
+            'pagination' => [
+                'pageSize' => 15,
+            ],
         ]);
         // get the posts in the current page
 ////        $posts = $dataProvider->getModels();
@@ -52,6 +52,7 @@ class ServerViewController extends \yii\web\Controller
         $datum = $cmd->queryScalar(); 
         $dataProvider_sc = new ActiveDataProvider([
             'query' => ServerConfig::find()->where(['Server' => $servername])->andWhere(['CaptureDate' => $datum]),
+            'pagination' => [ 'pageSize' => 15],
         ]);
 ////        $posts_sc = $dataProvider_sc->getModels();
 
@@ -60,6 +61,7 @@ class ServerViewController extends \yii\web\Controller
                   ->orderBy(['CaptureDate' => SORT_DESC])->scalar();
         $dataProvider_db = new ActiveDataProvider([
             'query' => DbData::find()->where(['Server' => $servername, 'physicalFileName' => "_Total"])->andWhere(['CaptureDate' => $datum]),
+            'pagination' => [ 'pageSize' => 15],
         ]);
 
         // -- Datasets
@@ -117,7 +119,8 @@ class ServerViewController extends \yii\web\Controller
                         4 => 'Buffer Cache Size (MB)', 5 => ['Cache Hit Ratio','_Total'],
                         6 => 'Pages/Sec', 7 => 'Log Bytes Flushed/sec',
                         8 => 'Log Flushes/sec', 9 => ['SQL Compilations/sec',''],
-                        10 => ['SQL Re-Compilations/sec',''], 11 => '',
+                        10 => ['SQL Re-Compilations/sec',''], 11 => 'Cache hit ratio',
+                        12 => 'Pages/sec', 13 => ['Target Server Memory (KB)','']
                         );
 
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
@@ -138,6 +141,8 @@ class ServerViewController extends \yii\web\Controller
             'dataset_9' => $this->getPerfmonDataset($servername,$cntrs[9],$dt),
             'dataset_10' => $this->getPerfmonDataset($servername,$cntrs[10],$dt),
             'dataset_11' => $this->getPerfmonDataset($servername,$cntrs[11],$dt),
+            'dataset_12' => $this->getPerfmonDataset($servername,$cntrs[12],$dt),
+            'dataset_13' => $this->getPerfmonDataset($servername,$cntrs[13],$dt),
         ]);
     }
 

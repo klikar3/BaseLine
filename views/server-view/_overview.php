@@ -18,11 +18,21 @@ use klikar3\rgraph\RGraphLine;
 <?php
 
     $this->registerJs(
-       'var autoRefresh = setInterval( function ()
+       "var autoRefresh = setInterval( function ()
     {
        window.location.reload();
     }, 150000); // this will reload page after every 2,5 minutes.
-    '
+    
+    $(document).ready(function() { 
+   $('a[data-toggle=\"tab\"]').on('show.bs.tab', function (e) {
+      localStorage.setItem('lastTab', $(this).attr('href'));
+   });
+   var lastTab = localStorage.getItem('lastTab');
+   if (lastTab) {
+      $('[href=\"' + lastTab + '\"]').tab('show');
+   }
+});
+    "
     );
     date_default_timezone_set('Europe/Berlin'); 
 

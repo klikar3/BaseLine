@@ -71,23 +71,24 @@ echo TabsX::widget([
             'content'=>$content_sc
         ],
         [
-            'label'=>'<i class="glyphicon glyphicon-list-alt"></i> Weiteres',
+            'label'=>'<i class="glyphicon glyphicon-list-alt"></i> Datenbanken',
+            'content'=>$content_db
+        ],
+        [
+            'label'=>'<i class="glyphicon glyphicon-chevron-right"></i> Weiteres',
             'items'=>[
-                 [
-                     'label'=>'<i class="glyphicon glyphicon-chevron-right"></i> Datenbanken',
-                     'encode'=>false,
-                     'content'=>$content_db,
-                 ],
                  [
                      'label'=>'<i class="glyphicon glyphicon-chevron-right"></i> Option 2',
                      'encode'=>false,
-                     'content'=>$content1,
+                    'content'=>'',
                  ],
             ],
         ],
         [
             'label'=>'<i class="glyphicon glyphicon-king"></i> Disabled',
-            'headerOptions' => ['class'=>'disabled']
+            'encode'=>false,
+            'content'=>'',
+            'headerOptions' => ['class'=>'disabled'],
         ],
     ],
     'position'=>TabsX::POS_ABOVE,

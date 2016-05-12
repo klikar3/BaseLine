@@ -19,7 +19,15 @@ use kartik\grid\GridView;
 //    'filterModel' => $searchModel,
     'columns' => ['Name','Value','ValueInUse','CaptureDate'],
     'responsive'=>true,
-    'hover'=>true
+    'hover'=>true, 
+    'rowOptions'=>function ($model, $key, $index, $grid){
+           return ['class'=>$index%2 ? 'normal' : 'info'];
+		},
+//    'pager' => [
+//        'pagesize' => 15,
+//    ]
+//    'striped' => true,
+//    'tableOptions' =>['class' => 'table table-striped table-bordered'],
 ]);
 ?>
 <?php /* ListView::widget([

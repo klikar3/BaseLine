@@ -23,6 +23,16 @@ $this->title = 'BaseLine';
 $items = app\controllers\ServerViewController::getServersMenu("/index.php?r=server-view%2Fres_sess&id=",$id);
 
 ?>
+<?php
+    $this->registerJs(
+       'var autoRefresh = setInterval( function ()
+    {
+       window.location.reload();
+    }, 60000); // this will reload page after every 1 minute.
+    '
+    );
+    date_default_timezone_set('Europe/Berlin'); 
+?>
 <div class="site-index">
 
 

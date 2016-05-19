@@ -26,6 +26,16 @@ $items = app\controllers\ServerViewController::getServersMenu("/index.php?r=serv
 //\yii\helpers\VarDumper::dump($items, 10, true);
 
 ?>
+<?php
+    $this->registerJs(
+       'var autoRefresh = setInterval( function ()
+    {
+       window.location.reload();
+    }, 60000); // this will reload page after every 1 minute.
+    '
+    );
+    date_default_timezone_set('Europe/Berlin'); 
+?>
 <div class="site-index">
 
 

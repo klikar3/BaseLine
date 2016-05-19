@@ -23,6 +23,16 @@ $this->title = 'BaseLine';
 $items = app\controllers\ServerViewController::getServersMenu("/index.php?r=server-view%2Fres_mem&id=",$id);
 
 ?>
+<?php
+    $this->registerJs(
+       'var autoRefresh = setInterval( function ()
+    {
+       window.location.reload();
+    }, 60000); // this will reload page after every 1 minute.
+    '
+    );
+    date_default_timezone_set('Europe/Berlin'); 
+?>
 <div class="site-index">
 
 
@@ -45,7 +55,8 @@ $cont = $this->render('_mem', [ 'dataset_0' => $dataset_0, 'dataset_1' => $datas
                                 'dataset_6' => $dataset_6, 'dataset_7' => $dataset_7, 
                                 'dataset_8' => $dataset_8, 'dataset_9' => $dataset_9, 
                                 'dataset_10' => $dataset_10, 'dataset_11' => $dataset_11, 
-                                'dataset_12' => $dataset_12, //'dataset_13' => $dataset_13, 
+                                'dataset_12' => $dataset_12, 'dataset_13' => $dataset_13, 
+                                'dataset_14' => $dataset_14,
                                 'cntrs' => $cntrs, 
                                 'id' => $id, 'servername' => $servername,
                                    ]);  

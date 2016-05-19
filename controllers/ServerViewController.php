@@ -76,10 +76,10 @@ class ServerViewController extends \yii\web\Controller
             'dataProvider' => $dataProvider,
             'dataProvider_sc' => $dataProvider_sc,
             'dataProvider_db' => $dataProvider_db,
-            'datasets' => $this->getPerfmonDataset($servername,['Page Life Expectancy',''], $dt ),
-            'dataset_cpu' => $this->getPerfmonDataset($servername,'Cpu Utilization %',$dt),
-            'dataset_pps' => $this->getPerfmonDataset($servername,'Pages/sec', $dt ),
-            'dataset_dql' => $this->getPerfmonDataset($servername,'Disk Queue Length', $dt ),
+            'datasets' => $this->getPerfmonDataset($servername,['SQLServer:Buffer Manager:Page Life Expectancy:',''], $dt ),
+            'dataset_cpu' => $this->getPerfmonDataset($servername,'Instance: Cpu Utilization %',$dt),
+            'dataset_pps' => $this->getPerfmonDataset($servername,'OS: Pages/sec', $dt ),
+            'dataset_dql' => $this->getPerfmonDataset($servername,'OS:Disk Queue Length:_Total', $dt ),
             'dataset_net' => $this->getNetPerfDataset($servername,'BytesTotalPersec',$dt),
 
         ]);
@@ -92,7 +92,7 @@ class ServerViewController extends \yii\web\Controller
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
-        $cntrs = array( 0 => 'Signal Wait Percent',1 => 'Cpu Utilization %', 2 => 'Cpu Usage %', 3 => 'Cpu Queue Length');
+        $cntrs = array( 0 => 'Signal Wait Percent',1 => 'Instance: Cpu Utilization %', 2 => 'OS: Cpu Usage %', 3 => 'OS:CPU Queue Length:_Total');
 
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
 
@@ -114,13 +114,14 @@ class ServerViewController extends \yii\web\Controller
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
-        $cntrs = array( 0 => ['Page Life Expectancy',''],1 => ['Memory Utilization %','_Total'], 
-                        2 => ['Plan Cache Size (MB)','_Total'], 3 => ['Buffer cache hit ratio',''], 
-                        4 => 'Buffer Cache Size (MB)', 5 => ['Cache Hit Ratio','_Total'],
-                        6 => 'Pages/Sec', 7 => 'Log Bytes Flushed/sec',
-                        8 => 'Log Flushes/sec', 9 => ['SQL Compilations/sec',''],
-                        10 => ['SQL Re-Compilations/sec',''], 11 => 'Cache hit ratio',
-                        12 => ['Target Server Memory (KB)','']
+        $cntrs = array( 0 => ['SQLServer:Buffer Manager:Page life Expectancy:',''],1 => ['OS:Memory Utilization %:_Total','_Total'], 
+                        2 => ['Instance: Plan Cache Size (MB)','_Total'], 3 => ['SQLServer:Buffer Manager:Buffer cache hit ratio:',''], 
+                        4 => ['Instance: Buffer Cache Size (MB)','_Total'], 5 => ['Cache Hit Ratio','_Total'],
+                        6 => 'OS:Pages/Sec:_Total', 7 => 'SQLServer:Databases:Log Bytes Flushed/sec:_Total',
+                        8 => 'SQLServer:Databases:Log Flushes/sec:_Total', 9 => ['SQLServer:SQL Statistics:SQL Compilations/sec:',''],
+                        10 => ['SQLServer:SQL Statistics:SQL Re-Compilations/sec:',''], 11 => 'SQLServer:Plan Cache:Cache Hit Ratio:_Total',
+                        12 => ['SQLServer:Memory Manager:Target Server Memory (KB):',''], 13 => ['SQLServer:Buffer Manager:Page reads/sec:',''],
+                        14 => ['SQLServer:Buffer Manager:Page writes/sec:',''],
                         );
 
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
@@ -142,7 +143,8 @@ class ServerViewController extends \yii\web\Controller
             'dataset_10' => $this->getPerfmonDataset($servername,$cntrs[10],$dt),
             'dataset_11' => $this->getPerfmonDataset($servername,$cntrs[11],$dt),
             'dataset_12' => $this->getPerfmonDataset($servername,$cntrs[12],$dt),
-//            'dataset_13' => $this->getPerfmonDataset($servername,$cntrs[13],$dt),
+            'dataset_13' => $this->getPerfmonDataset($servername,$cntrs[13],$dt),
+            'dataset_14' => $this->getPerfmonDataset($servername,$cntrs[14],$dt),
         ]);
     }
 
@@ -153,9 +155,11 @@ class ServerViewController extends \yii\web\Controller
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
-        $cntrs = array( 0 => 'I/O Wait Time',1 => 'I/O Read Wait Time', 2 => 'I/O Write Wait Time', 3 => 'Disk Queue Length',
-                        4 => 'Physical I/O Rate (Kb/sec)', 5 => 'Physical Read I/O Rate (Kb/sec)', 
-                        6 => 'Physical Write I/O Rate (Kb/sec)', 7 => 'Physical Transfers Per Sec');
+        $cntrs = array( 0 => 'I/O Wait Time',1 => 'I/O Read Wait Time', 2 => 'I/O Write Wait Time', 3 => 'OS:Disk Queue Length:_Total',
+                        4 => 'OS:Physical I/O Rate (Kb/sec):_Total', 5 => 'OS:Physical Read I/O Rate (Kb/sec):_Total', 
+                        6 => 'OS:Physical Write I/O Rate (Kb/sec):_Total', 7 => 'OS:Physical Transfers Per Sec:_Total',
+                        8 => 'OS:Physical Reads per Sec:_Total', 9 => 'OS:Physical Writes Per Sec:_Total',
+                        );
 
         return $this->render('res_disk', [
             'id' => $id,
@@ -169,9 +173,9 @@ class ServerViewController extends \yii\web\Controller
             'dataset_5' => $this->getPerfmonDataset($servername,$cntrs[5],$dt),
             'dataset_6' => $this->getPerfmonDataset($servername,$cntrs[6],$dt),
             'dataset_7' => $this->getPerfmonDataset($servername,$cntrs[7],$dt),
-/*            'dataset_8' => $this->getPerfmonDataset($servername,$cntrs[8],$dt),
+            'dataset_8' => $this->getPerfmonDataset($servername,$cntrs[8],$dt),
             'dataset_9' => $this->getPerfmonDataset($servername,$cntrs[9],$dt),
-            'dataset_10' => $this->getPerfmonDataset($servername,$cntrs[10],$dt),
+/*            'dataset_10' => $this->getPerfmonDataset($servername,$cntrs[10],$dt),
             'dataset_11' => $this->getPerfmonDataset($servername,$cntrs[11],$dt),
 */        ]);
     }
@@ -204,7 +208,7 @@ class ServerViewController extends \yii\web\Controller
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
-        $cntrs = array( 0 => 'Active Session Count',1 => '', 2 => '', 3 => '');
+        $cntrs = array( 0 => 'Instance: Active Session Count',1 => '', 2 => '', 3 => '');
 
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
 

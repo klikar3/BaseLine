@@ -15,18 +15,6 @@ use klikar3\rgraph\RGraphLine;
 /* @var $form yii\widgets\ActiveForm */
 
 ?>
-<?php
-
-    $this->registerJs(
-       'var autoRefresh = setInterval( function ()
-    {
-       window.location.reload();
-    }, 20000); // this will reload page after every 1 minute.
-    '
-    );
-    date_default_timezone_set('Europe/Berlin'); 
-
-?>
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>
 <div class="row">
   <?php echo app\controllers\ServerViewController::getNetLine($servername, $dataset_0, $cntrs[0], $id, 0); ?>

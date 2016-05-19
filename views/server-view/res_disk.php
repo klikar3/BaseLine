@@ -23,6 +23,16 @@ $this->title = 'BaseLine';
 $items = app\controllers\ServerViewController::getServersMenu("/index.php?r=server-view%2Fres_disk&id=",$id);
 
 ?>
+<?php
+    $this->registerJs(
+       'var autoRefresh = setInterval( function ()
+    {
+       window.location.reload();
+    }, 60000); // this will reload page after every 1 minute.
+    '
+    );
+    date_default_timezone_set('Europe/Berlin'); 
+?>
 <div class="site-index">
 
 
@@ -44,7 +54,7 @@ $cont = $this->render('_disk', [ 'dataset_0' => $dataset_0, 'dataset_1' => $data
                                 'dataset_4' => $dataset_4, 'dataset_5' => $dataset_5, 
                                 'dataset_6' => $dataset_6, 
                                 'dataset_7' => $dataset_7, 
-//                                'dataset_8' => $dataset_8, 'dataset_9' => $dataset_9, 
+                                'dataset_8' => $dataset_8, 'dataset_9' => $dataset_9, 
 //                                'dataset_10' => $dataset_10, 'dataset_11' => $dataset_11, 
                                 'cntrs' => $cntrs, 
                                 'id' => $id, 'servername' => $servername,

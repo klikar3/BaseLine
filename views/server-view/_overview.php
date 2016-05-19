@@ -41,8 +41,8 @@ use klikar3\rgraph\RGraphLine;
 <div class="row">
   <?= app\controllers\ServerViewController::getPaintLine($servername, $datasets, ['Page Life Expectancy',''], $id, 0); ?>
   <?= app\controllers\ServerViewController::getPaintLine($servername, $dataset_cpu, 'Cpu Utilization %', $id, 0); ?>
-  <?= app\controllers\ServerViewController::getPaintLine($servername, $dataset_pps, 'Pages/Sec', $id, 0); ?>
-  <?= app\controllers\ServerViewController::getPaintLine($servername, $dataset_dql, 'Disk Queue Length', $id, 0); ?>
+  <?= app\controllers\ServerViewController::getPaintLine($servername, $dataset_pps, 'OS: Pages/Sec', $id, 0); ?>
+  <?= app\controllers\ServerViewController::getPaintLine($servername, $dataset_dql, 'OS:Disk Queue Length:_Total', $id, 0); ?>
   <?php echo app\controllers\ServerViewController::getNetLine($servername, $dataset_net, 'BytesTotalPersec', $id, 0); ?>
 
 </div>

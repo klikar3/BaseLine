@@ -208,7 +208,8 @@ class ServerViewController extends \yii\web\Controller
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
-        $cntrs = array( 0 => 'Instance: Active Session Count',1 => '', 2 => '', 3 => '');
+        $cntrs = array( 0 => 'Instance: Active Session Count',1 => 'SQLServer:Databases:Transactions/sec:_Total', 
+                        2 => ['SQLServer:General Statistics:Processes blocked:',''], 3 => '');
 
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
 
@@ -263,7 +264,23 @@ class ServerViewController extends \yii\web\Controller
         ]);
     }
     
-    public static function getServername($id)
+    public function actionDetail_agg($cntr,$id,$days)
+    {
+        $cntr = json_decode($cntr);
+        $servername = $this->getServername($id);
+
+        date_default_timezone_set('Europe/Berlin'); 
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
+
+        return $this->render('detail_agg', [
+            'id' => $id,
+            'cntr' => $cntr,
+            'servername' => $servername,
+            'dataset' => $this->getPerfmonDatasetAgg($servername,$cntr,$dt),
+        ]);
+    }
+    
+   public static function getServername($id)
     {
         $lconn = \Yii::$app->db;        
         $cmd = $lconn
@@ -293,6 +310,27 @@ class ServerViewController extends \yii\web\Controller
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
         
         return !empty($dataset) ? $dataset : [ [0, 0] ];
+
+    }
+
+    public function getPerfmonDatasetAgg($srvr,$cntr,$dt)
+    {
+        $instance='_Total';
+        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
+        else $counter = $cntr;
+        
+        $pcid = (new \yii\db\Query())
+        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', array('cntr' => $counter))
+        ->scalar();
+        
+        $dataset = (new \yii\db\Query())
+        ->select('TimeSlotStart, MinVal, AvgVal, MaxVal, Median, StdDev')->from('PerfMonDataAgg1H')->where('Server=:srvr AND Counter_id=:pcid AND TimeSlotStart>:dt AND instance=:inst',
+        array('srvr' => $srvr, 'pcid' => $pcid, 'dt' => $dt, 'inst' => $instance ))
+        ->orderBy('TimeSlotStart')
+        ->all();
+//        \yii\helpers\VarDumper::dump($dataset, 10, true);
+        
+        return !empty($dataset) ? $dataset : [ [0, 0, 0, 0, 0] ];
 
     }
 
@@ -416,8 +454,8 @@ class ServerViewController extends \yii\web\Controller
                   ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
                   ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
                   ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
-                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
-                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
                   ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
               ],
           ]
@@ -564,4 +602,107 @@ class ServerViewController extends \yii\web\Controller
       ;    
   }
     
+    public static function getPaintLineAgg($srvr,$dataset,$cntr,$id,$detail=0,$title='') {
+        
+        $output = true;
+        
+        $instance='_Total';
+        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
+        else $counter = $cntr;
+        
+        $pcid = (new \yii\db\Query())
+        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', ['cntr' => $counter])
+        ->scalar();
+        
+        $pcsid = (new \yii\db\Query())
+        ->select('id')->from('PerfCounterPerServer')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
+          ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
+        ->scalar();
+        
+        $stat = 'unknown';        
+        if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData')
+        ->where('Server=:srvr AND Counter_id=:pcid AND instance=:inst', array('srvr' => $srvr, 'pcid' => $pcid, 'inst' => $instance ))
+        ->orderBy('CaptureDate desc')->limit(1)->scalar();
+
+        switch ($stat) {
+          case 'unknown':
+              $bg = 'Gradient(lightgrey:white)'; break;
+          case 'green':
+              $bg = 'Gradient(lightgreen:white)'; break;
+          case 'yellow':
+              $bg = 'Gradient(yellow:white)'; break;
+          case 'red':
+              $bg = 'Gradient(orange:white)'; break;
+          default:
+              $bg = 'Gradient(lightgrey:white)';
+       }
+//      \yii\helpers\VarDumper::dump($dataset, 10, true);
+      if (empty($dataset)) return '';
+      $minvals = ArrayHelper::getColumn($dataset,'MinVal');
+      $avgvals = ArrayHelper::getColumn($dataset,'AvgVal');
+      $avgvals = ArrayHelper::getColumn($dataset,'AvgVal');      
+      $maxvals = ArrayHelper::getColumn($dataset,'MaxVal');      
+      $medvals = ArrayHelper::getColumn($dataset,'Median');      
+      $stdvals = ArrayHelper::getColumn($dataset,'StdDev');      
+      $zeiten = ArrayHelper::getColumn($dataset,'TimeSlotStart');
+      $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
+      $daten = [$minvals, $avgvals, $maxvals, $medvals, $stdvals]; 
+      $tooltips = $medvals + $zeiten;
+
+      for ($i = 0; $i < count($zeiten); ++$i) {
+        $tooltips[$i] = $tooltips[$i] . '<br>'. substr($zeiten[$i],0,16);     
+      }    
+//      \yii\helpers\VarDumper::dump('Counter: '.$counter, 10, true);
+        
+      if ($output) return RGraphLine::widget([
+          'data' => !empty($daten) ? $daten : [ [0,0] ],
+          'allowDynamic' => true,
+          'allowTooltips' => true,
+          'allowContext' => true,
+//          'id' => 'rgline_'.$pcid,
+          'htmlOptions' => [
+              'height' => ($detail==0) ? '180px' : '600px',
+              'width' => ($detail==0) ? '280px' : '900px',
+          ],
+          'options' => [
+              'height' => ($detail==0) ? '180px' : '600px',
+              'width' => ($detail==0) ? '280px' : '800px',
+//              'id' => 'rgline_'.$pcid,
+              'colors' => ['blue','green', 'orange', 'red', 'yellow'],
+//              'filled' => true,
+              'clearto' => ['white'],
+/*              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,11,5);},
+                                    ArrayHelper::getColumn($dataset,'CaptureDate')
+                          ) : [ 'No Data' ],
+*/             'labels' => !empty($dataset) ? array_map(function($val) use ($detail){return substr($val,0,16);},
+                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),$anzahl),0)
+                          ) : [ 'No Data' ],
+              'tooltips' => $tooltips,
+//              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
+//              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
+  //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
+  //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',
+              'textAngle' => 45,
+              'textSize' => 8,
+//              'gutter' => ['left' => 50, 'bottom' => 80, 'top' => 50],
+              'gutter' => ['left' => ($detail==0) ? 50 : 50, 'bottom' => ($detail==0) ? 50 : 80, 'top' => 50, 'right' => 50],
+              'title' => !empty($title) ? $title : $counter,
+              'titleSize' => 12,
+              'titleBold' => false,
+              'tickmarks' => 'none',
+//              'ymax' => 100,
+              'backgroundColor' => $bg,
+              'contextmenu' => [
+                  ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
+                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
+                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
+                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detailAgg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detailAgg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
+              ],
+          ]
+      ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
+      ;    
+    }
+  
 }

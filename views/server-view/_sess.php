@@ -18,8 +18,8 @@ use klikar3\rgraph\RGraphLine;
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>
 <div class="row">
   <?= app\controllers\ServerViewController::getPaintLine($servername, $dataset_0, $cntrs[0], $id, 0); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_1, $cntrs[1], $id, 0, ""); ?>
-  <?php // echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_2, $cntrs[2], $id, 0); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_1, $cntrs[1], $id, 0, "SQL:Transactions/sec"); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_2, $cntrs[2], $id, 0, "SQL: Processes blocked"); ?>
   <?php //echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_3, $cntrs[3], $id, 0); ?>
   <?php //echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_4, $cntrs[4], $id, 0); ?>
   <?php //echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_5, $cntrs[5], $id, 0, ""); ?>

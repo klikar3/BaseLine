@@ -280,6 +280,38 @@ class ServerViewController extends \yii\web\Controller
         ]);
     }
     
+    public function actionOver_disk($cntr='disk',$id=0,$days=3)
+    {
+//        $cntr = json_decode($cntr);
+//        $servername = $this->getServername($id);
+
+        date_default_timezone_set('Europe/Berlin'); 
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
+
+        return $this->render('report', [
+            'id' => $id,
+            'cntr' => $cntr,
+            'title' => 'OS:Physical I/O Rate (Kb/sec):_Total',
+            'dataset' => $this->getPerfmonDatasetRep($cntr,$days),
+        ]);
+    }
+    
+    public function actionOver_net($cntr='',$id=0,$days=90)
+    {
+        $cntr = json_decode($cntr);
+        $servername = $this->getServername($id);
+
+        date_default_timezone_set('Europe/Berlin'); 
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
+
+        return $this->render('report', [
+            'id' => $id,
+            'cntr' => $cntr,
+            'servername' => $servername,
+            'dataset' => $this->getPerfmonDatasetAgg($servername,$cntr,$dt),
+        ]);
+    }
+    
    public static function getServername($id)
     {
         $lconn = \Yii::$app->db;        
@@ -334,10 +366,32 @@ class ServerViewController extends \yii\web\Controller
 
     }
 
+    public function getPerfmonDatasetRep($cntr,$days=2)
+    {
+        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
+        else $counter = $cntr;
+        
+        if ($counter == 'disk') {
+          try {
+            $cmd = \Yii::$app->db->createCommand('exec dbo.usp_getDiskRep :d;');               
+            $cmd->bindValue(':d', $days);
+            $dataset = $cmd->queryAll(); 
+          }catch (Exception $e) {
+            Log::trace("Error : ".$e);
+            throw new Exception("Error : ".$e);
+          }
+        } 
+                
+        return !empty($dataset) ? $dataset : [ [0, 0, 0, 0, 0] ];
+
+    }
+
     public static function getStatusimage ($status,$id,$ziel) {
 //        \yii\helpers\VarDumper::dump($status, 10, true);
         switch ($status) {
           case 'unknown':
+              return Html::a(Html::img('@web/images/alarm_unknown.png', ['alt' => 'unknown']), [$ziel, 'id' => $id]);
+          case 'grey':
               return Html::a(Html::img('@web/images/alarm_unknown.png', ['alt' => 'unknown']), [$ziel, 'id' => $id]);
           case 'green':
               return Html::a(Html::img('@web/images/check_16.png', ['alt' => 'green']), [$ziel, 'id' => $id]);
@@ -701,6 +755,124 @@ class ServerViewController extends \yii\web\Controller
                   ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
               ],
           ]
+      ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
+      ;    
+    }
+    
+    public static function getPaintLineRep($dataset, $title='') {
+        
+        $output = true;
+        
+/*        $instance='_Total';
+        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
+        else $counter = $cntr;
+        
+        $pcid = (new \yii\db\Query())
+        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', ['cntr' => $counter])
+        ->scalar();
+        
+        $pcsid = (new \yii\db\Query())
+        ->select('id')->from('PerfCounterPerServer')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
+          ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
+        ->scalar();
+*/        
+        $stat = 'unknown';        
+/*        if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData')
+        ->where('Server=:srvr AND Counter_id=:pcid AND instance=:inst', array('srvr' => $srvr, 'pcid' => $pcid, 'inst' => $instance ))
+        ->orderBy('CaptureDate desc')->limit(1)->scalar();
+*/
+        switch ($stat) {
+          case 'unknown':
+              $bg = 'Gradient(lightgrey:white)'; break;
+          case 'green':
+              $bg = 'Gradient(lightgreen:white)'; break;
+          case 'yellow':
+              $bg = 'Gradient(yellow:white)'; break;
+          case 'red':
+              $bg = 'Gradient(orange:white)'; break;
+          default:
+              $bg = 'Gradient(lightgrey:white)';
+       }
+//      \yii\helpers\VarDumper::dump($dataset, 10, true);
+      if (empty($dataset)) return '';
+      $zeiten = ArrayHelper::getColumn($dataset,'TimeSlotStart');
+      $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
+      $cols = array_keys($dataset[1]);
+//      \yii\helpers\VarDumper::dump($cols, 10, true);
+      foreach ($cols as $col) {
+          if ($col != "TimeSlotStart") {
+            $rows = ArrayHelper::getColumn($dataset, $col); 
+            $daten[] = $rows;
+            $keys[] = $col;
+/*            for ($i = 0; $i < count($rows); ++$i) {
+              $trows[] = $rows[$i] . '<br>'. substr($zeiten[$i],0,16);     
+            }    
+            $tooltips[] =  $trows;
+*/          }  
+      }
+/*        $minvals = ArrayHelper::getColumn($dataset,'sql-cluster03');
+      $avgvals = ArrayHelper::getColumn($dataset,'AvgVal');
+      $avgvals = ArrayHelper::getColumn($dataset,'AvgVal');      
+      $maxvals = ArrayHelper::getColumn($dataset,'MaxVal');      
+      $medvals = ArrayHelper::getColumn($dataset,'Median');      
+      $stdvals = ArrayHelper::getColumn($dataset,'StdDev');      
+      $daten = [$minvals, $avgvals, $maxvals, $medvals, $stdvals]; 
+*/     $tooltips = $zeiten;
+
+//       \yii\helpers\VarDumper::dump($tooltips, 10, true);
+        
+      if ($output) return RGraphLine::widget([
+          'data' => !empty($daten) ? $daten : [ [0,0] ],
+          'allowDynamic' => true,
+          'allowTooltips' => true,
+          'allowContext' => true,
+          'allowKeys' => true,
+//          'id' => 'rgline_'.$pcid,
+          'htmlOptions' => [
+              'height' => '700px',
+              'width' => '1024px',
+          ],
+          'options' => [
+              'height' => '800px',
+              'width' => '1280px',
+//              'id' => 'rgline_'.$pcid,
+//+              'colors' => ['blue','green', 'orange', 'red', 'yellow'],
+//              'filled' => true,
+              'clearto' => ['white'],
+/*              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,11,5);},
+                                    ArrayHelper::getColumn($dataset,'CaptureDate')
+                          ) : [ 'No Data' ],
+*/             'labels' => !empty($dataset) ? array_map(function($val){return substr($val,0,16);},
+                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'TimeSlotStart'),$anzahl),0)
+                          ) : [ 'No Data' ],
+              'crosshairs' => false,
+              'tooltips' => $tooltips,
+//              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
+//              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
+  //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
+  //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',
+              'textAngle' => 45,
+              'textSize' => 8,
+//              'gutter' => ['left' => 50, 'bottom' => 80, 'top' => 50],
+              'gutter' => ['left' =>  50, 'bottom' => 80, 'top' => 50, 'right' => 100],
+              'title' => !empty($title) ? $title : '',
+              'titleSize' => 12,
+              'titleBold' => false,
+              'tickmarks' => 'none',
+              'key' => $keys,
+              'keyPosition' => 'graph',
+              'keyInteractive' => true,
+//              'ymax' => 100,
+              'backgroundColor' => $bg,
+/*              'contextmenu' => [
+                  ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
+                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
+                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
+                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detailAgg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detailAgg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+                 ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
+              ],
+*/           ]
       ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
       ;    
     }

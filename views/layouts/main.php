@@ -39,6 +39,10 @@ AppAsset::register($this);
         'options' => ['class' => 'navbar-nav navbar-right'],
         'items' => [
             ['label' => 'Home', 'url' => ['/site/index']],
+            ['label' => 'Auswertungen', 'items' => [['label' => 'Disk', 'url' => ['/server-view/over_disk']],
+                                                  ['label' => 'Network', 'url' => ['/config-view/over_net']],
+                                                  ]
+            ],
             ['label' => 'Stammdaten', 'items' => [['label' => 'Server', 'url' => ['/server-data/index']],
                                                   ['label' => 'Config', 'url' => ['/config-data/index']],
                                                   ['label' => 'PerfMon-Defaults', 'url' => ['/perf-counter-default/index']],

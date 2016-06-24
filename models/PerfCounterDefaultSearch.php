@@ -19,7 +19,7 @@ class PerfCounterDefaultSearch extends PerfCounterDefault
     {
         return [
             [['id', 'is_perfmon'], 'integer'],
-            [['counter_name', 'direction', 'belongsto'], 'safe'],
+            [['counter_name', 'direction', 'belongsto', 'Description'], 'safe'],
             [['AvgValue', 'StdDefValue', 'WarnValue', 'AlertValue'], 'number'],
         ];
     }

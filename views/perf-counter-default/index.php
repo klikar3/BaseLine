@@ -34,6 +34,7 @@ $this->params['breadcrumbs'][] = $this->title;
             'is_perfmon',
             'direction',
             'belongsto',
+            'Description',
 
             ['class' => 'yii\grid\ActionColumn'],
         ],

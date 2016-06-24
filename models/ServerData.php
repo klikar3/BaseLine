@@ -21,6 +21,8 @@ use Yii;
  * @property string $stat_disk
  * @property string $stat_sess
  * @property string $stat_net
+ * @property resource $User_Encrypted 
+ * @property resource $Password_Encrypted 
  */
 class ServerData extends \yii\db\ActiveRecord
 {
@@ -32,6 +34,9 @@ class ServerData extends \yii\db\ActiveRecord
         return 'ServerData';
     }
 
+    private $usr;
+    private $pwd;
+
     /**
      * @inheritdoc
      */
@@ -39,7 +44,8 @@ class ServerData extends \yii\db\ActiveRecord
     {
         return [
             [['Server', 'usertyp', 'typ'], 'required'],
-            [['Server', 'usertyp', 'user', 'password', 'snmp_pw', 'typ', 'stat_wait', 'stat_queries', 'stat_cpu', 'stat_mem', 'stat_disk', 'stat_sess'], 'string']
+            [['Server', 'usertyp', 'user', 'usr', 'password', 'pwd', 'snmp_pw', 'typ', 'stat_wait', 'stat_queries', 'stat_cpu', 'stat_mem', 'stat_disk', 'stat_sess', 'stat_net'], 'string'],
+            [['User_Encrypted', 'Password_Encrypted', 'Description'], 'string']
         ];
     }
 
@@ -63,6 +69,46 @@ class ServerData extends \yii\db\ActiveRecord
             'stat_disk' => Yii::t('app', 'Disk'),
             'stat_sess' => Yii::t('app', 'Sess'),
             'stat_net' => Yii::t('app', 'Net'),
-        ];
+            'User_Encrypted' => Yii::t('app', 'User Encrypted'),
+		        'Password_Encrypted' => Yii::t('app', 'Password Encrypted'),
+		        ];
     }
+    
+/*    public function beforeSave($insert)
+    {
+//      $this->setUsr($this->usr);
+//      \yii\helpers\VarDumper::dump($this->User_Encrypted, 10, true);                  
+//      Yii::error($this->usr, 'application');                  
+//      Yii::error($this->User_Encrypted, 'application');                  
+      return true;
+    }
+*/
+    public function getUsr()
+    {
+        return \Yii::$app->db->createCommand('OPEN SYMMETRIC KEY [key_DataShare] DECRYPTION BY CERTIFICATE [cert_keyProtection]; SELECT dbo.uf_decrypt_ServerData(:uenc, :srvr) ')
+                          ->bindValues([':uenc' => $this->User_Encrypted, ':srvr' => $this->Server])->queryScalar();               
+//                          ->bindValue(':srvr', $this->Server)->queryScalar();                                                                        User_Encrypted
+    }    
+    
+    public function setUsr($u)
+    {
+//        $this->User_Encrypted = \Yii::$app->db->createCommand('OPEN SYMMETRIC KEY [key_DataShare] DECRYPTION BY CERTIFICATE [cert_keyProtection]; SELECT dbo.uf_encrypt_ServerData(:u, :srvr) ')
+//                          ->bindValues([':u' => $u, ':srvr' => $this->Server])->queryScalar();
+        $this->usr = $u;
+//        \yii\helpers\VarDumper::dump($this->User_Encrypted, 10, true);                  
+//        return true;                                 
+    }    
+
+    public function getPwd()
+    {
+        return \Yii::$app->db->createCommand('OPEN SYMMETRIC KEY [key_DataShare] DECRYPTION BY CERTIFICATE [cert_keyProtection]; SELECT dbo.uf_decrypt_ServerData(:pwenc, :srvr) ')
+                          ->bindValues([':pwenc' => $this->Password_Encrypted, ':srvr' => $this->Server])->queryScalar();               
+    }
+        
+    public function setPwd($p)
+    {
+//
+//                          ->bindValues([':pw' => $p, ':srvr' => $this->Server])->queryScalar();
+        $this->pwd = $p;               
+    }    
 }

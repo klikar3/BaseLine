@@ -7,7 +7,7 @@ use yii\grid\GridView;
 /* @var $searchModel app\models\ServerDataSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
 
-$this->title = Yii::t('app', 'Server Datas');
+$this->title = Yii::t('app', 'Serverdaten');
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <?php
@@ -24,7 +24,7 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="server-data-index">
 
-    <h1><?= Html::encode($this->title) ?></h1>
+    <h4><?= Html::encode($this->title) ?></h4>
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
 
     <p>
@@ -35,14 +35,21 @@ $this->params['breadcrumbs'][] = $this->title;
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
-            ['class' => 'yii\grid\DataColumn',
+            [ 'attribute' => 'id',
+              'class' => 'yii\grid\DataColumn',
               'value' => 'id',
               'options' => [ 'width' => '50px;']
             ],
-            'Server',
+            [ 'attribute' => 'Server',
+              'class' => 'yii\grid\DataColumn',
+              'value' => 'Server',
+              'options' => [ 'width' => '200px;']
+            ],
             'usertyp',
-            'user',
-            'password',
+//            'user',
+//            'usr',
+//            'password',
+//            'pwd',
             'snmp_pw',
             'typ',
             'stat_wait',

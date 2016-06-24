@@ -34,7 +34,7 @@ class PerfCounterDefault extends \yii\db\ActiveRecord
     {
         return [
             [['counter_name'], 'required'],
-            [['counter_name', 'direction', 'belongsto'], 'string'],
+            [['counter_name', 'direction', 'belongsto', 'Description'], 'string'],
             [['AvgValue', 'StdDefValue', 'WarnValue', 'AlertValue'], 'number'],
             [['is_perfmon'], 'integer'],
             [['counter_name'], 'unique']
@@ -56,6 +56,7 @@ class PerfCounterDefault extends \yii\db\ActiveRecord
             'is_perfmon' => Yii::t('app', 'Is Perfmon'),
             'direction' => Yii::t('app', 'Direction'),
             'belongsto' => Yii::t('app', 'Belongsto'),
+            'Description' => Yii::t('app', 'Description'),
         ];
     }
 }

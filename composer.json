@@ -24,6 +24,7 @@
         "kartik-v/yii2-mpdf": "@dev",
 		    "kartik-v/yii2-tabs-x": "*",
         "kartik-v/yii2-krajee-base": "*",
+        "kartik-v/yii2-password": "*",
         "klikar3/rgraph": "dev-master"
     },
     "require-dev": {

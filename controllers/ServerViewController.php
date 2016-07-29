@@ -78,7 +78,7 @@ class ServerViewController extends \yii\web\Controller
             'dataProvider_db' => $dataProvider_db,
             'datasets' => $this->getPerfmonDataset($servername,['SQLServer:Buffer Manager:Page Life Expectancy:',''], $dt ),
             'dataset_cpu' => $this->getPerfmonDataset($servername,'Instance: Cpu Utilization %',$dt),
-            'dataset_pps' => $this->getPerfmonDataset($servername,'OS: Pages/sec', $dt ),
+            'dataset_pps' => $this->getPerfmonDataset($servername,'OS:Pages/Sec:_Total', $dt ),
             'dataset_dql' => $this->getPerfmonDataset($servername,'OS:Disk Queue Length:_Total', $dt ),
             'dataset_net' => $this->getNetPerfDataset($servername,'BytesTotalPersec',$dt),
 

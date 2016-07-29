@@ -1,7 +1,10 @@
 <?php
 
 use yii\helpers\Html;
-use yii\widgets\DetailView;
+//use yii\widgets\DetailView;
+
+use kartik\detail\DetailView;
+use kartik\password\PasswordInput;
 
 /* @var $this yii\web\View */
 /* @var $model app\models\ServerData */
@@ -32,7 +35,21 @@ $this->params['breadcrumbs'][] = $this->title;
             'Server',
             'usertyp',
             'usr',
-            'pwd',
+            [
+                'attribute'=>'pwd', 
+//                'label'=>'Available?',
+                'format'=>'raw',
+                'value'=>'<span class="label label-danger">N/A</span>',
+                'type'=>DetailView::INPUT_PASSWORD,
+//                'widgetOptions' => [
+//                    'pluginOptions' => [
+//                        'onText' => 'Yes',
+//                        'offText' => 'No',
+//                    ]
+//                ],
+//                'valueColOptions'=>['style'=>'width:30%']
+            ],
+//            'pwd',
             'snmp_pw',
             'typ',
             'stat_wait',

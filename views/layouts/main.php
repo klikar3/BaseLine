@@ -40,7 +40,7 @@ AppAsset::register($this);
         'items' => [
             ['label' => 'Home', 'url' => ['/site/index']],
             ['label' => 'Auswertungen', 'items' => [['label' => 'Disk', 'url' => ['/server-view/over_disk']],
-                                                  ['label' => 'Network', 'url' => ['/config-view/over_net']],
+                                                  ['label' => 'Network', 'url' => ['/server-view/over_net']],
                                                   ]
             ],
             ['label' => 'Stammdaten', 'items' => [['label' => 'Server', 'url' => ['/server-data/index']],

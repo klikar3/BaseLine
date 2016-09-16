@@ -15,7 +15,10 @@ $this->params['breadcrumbs'][] = Yii::t('app', 'Update');
 <div class="perf-counter-per-server-update">
 
     <h1><?= Html::encode($this->title) ?></h1>
-
+<?php echo Html::a(Yii::t('app', '<< Back'), Yii::$app->request->getReferrer(), [
+		            'onclick'=>"js:history.go(-1);return false;",'class'=>'btn btn-sm btn-primary',
+		        ]) 
+?>
     <?= $this->render('_form', [
         'model' => $model,
     ]) ?>

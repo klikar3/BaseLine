@@ -47,6 +47,7 @@ $this->title = 'BaseLine';
                     'options' => [ 'width' => '200px;']
                   ],
                   'usertyp',
+                  'typ',
                   [ 'class' => 'yii\grid\DataColumn',
                     'attribute' => 'stat_wait',
                     'format' => 'raw',

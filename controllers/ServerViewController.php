@@ -155,7 +155,7 @@ class ServerViewController extends \yii\web\Controller
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
-        $cntrs = array( 0 => 'I/O Wait Time',1 => 'I/O Read Wait Time', 2 => 'I/O Write Wait Time', 3 => 'OS:Disk Queue Length:_Total',
+        $cntrs = array( 0 => 'I/O Wait Time',1 => 'I/O Read Wait Time', 2 => 'I/O Write Wait Time', 3 => ['OS:Disk Queue Length:_Total','_Total'],
                         4 => 'OS:Physical I/O Rate (Kb/sec):_Total', 5 => 'OS:Physical Read I/O Rate (Kb/sec):_Total', 
                         6 => 'OS:Physical Write I/O Rate (Kb/sec):_Total', 7 => 'OS:Physical Transfers Per Sec:_Total',
                         8 => 'OS:Physical Reads per Sec:_Total', 9 => 'OS:Physical Writes Per Sec:_Total',
@@ -280,13 +280,13 @@ class ServerViewController extends \yii\web\Controller
         ]);
     }
     
-    public function actionOver_disk($cntr='disk',$id=0,$days=3)
+    public function actionOver_disk($cntr='disk',$id=0,$days=7)
     {
 //        $cntr = json_decode($cntr);
 //        $servername = $this->getServername($id);
 
-        date_default_timezone_set('Europe/Berlin'); 
-        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
+//        date_default_timezone_set('Europe/Berlin'); 
+//        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
 
         return $this->render('report', [
             'id' => $id,
@@ -296,19 +296,19 @@ class ServerViewController extends \yii\web\Controller
         ]);
     }
     
-    public function actionOver_net($cntr='',$id=0,$days=90)
+    public function actionOver_net($cntr='net',$id=0,$days=3)
     {
-        $cntr = json_decode($cntr);
-        $servername = $this->getServername($id);
+//        $cntr = json_decode($cntr);
+//        $servername = $this->getServername($id);
 
-        date_default_timezone_set('Europe/Berlin'); 
-        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
+//        date_default_timezone_set('Europe/Berlin'); 
+//        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
 
         return $this->render('report', [
             'id' => $id,
             'cntr' => $cntr,
-            'servername' => $servername,
-            'dataset' => $this->getPerfmonDatasetAgg($servername,$cntr,$dt),
+            'title' => 'BytesTotalPersec',
+            'dataset' => $this->getPerfmonDatasetRep($cntr,$days),
         ]);
     }
     
@@ -341,7 +341,7 @@ class ServerViewController extends \yii\web\Controller
         ->all();
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
         
-        return !empty($dataset) ? $dataset : [ [0, 0] ];
+        return !empty($dataset) ? $dataset : [ [0, 0, ''] ];
 
     }
 
@@ -362,7 +362,7 @@ class ServerViewController extends \yii\web\Controller
         ->all();
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
         
-        return !empty($dataset) ? $dataset : [ [0, 0, 0, 0, 0] ];
+        return !empty($dataset) ? $dataset : [ ['', 0, 0, 0, 0, 0] ];
 
     }
 
@@ -374,6 +374,37 @@ class ServerViewController extends \yii\web\Controller
         if ($counter == 'disk') {
           try {
             $cmd = \Yii::$app->db->createCommand('exec dbo.usp_getDiskRep :d;');               
+            $cmd->bindValue(':d', $days);
+            $dataset = $cmd->queryAll(); 
+          }catch (Exception $e) {
+            Log::trace("Error : ".$e);
+            throw new Exception("Error : ".$e);
+          }
+        } 
+                
+        if ($counter == 'net') {
+          try {
+            $cmd = \Yii::$app->db->createCommand('exec dbo.usp_getNetRep :d;');               
+            $cmd->bindValue(':d', $days);
+            $dataset = $cmd->queryAll(); 
+          }catch (Exception $e) {
+            Log::trace("Error : ".$e);
+            throw new Exception("Error : ".$e);
+          }
+        } 
+                
+        return !empty($dataset) ? $dataset : [ [0, 0, 0, 0, 0] ];
+
+    }
+
+    public function getNetPerfDatasetRep($cntr,$days=2)
+    {
+        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
+        else $counter = $cntr;
+        
+        if ($counter == 'disk') {
+          try {
+            $cmd = \Yii::$app->db->createCommand('exec dbo.usp_getNetRep :d;');               
             $cmd->bindValue(':d', $days);
             $dataset = $cmd->queryAll(); 
           }catch (Exception $e) {
@@ -713,6 +744,7 @@ class ServerViewController extends \yii\web\Controller
           'allowDynamic' => true,
           'allowTooltips' => true,
           'allowContext' => true,
+          'allowKeys' => true,
 //          'id' => 'rgline_'.$pcid,
           'htmlOptions' => [
               'height' => ($detail==0) ? '180px' : '600px',
@@ -739,7 +771,7 @@ class ServerViewController extends \yii\web\Controller
               'textAngle' => 45,
               'textSize' => 8,
 //              'gutter' => ['left' => 50, 'bottom' => 80, 'top' => 50],
-              'gutter' => ['left' => ($detail==0) ? 50 : 50, 'bottom' => ($detail==0) ? 50 : 80, 'top' => 50, 'right' => 50],
+              'gutter' => ['left' => ($detail==0) ? 80 : 80, 'bottom' => ($detail==0) ? 50 : 80, 'top' => 50, 'right' => 50],
               'title' => !empty($title) ? $title : $counter,
               'titleSize' => 12,
               'titleBold' => false,
@@ -854,7 +886,7 @@ class ServerViewController extends \yii\web\Controller
               'textAngle' => 45,
               'textSize' => 8,
 //              'gutter' => ['left' => 50, 'bottom' => 80, 'top' => 50],
-              'gutter' => ['left' =>  50, 'bottom' => 80, 'top' => 50, 'right' => 100],
+              'gutter' => ['left' =>  70, 'bottom' => 80, 'top' => 50, 'right' => 50],
               'title' => !empty($title) ? $title : '',
               'titleSize' => 12,
               'titleBold' => false,

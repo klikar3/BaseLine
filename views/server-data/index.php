@@ -52,6 +52,7 @@ $this->params['breadcrumbs'][] = $this->title;
 //            'pwd',
             'snmp_pw',
             'typ',
+            'paused',
             'stat_wait',
 		        'stat_queries',
 		        'stat_cpu',

@@ -14,7 +14,7 @@ use kartik\password\PasswordInput;
 
     <?php $form = ActiveForm::begin(); ?>
 
-    <?php  echo $form->field($model, 'Server')->textInput() ?>
+    <?php echo $form->field($model, 'Server')->textInput() ?>
 
     <?= $form->field($model, 'usertyp')->textInput() ?>
 
@@ -29,19 +29,21 @@ use kartik\password\PasswordInput;
 
     <?= $form->field($model, 'typ')->textInput() ?>
 
-    <?= $form->field($model, 'stat_wait')->textInput() ?>
+    <?php //echo $form->field($model, 'stat_wait')->textInput() ?>
 
-    <?= $form->field($model, 'stat_queries')->textInput() ?>
+    <?php //echo $form->field($model, 'stat_queries')->textInput() ?>
 
-    <?= $form->field($model, 'stat_cpu')->textInput() ?>
+    <?php //echo $form->field($model, 'stat_cpu')->textInput() ?>
 
-    <?= $form->field($model, 'stat_mem')->textInput() ?>
+    <?php //echo $form->field($model, 'stat_mem')->textInput() ?>
 
-    <?= $form->field($model, 'stat_disk')->textInput() ?>
+    <?php //echo $form->field($model, 'stat_disk')->textInput() ?>
 
-    <?= $form->field($model, 'stat_sess')->textInput() ?>
+    <?php //echo $form->field($model, 'stat_sess')->textInput() ?>
 
     <?= $form->field($model, 'Description')->textInput() ?>
+
+    <?= $form->field($model, 'paused')->textInput() ?>
 
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? Yii::t('app', 'Create') : Yii::t('app', 'Update'), ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>

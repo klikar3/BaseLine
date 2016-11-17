@@ -34,6 +34,7 @@
         "yiisoft/yii2-debug": "*",
         "yiisoft/yii2-gii": "*",
         "yiisoft/yii2-faker": "*",
+        "bizley/migration": "*",
         "c006/yii2-migration-utility": "dev-master"
     },
     "config": {

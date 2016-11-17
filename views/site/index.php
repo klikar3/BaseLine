@@ -46,8 +46,21 @@ $this->title = 'BaseLine';
                      },
                     'options' => [ 'width' => '200px;']
                   ],
-                  'usertyp',
-                  'typ',
+                  [ 'class' => 'yii\grid\DataColumn',
+                    'attribute' => 'usertyp',
+                    'options' => [ 'width' => '80px;'],
+                  ],
+                  [ 'class' => 'yii\grid\DataColumn',
+                    'attribute' => 'typ',
+                    'options' => [ 'width' => '80px;']
+                  ],
+                  [ 'attribute' => 'paused',
+                    'format' => 'raw',
+                    'value' => function ($model, $index, $widget) {
+                        return Html::checkbox('paused[]', $model->paused, ['value' => $index, 'disabled' => true]);
+                    },
+                    'options' => [ 'width' => '50px;']
+                  ],
                   [ 'class' => 'yii\grid\DataColumn',
                     'attribute' => 'stat_wait',
                     'format' => 'raw',

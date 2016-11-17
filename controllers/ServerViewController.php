@@ -208,7 +208,7 @@ class ServerViewController extends \yii\web\Controller
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60);
-        $cntrs = array( 0 => 'Instance: Active Session Count',1 => 'SQLServer:Databases:Transactions/sec:_Total', 
+        $cntrs = array( 0 => ['Instance: Active Session Count','_Total'],1 => 'SQLServer:Databases:Transactions/sec:_Total', 
                         2 => ['SQLServer:General Statistics:Processes blocked:',''], 3 => '');
 
 //        \yii\helpers\VarDumper::dump($dataset_cpu, 10, true);
@@ -331,7 +331,7 @@ class ServerViewController extends \yii\web\Controller
         else $counter = $cntr;
         
         $pcid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', array('cntr' => $counter))
+        ->select('id')->from('PerfCounterDefault WITH (READPAST)')->where('counter_name=:cntr', array('cntr' => $counter))
         ->scalar();
         
         $dataset = (new \yii\db\Query())

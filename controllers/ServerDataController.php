@@ -71,12 +71,28 @@ class ServerDataController extends Controller
     public function actionCreate()
     {
         $model = new ServerData();
+        
+        //$data = Yii::$app->request->post();
+        //Yii::error($data['ServerData']['usr'],'application');
+        //\yii\helpers\VarDumper::dump($data, 10, true)
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            try {
+                \Yii::$app->db->createCommand("USE BASELINE; EXEC [dbo].[usp_getConfigData] '".$model->Server."'")
+                ->execute();
+            } catch (\yii\db\Exception $e) {
+                $model->addError('Server', Yii::t('app', 'Konnte Serverkonfiguration nicht auslesen.'));
+                return $this->render('create', [
+                'model' => $model, 
+            ]);
+            }        
             return $this->redirect(['view', 'id' => $model->id]);
         } else {
+//            $model->setUsr('iii') ;//$data['ServerData']['usr'];
+//            $model->setPwd('ooo'); //$data['ServerData']['pwd'];
+//            Yii::error($model['usr'],'application');
             return $this->render('create', [
-                'model' => $model,
+                'model' => $model, 
             ]);
         }
     }
@@ -115,6 +131,8 @@ class ServerDataController extends Controller
             }
         } else {
 //            Yii::error('no load','application');
+            $model->getUsr();
+            $model->getPwd();
             return $this->render('update', [
                 'model' => $model,
             ]);
@@ -129,7 +147,73 @@ class ServerDataController extends Controller
      */
     public function actionDelete($id)
     {
-        $this->findModel($id)->delete();
+        Yii::$app->db->transaction(function(){
+        
+            foreach($this->ServerConfig as $c){
+                if( !$c->delete() ){
+                    throw new Exception('Fehler beim löschen der zugehörigen ServerConfig. Errors: '. 
+                                        join(', ', $ServerData->getFirstErrors()));
+                }
+            }
+            
+            foreach($this->DbData as $c){
+                if( !$c->delete() ){
+                    throw new Exception('Fehler beim löschen der zugehörigen DbData. Errors: '. 
+                                        join(', ', $ServerData->getFirstErrors()));
+                }
+            }
+            
+            foreach($this->PerfmonDataAgg1H as $c){
+                if( !$c->delete() ){
+                    throw new Exception('Fehler beim löschen der zugehörigen PerfmonDataAgg1H. Errors: '. 
+                                        join(', ', $ServerData->getFirstErrors()));
+                }
+            }
+            
+            foreach($this->PerfMonData as $c){
+                if( !$c->delete() ){
+                    throw new Exception('Fehler beim löschen der zugehörigen PerfMonData. Errors: '. 
+                                        join(', ', $ServerData->getFirstErrors()));
+                }
+            }
+            
+            foreach($this->IoCounters as $c){
+                if( !$c->delete() ){
+                    throw new Exception('Fehler beim löschen der zugehörigen IoCounters. Errors: '. 
+                                        join(', ', $ServerData->getFirstErrors()));
+                }
+            }
+            
+            foreach($this->NetMonData as $c){
+                if( !$c->delete() ){
+                    throw new Exception('Fehler beim löschen der zugehörigen NetMonData. Errors: '. 
+                                        join(', ', $ServerData->getFirstErrors()));
+                }
+            }
+            
+            foreach($this->NetmonDataAgg1H as $c){
+                if( !$c->delete() ){
+                    throw new Exception('Fehler beim löschen der zugehörigen NetmonDataAgg1H. Errors: '. 
+                                        join(', ', $ServerData->getFirstErrors()));
+                }
+            }
+            
+            foreach($this->PerfCounterDefaultServer as $c){
+                if( !$c->delete() ){
+                    throw new Exception('Fehler beim löschen der zugehörigen PerfCounterDefaultServer. Errors: '. 
+                                        join(', ', $ServerData->getFirstErrors()));
+                }
+            }
+            
+            foreach($this->ConfigData as $c){
+                if( !$c->delete() ){
+                    throw new Exception('Fehler beim löschen der zugehörigen ConfigData. Errors: '.
+                                        join(', ', $ServerData->getFirstErrors()));
+                }
+            }
+            
+            $this->findModel($id)->delete();
+        });
 
         return $this->redirect(['index']);
     }

@@ -78,10 +78,10 @@ class ServerDataController extends Controller
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
             try {
-                \Yii::$app->db->createCommand("USE BASELINE; EXEC [dbo].[usp_getConfigData] '".$model->Server."'")
+                \Yii::$app->db->createCommand("USE BASELINEDATA; EXEC [dbo].[usp_getConfigData] '".$model->Server."'")
                 ->execute();
             } catch (\yii\db\Exception $e) {
-                $model->addError('Server', Yii::t('app', 'Konnte Serverkonfiguration nicht auslesen.'));
+                $model->addError('Server', Yii::t('app', 'Konnte Serverkonfiguration nicht auslesen.').$e->getmessage());
                 return $this->render('create', [
                 'model' => $model, 
             ]);

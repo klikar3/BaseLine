@@ -29,11 +29,11 @@ $items = app\controllers\ServerViewController::getServersMenu("/index.php?r=serv
     <div class="body-content">
 <?php echo Html::beginTag('div', ['class'=>'dropdown']); ?>
 <h4>Server:&nbsp; <?php
-echo Html::button($servername.'&nbsp;<span class="caret"></span></button>', 
+echo Html::button($servername.'&nbsp;<span class="caret"></span>', 
     ['type'=>'button', 'class'=>'btn btn-default', 'data-toggle'=>'dropdown']);
 echo DropdownX::widget([ 'items' => $items,]); 
-echo Html::endTag('div');
-?></h4> 
+
+?></h4> <?php echo Html::endTag('div'); ?>
 <?php echo Html::beginTag('div', ['style'=>'text-align: right;']); 
 echo Html::a('Ressourcen',Url::toRoute(['res_cpu', 'id' => $id])); 
 echo Html::endTag('div');
@@ -46,7 +46,8 @@ $overview = $this->render('_overview', ['id' => $id,
                                         'dataset_cpu' => $dataset_cpu,
                                         'dataset_pps' => $dataset_pps,
                                         'dataset_dql' => $dataset_dql,
-                                        'dataset_net' => $dataset_net]);  
+                                        'dataset_net' => $dataset_net,
+                                        'dataset_waits' => $dataset_waits]);  
 $content1 = $this->render('_config', ['servername' => $servername,
                                                   'dataProvider' => $dataProvider]);
 $content_sc = $this->render('_sconfig', ['servername' => $servername,

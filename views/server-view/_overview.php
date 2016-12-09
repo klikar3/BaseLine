@@ -9,7 +9,7 @@ use yii\widgets\ListView;
 use kartik\grid\GridView;
 
 use klikar3\rgraph\RGraphLine;
-
+use klikar3\rgraph\RGraphBar;
 /* @var $this yii\web\View */
 /* @var $model app\models\ConfigData */
 /* @var $form yii\widgets\ActiveForm */
@@ -37,6 +37,21 @@ use klikar3\rgraph\RGraphLine;
     date_default_timezone_set('Europe/Berlin'); 
 
 ?>
+<style>
+    .RGraph_tooltip img {
+        display: none;
+    }
+
+    .RGraph_tooltip {
+        box-shadow: none ! important;
+        border: 2px solid blue ! important;
+        background-color: white ! important;
+        padding: 3px ! important;
+        text-align: center;
+        font-weight: bold;
+        font-family: Verdana;
+    }
+</style>
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>
 <div class="row">
   <?= app\controllers\ServerViewController::getPaintLine($servername, $datasets, ['Page Life Expectancy',''], $id, 0); ?>
@@ -44,5 +59,8 @@ use klikar3\rgraph\RGraphLine;
   <?= app\controllers\ServerViewController::getPaintLine($servername, $dataset_pps, 'OS: Pages/Sec', $id, 0); ?>
   <?= app\controllers\ServerViewController::getPaintLine($servername, $dataset_dql, 'OS:Disk Queue Length:_Total', $id, 0); ?>
   <?php echo app\controllers\ServerViewController::getNetLine($servername, $dataset_net, 'BytesTotalPersec', $id, 0); ?>
-
+</div>
+<div class="row">
+  <?php echo app\controllers\ServerViewController::getWaitBar($servername, $dataset_waits, 'BytesTotalPersec', $id, 0); ?>
+        
 </div>

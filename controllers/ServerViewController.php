@@ -12,6 +12,7 @@ use yii\helpers\Url;
 use yii\web\JsExpression;
 
 use klikar3\rgraph\RGraphLine;
+use klikar3\rgraph\RGraphBar;
 
 use app\models\ConfigData;
 use app\models\ConfigDataSearch;
@@ -81,7 +82,7 @@ class ServerViewController extends \yii\web\Controller
             'dataset_pps' => $this->getPerfmonDataset($servername,'OS:Pages/Sec:_Total', $dt ),
             'dataset_dql' => $this->getPerfmonDataset($servername,'OS:Disk Queue Length:_Total', $dt ),
             'dataset_net' => $this->getNetPerfDataset($servername,'BytesTotalPersec',$dt),
-
+            'dataset_waits' => $this->getWaitDataset($servername,$dt),
         ]);
     }
 
@@ -417,25 +418,72 @@ class ServerViewController extends \yii\web\Controller
 
     }
 
-    public static function getStatusimage ($status,$id,$ziel) {
+   public function getWaitDataset($srvr,$dt)
+    {
+        
+        $pcid = (new \yii\db\Query())
+        ->select('id')->from('ServerData WITH (NOLOCK)')->where('Server=:srvr', array('srvr' => $srvr))
+        ->scalar();
+        
+        $dataset = (new \yii\db\Query())
+        ->select('Waits.CaptureEnd, WaitTypes.WaitType, Waits.WaitCount, Waits.Percentage')->from('Waits')
+        ->join('INNER JOIN','WaitTypes',
+				'WaitTypes.id = Waits.WaitTypeId')
+        ->where('ServerId=:srvr AND CaptureEnd>:dt',
+        array('srvr' => $pcid, 'dt' => $dt ))
+        ->orderBy('Waits.CaptureEnd, WaitTypes.WaitType,')
+        ->all();
+//        \yii\helpers\VarDumper::dump($dataset, 10, true);
+        
+        
+      $waittypes = ArrayHelper::getColumn($dataset,'WaitType');
+//      \yii\helpers\VarDumper::dump($waittypes, 10, true);
+      
+      $unique = array();
+      foreach ($waittypes as $key => $value) {
+                if (!in_array($value, $unique)) {
+                    $unique[] = $value;
+                }
+                else {
+                  $waittypes[$key] = "ttt";
+                }
+          }
+      unset($value);  
+      unset($unique);
+//      \yii\helpers\VarDumper::dump($waittypes, 10, true);
+      $waittypes = array_filter($waittypes, function($e)  {
+          return ($e !== "ttt");
+      });     
+      sort($waittypes);
+//      \yii\helpers\VarDumper::dump($waittypes, 10, true);
+
+        return !empty($dataset) ? $dataset : [ [0, '', 0] ];
+
+    }
+
+    public static function getStatusimage ($status,$id,$ziel,$paused=0) {
 //        \yii\helpers\VarDumper::dump($status, 10, true);
+        if ($paused == 1)
+          $status = "unknown";
         switch ($status) {
           case 'unknown':
-              return Html::a(Html::img('@web/images/alarm_unknown.png', ['alt' => 'unknown']), [$ziel, 'id' => $id]);
+              return Html::a(Html::img('@web/images/question-frame_open_commons.png', ['alt' => 'unknown', 'data-toggle'=>'tooltip','data-placement'=>'left','title' => 'unknown','style'=>'cursor:default;']), [$ziel, 'id' => $id]);
           case 'grey':
-              return Html::a(Html::img('@web/images/alarm_unknown.png', ['alt' => 'unknown']), [$ziel, 'id' => $id]);
+              return Html::a(Html::img('@web/images/alarm_unknown.png', ['alt' => 'neutral', 'data-toggle'=>'tooltip','data-placement'=>'left','title' => 'neutral']), [$ziel, 'id' => $id]);
           case 'green':
-              return Html::a(Html::img('@web/images/check_16.png', ['alt' => 'green']), [$ziel, 'id' => $id]);
+              return Html::a(Html::img('@web/images/check_16.png', ['alt' => 'green', 'data-toggle'=>'tooltip','data-placement'=>'left','title' => 'ok']), [$ziel, 'id' => $id]);
           case 'yellow':
-              return Html::a(Html::img('@web/images/warning_16.png', ['alt' => 'yellow']), [$ziel, 'id' => $id]);
+              return Html::a(Html::img('@web/images/warning_16.png', ['alt' => 'yellow', 'data-toggle'=>'tooltip','data-placement'=>'left','title' => 'warning']), [$ziel, 'id' => $id]);
           case 'red':
-              return Html::a(Html::img('@web/images/delete_angled_16.png', ['alt' => 'red']), [$ziel, 'id' => $id]);
+              return Html::a(Html::img('@web/images/delete_angled_16.png', ['alt' => 'red', 'data-toggle'=>'tooltip','data-placement'=>'left','title' => 'alert']), [$ziel, 'id' => $id]);
         }
-        return Html::a(Html::img('@web/images/delete_angled_16.png', ['alt' => 'red']), [$ziel, 'id' => $id]);
+        return Html::a(Html::img('@web/images/delete_angled_16.png', ['alt' => 'red', 'data-toggle'=>'tooltip','data-placement'=>'left','title' => 'alert']), [$ziel, 'id' => $id]);
    }
    
-    public static function getWaitimage ($status,$id,$ziel) {
+    public static function getWaitimage ($status,$id,$ziel,$paused=0) {
 //        \yii\helpers\VarDumper::dump($status, 10, true);
+        if ($paused == 1)
+          $status = "unknown";
         switch ($status) {
           case 'unknown':
               return Html::a(Html::img('@web/images/WaitTimeMeter_3.png', ['alt' => 'unknown']), [$ziel, 'id' => $id]);
@@ -448,7 +496,7 @@ class ServerViewController extends \yii\web\Controller
         }
         return Html::a(Html::img('@web/images/WaitTimeMeter_3.png', ['alt' => 'red']), [$ziel, 'id' => $id]);
    }
-
+            
     public static function getPaintLine($srvr,$dataset,$cntr,$id,$detail=0,$title='') {
         
         $output = true;
@@ -508,12 +556,12 @@ class ServerViewController extends \yii\web\Controller
               'width' => ($detail==0) ? '280px' : '800px',
           ],
           'options' => [
-              'height' => ($detail==0) ? '180px' : '600px',
-              'width' => ($detail==0) ? '280px' : '800px',
+//              'height' => ($detail==0) ? '180px' : '600px',
+//              'width' => ($detail==0) ? '280px' : '800px',
 //              'id' => 'rgline_'.$pcid,
               'colors' => ['blue','green'],
 //              'filled' => true,
-              'clearto' => ['white'],
+//              'clearto' => ['white'],
 /*              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,11,5);},
                                     ArrayHelper::getColumn($dataset,'CaptureDate')
                           ) : [ 'No Data' ],
@@ -526,9 +574,10 @@ class ServerViewController extends \yii\web\Controller
   //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
   //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',
               'textAngle' => 45,
-              'textSize' => 8,
+              'textSize' => 7,
+//              'textFonts' => 'arial condensed',
 //              'gutter' => ['left' => 50, 'bottom' => 80, 'top' => 50],
-              'gutter' => ['left' => ($detail==0) ? 50 : 50, 'bottom' => ($detail==0) ? 50 : 80, 'top' => 50],
+              'gutter' => ['left' => ($detail==0) ? 50 : 50, 'bottom' => ($detail==0) ? 62 : 100, 'top' => 50],
               'title' => !empty($title) ? $title : $counter,
               'titleSize' => 12,
               'titleBold' => false,
@@ -548,7 +597,164 @@ class ServerViewController extends \yii\web\Controller
       ;    
     }
   
-    public static function getServersMenu($target,$id) {
+    public static function getWaitBar($srvr,$dataset,$id,$detail=0,$title='') {
+        
+        $output = true;
+        $detail = 1;
+               
+        $stat = 'unknown'; 
+        
+        $title = 'Wait-Typen';
+        $cntr = 'Waits';
+               
+/*        if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData')
+        ->where('Server=:srvr AND Counter_id=:pcid AND instance=:inst', array('srvr' => $srvr, 'pcid' => $pcid, 'inst' => $instance ))
+        ->orderBy('CaptureDate desc')->limit(1)->scalar();
+*/
+        switch ($stat) {
+          case 'unknown':
+              $bg = 'Gradient(lightgrey:white)'; break;
+          case 'green':
+              $bg = 'Gradient(lightgreen:white)'; break;
+          case 'yellow':
+              $bg = 'Gradient(yellow:white)'; break;
+          case 'red':
+              $bg = 'Gradient(orange:white)'; break;
+          default:
+              $bg = 'Gradient(lightgrey:white)';
+       }
+       
+//      \yii\helpers\VarDumper::dump($dataset, 10, true);
+      
+      if (empty($dataset)) return '';
+      $waittypes = ArrayHelper::getColumn($dataset,'WaitType');
+      $unique = array();
+      foreach ($waittypes as $key => $value) {
+                if (!in_array($value, $unique)) {
+                    $unique[] = $value;
+                }
+                else {
+                  $waittypes[$key] = "ttt";
+                }
+          }
+      unset($value);  
+      unset($unique);
+//      \yii\helpers\VarDumper::dump($waittypes, 10, true);
+      $waittypes = array_filter($waittypes, function($e)  {
+          return ($e !== "ttt");
+      });     
+      sort($waittypes);
+//      \yii\helpers\VarDumper::dump($waittypes, 10, true);
+      $zeiten = ArrayHelper::getColumn($dataset,'CaptureEnd');
+      $unique = array();
+      foreach ($zeiten as $key => $value) {
+                if (!in_array($value, $unique)) {
+                    $unique[] = $value;
+                }
+                else {
+                  $zeiten[$key] = "ttt";
+                }
+          }
+      unset($value);  
+      unset($unique);
+      $zeiten = array_filter($zeiten, function($e)  {
+          return ($e !== "ttt");
+      });     
+      sort($zeiten);
+//      \yii\helpers\VarDumper::dump($zeiten, 10, true);
+      $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
+      $ymaxy = 0;
+      for ($i = 0; $i < count($zeiten); $i++) {
+        $ymax = 0.0;
+        for ($j = 0; $j < count($waittypes); $j++) {
+          for ($k = 0; $k < count($dataset); $k++) {  
+            if ($dataset[$k]['CaptureEnd'] == $zeiten[$i]) {
+              if (!isset($zeile)) 
+                $zeile = array(); 
+              if ($dataset[$k]['WaitType'] == $waittypes[$j]) {
+                $zeile[$j] = intval($dataset[$k]['Percentage']);
+                $ymax += intval($dataset[$k]['Percentage']);
+              }  
+              else 
+                if (!isset($zeile[$j])) 
+                  $zeile[$j] = 0;
+            }
+          }          
+        }
+        $daten[] = $zeile;
+        unset($zeile);
+        if ($ymax > $ymaxy) $ymaxy = $ymax;       
+      }  
+      $ymaxy = intval($ymaxy * 1.2);  
+//      $avgvals = ArrayHelper::getColumn($dataset,'Percentage');
+//      $daten = [$values, $avgvals]; 
+      $tooltips = array();
+
+      for ($i = 0; $i < count($zeiten); ++$i) {
+        $tooltips[$i] = $waittypes;     
+      }    
+
+//      \yii\helpers\VarDumper::dump($daten);
+        
+      if ($output) return RGraphBar::widget([
+          'data' => !empty($daten) ? $daten : [ [0,0, 0] ],
+          'allowDynamic' => true,
+          'allowTooltips' => true,
+//          'allowContext' => true,
+          'allowKeys' => true,
+          'allowResizing' => true,
+//          'allowEffects' => true,
+//          'allowAnnotate' => true,
+          'id' => 'rgbar_Waits',
+          'htmlOptions' => [
+              'height' => ($detail==0) ? '180px' : '700px',
+              'width' => ($detail==0) ? '280px' : '1000px',
+          ],
+          'options' => [
+              'grouping' => 'stacked',
+              'resizable' => true,
+//              'linewidth' => 2,
+//              'textAccessible' => true,
+//              'strokestyle' => 'white',
+              'hmargin' => 20,
+              'hmarginGrouped' => 2,
+//              'clearto' => 'white',              
+//              'height' => ($detail==0) ? '180px' : '700px',
+//              'width' => ($detail==0) ? '280px' : '1000px',
+//              'id' => 'rgbar1_'.$id,
+//              'colors' => ['blue','green'],
+//              'filled' => true,
+              'textAngle' => 45,
+              'textSize' => 7,
+              'textFonts' => 'arial condensed',
+              'labelsAbove' => true,
+              'labelsAboveDecimals' => 2,
+              'labelsAboveSize' => 8,
+              'labels' => !empty($zeiten) ? array_map(function($val) {return substr($val,0,16);},
+                                    array_column(array_chunk($zeiten,$anzahl),0)
+                          ) : [ 'No Data' ],
+              'tooltips' => $tooltips,
+              'key' => $waittypes,
+              'keyInteractive' => true,
+              'gutter' => ['left' => ($detail==0) ? 50 : 80, 'bottom' => ($detail==0) ? 80 : 100, 'top' => 50],
+              'title' => !empty($title) ? $title : $counter,
+              'titleSize' => 12,
+              'titleBold' => false,
+              'ymax' => $ymaxy,
+              'backgroundColor' => $bg,
+/*              'contextmenu' => [
+                  ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
+                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
+                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
+                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $id ])."\");}") ],
+              ],*/
+          ],
+      ]);    
+    }
+  
+     public static function getServersMenu($target,$id) {
               
         $dataset1 = (new \yii\db\Query())
         ->select('Server as label, id as url')->from('ServerData')->orderBy('id')
@@ -655,8 +861,8 @@ class ServerViewController extends \yii\web\Controller
               'width' => ($detail==0) ? '280px' : '800px',
           ],
           'options' => [
-              'height' => ($detail==0) ? '180px' : '600px',
-              'width' => ($detail==0) ? '280px' : '800px',
+//              'height' => ($detail==0) ? '180px' : '600px',
+//              'width' => ($detail==0) ? '280px' : '800px',
 //              'id' => 'rgline_'.$pcid,
               'colors' => ['blue','green'], //    ,'orange'
 //              'filled' => true,
@@ -666,8 +872,9 @@ class ServerViewController extends \yii\web\Controller
                           ) : [ 'No Data' ],
               'tooltips' => $tooltips,
               'textAngle' => 45,
-              'textSize' => 8,
-              'gutter' => ['left' => ($detail==0) ? 60 : 60, 'bottom' => ($detail==0) ? 60 : 80, 'top' => 50],
+              'textSize' => 7,
+              'textFonts' => 'arial condensed',
+              'gutter' => ['left' => ($detail==0) ? 60 : 60, 'bottom' => ($detail==0) ? 62 : 62, 'top' => 50],
               'title' => !empty($title) ? $title : 'Net k'.$cntr,
               'titleSize' => 12,
               'titleBold' => false,

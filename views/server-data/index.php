@@ -59,6 +59,7 @@ $this->params['breadcrumbs'][] = $this->title;
 		        'stat_mem',
 		        'stat_disk',
 		        'stat_sess',	
+		        'stat_net',	
             ['class' => 'yii\grid\ActionColumn',
               'options' => [ 'width' => '80px;']
             ],

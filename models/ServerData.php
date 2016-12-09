@@ -46,6 +46,7 @@ class ServerData extends \yii\db\ActiveRecord
         return [
 
             [['Server', 'usr', 'pwd', 'usertyp', 'typ'], 'required'],
+            ['Server', 'unique'],
             [['paused'], 'integer'],
             [['Server', 'usertyp', 'user', 'usr', 'password', 'pwd', 'snmp_pw', 'typ', 'stat_wait', 'stat_queries', 'stat_cpu', 'stat_mem', 'stat_disk', 'stat_sess', 'stat_net'], 'string'],
             [['User_Encrypted', 'Password_Encrypted', 'Description'], 'string'],
@@ -54,8 +55,9 @@ class ServerData extends \yii\db\ActiveRecord
         ];
     }
 
-    public function validateUser($attribute, $params)
-    {
+    public function validateUser($attribute, $params) 
+    {   // Nur für nicht pausierte SQL-Server
+        if (($this->typ != "sql") OR ($this->paused == 1)) return;
         $dsn = "sqlsrv:Server=".$this->Server.";Database=master";
         $connection = new \yii\db\Connection([
             'dsn' => $dsn,
@@ -201,5 +203,6 @@ class ServerData extends \yii\db\ActiveRecord
     public function getNetmonDataAgg1H()
     {
         return $this->hasMany(PerfmonDataAgg1H::className(), ['Server' => 'Server']);
-    }    
+    } 
+    
 }

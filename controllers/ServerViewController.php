@@ -176,8 +176,8 @@ class ServerViewController extends \yii\web\Controller
             'dataset_7' => $this->getPerfmonDataset($servername,$cntrs[7],$dt),
             'dataset_8' => $this->getPerfmonDataset($servername,$cntrs[8],$dt),
             'dataset_9' => $this->getPerfmonDataset($servername,$cntrs[9],$dt),
-/*            'dataset_10' => $this->getPerfmonDataset($servername,$cntrs[10],$dt),
-            'dataset_11' => $this->getPerfmonDataset($servername,$cntrs[11],$dt),
+            'dataset_10' => $this->getDriveDataset($servername,$id,$dt),
+/*            'dataset_11' => $this->getPerfmonDataset($servername,$cntrs[11],$dt),
 */        ]);
     }
 
@@ -322,18 +322,32 @@ class ServerViewController extends \yii\web\Controller
         $servername = $cmd->queryScalar();
         
         return $servername;
-
     }
 
+    public static function getPerfCounterDefaultId($counter) 
+    {
+        $pcid = (new \yii\db\Query())
+        ->select('id')->from('PerfCounterDefault WITH (READPAST)')->where('counter_name=:cntr', ['cntr' => $counter])
+        ->scalar();
+        return $pcid;
+    }    
+        
+    public static function getPerfCounterPerServerId($srvr,$counter,$instance) 
+    {    
+        $pcsid = (new \yii\db\Query())
+        ->select('id')->from('PerfCounterPerServer WITH (READPAST)')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
+          ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
+        ->scalar();
+        return $pcsid;
+    }    
+    
     public function getPerfmonDataset($srvr,$cntr,$dt)
     {
         $instance='_Total';
         if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
         else $counter = $cntr;
         
-        $pcid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterDefault WITH (READPAST)')->where('counter_name=:cntr', array('cntr' => $counter))
-        ->scalar();
+        $pcid = $this->getPerfCounterDefaultId($counter);
         
         $dataset = (new \yii\db\Query())
         ->select('value, AvgValue, CaptureDate')->from('PerfMonData')->where('Server=:srvr AND Counter_id=:pcid AND CaptureDate>:dt AND instance=:inst',
@@ -352,9 +366,7 @@ class ServerViewController extends \yii\web\Controller
         if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
         else $counter = $cntr;
         
-        $pcid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', array('cntr' => $counter))
-        ->scalar();
+        $pcid = $this->getPerfCounterDefaultId($counter);
         
         $dataset = (new \yii\db\Query())
         ->select('TimeSlotStart, MinVal, AvgVal, MaxVal, Median, StdDev')->from('PerfMonDataAgg1H')->where('Server=:srvr AND Counter_id=:pcid AND TimeSlotStart>:dt AND instance=:inst',
@@ -418,6 +430,24 @@ class ServerViewController extends \yii\web\Controller
 
     }
 
+    public function getDriveDataset($srvr,$srvrId,$dt)
+    {   
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * 7);    
+        $pcid = (new \yii\db\Query())
+        ->select('id')->from('ServerData WITH (READPAST)')->where('Server=:srvr', array('srvr' => $srvr))
+        ->scalar();
+        
+        $dataset = (new \yii\db\Query())
+        ->select('DriveLetter, PercentFree, CaptureDate')->from('DriveData')->where('ServerId=:srvrId AND CaptureDate>:dt',
+        array('srvrId' => $srvrId, 'dt' => $dt ))
+        ->orderBy('DriveLetter,CaptureDate')
+        ->all();
+//        \yii\helpers\VarDumper::dump($dataset, 10, true);
+        
+        return !empty($dataset) ? $dataset : [ ['', 0, ''] ];
+
+    }
+
    public function getWaitDataset($srvr,$dt)
     {
         
@@ -426,7 +456,7 @@ class ServerViewController extends \yii\web\Controller
         ->scalar();
         
         $dataset = (new \yii\db\Query())
-        ->select('Waits.CaptureEnd, WaitTypes.WaitType, Waits.WaitCount, Waits.Percentage')->from('Waits')
+        ->select('Waits.CaptureEnd, WaitTypes.WaitType, Waits.WaitCount, Waits.Percentage, SumWaitSecs')->from('Waits')
         ->join('INNER JOIN','WaitTypes',
 				'WaitTypes.id = Waits.WaitTypeId')
         ->where('ServerId=:srvr AND CaptureEnd>:dt',
@@ -505,14 +535,9 @@ class ServerViewController extends \yii\web\Controller
         if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
         else $counter = $cntr;
         
-        $pcid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', ['cntr' => $counter])
-        ->scalar();
+        $pcid = ServerViewController::getPerfCounterDefaultId($counter);
         
-        $pcsid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterPerServer')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
-          ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
-        ->scalar();
+        $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $counter, $instance);
         
         $stat = 'unknown';        
         if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData')
@@ -538,6 +563,8 @@ class ServerViewController extends \yii\web\Controller
       $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
       $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
       $daten = [$values, $avgvals]; 
+//      \yii\helpers\VarDumper::dump($daten, 10, true);
+
       $tooltips = $values + $zeiten;
 
       for ($i = 0; $i < count($zeiten); ++$i) {
@@ -672,8 +699,8 @@ class ServerViewController extends \yii\web\Controller
               if (!isset($zeile)) 
                 $zeile = array(); 
               if ($dataset[$k]['WaitType'] == $waittypes[$j]) {
-                $zeile[$j] = intval($dataset[$k]['Percentage']);
-                $ymax += intval($dataset[$k]['Percentage']);
+                $zeile[$j] = intval(($dataset[$k]['SumWaitSecs']/100)*$dataset[$k]['Percentage']);
+                $ymax += intval(($dataset[$k]['SumWaitSecs']/100)*$dataset[$k]['Percentage']);
               }  
               else 
                 if (!isset($zeile[$j])) 
@@ -774,9 +801,7 @@ class ServerViewController extends \yii\web\Controller
         if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
         else $counter = $cntr;
         
-        $pcid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', array('cntr' => $counter))
-        ->scalar();
+        $pcid = $this->getPerfCounterDefaultId($counter)
 */      
         $machine = (new \yii\db\Query())
         ->select('Value')->from('ServerConfig')->where('server=:sr AND Property=:prop', 
@@ -807,14 +832,9 @@ class ServerViewController extends \yii\web\Controller
         if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
         else $counter = $cntr;
         
-/*        $pcid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', ['cntr' => $counter])
-        ->scalar();
+/*        $pcid = ServerViewController::getPerfCounterDefaultId($counter)
         
-        $pcsid = (new \yii\db\Query())
-        ->select('status')->from('PerfCounterPerServer')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
-          ['srvr' => $srvr, 'cntr' => $cntr, 'inst' => $instance])
-        ->scalar();
+        $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $counter, $instance);
 */        
         $stat = 'unknown';        
         $stat = (new \yii\db\Query())
@@ -902,14 +922,9 @@ class ServerViewController extends \yii\web\Controller
         if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
         else $counter = $cntr;
         
-        $pcid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', ['cntr' => $counter])
-        ->scalar();
+        $pcid = ServerViewController::getPerfCounterDefaultId($counter);
         
-        $pcsid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterPerServer')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
-          ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
-        ->scalar();
+        $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $counter, $instance);
         
         $stat = 'unknown';        
         if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData')
@@ -997,29 +1012,11 @@ class ServerViewController extends \yii\web\Controller
       ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
       ;    
     }
-    
+
     public static function getPaintLineRep($dataset, $title='') {
         
         $output = true;
-        
-/*        $instance='_Total';
-        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
-        else $counter = $cntr;
-        
-        $pcid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterDefault')->where('counter_name=:cntr', ['cntr' => $counter])
-        ->scalar();
-        
-        $pcsid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterPerServer')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
-          ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
-        ->scalar();
-*/        
         $stat = 'unknown';        
-/*        if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData')
-        ->where('Server=:srvr AND Counter_id=:pcid AND instance=:inst', array('srvr' => $srvr, 'pcid' => $pcid, 'inst' => $instance ))
-        ->orderBy('CaptureDate desc')->limit(1)->scalar();
-*/
         switch ($stat) {
           case 'unknown':
               $bg = 'Gradient(lightgrey:white)'; break;
@@ -1043,20 +1040,9 @@ class ServerViewController extends \yii\web\Controller
             $rows = ArrayHelper::getColumn($dataset, $col); 
             $daten[] = $rows;
             $keys[] = $col;
-/*            for ($i = 0; $i < count($rows); ++$i) {
-              $trows[] = $rows[$i] . '<br>'. substr($zeiten[$i],0,16);     
-            }    
-            $tooltips[] =  $trows;
-*/          }  
+          }  
       }
-/*        $minvals = ArrayHelper::getColumn($dataset,'sql-cluster03');
-      $avgvals = ArrayHelper::getColumn($dataset,'AvgVal');
-      $avgvals = ArrayHelper::getColumn($dataset,'AvgVal');      
-      $maxvals = ArrayHelper::getColumn($dataset,'MaxVal');      
-      $medvals = ArrayHelper::getColumn($dataset,'Median');      
-      $stdvals = ArrayHelper::getColumn($dataset,'StdDev');      
-      $daten = [$minvals, $avgvals, $maxvals, $medvals, $stdvals]; 
-*/     $tooltips = $zeiten;
+     $tooltips = $zeiten;
 
 //       \yii\helpers\VarDumper::dump($tooltips, 10, true);
         
@@ -1075,7 +1061,7 @@ class ServerViewController extends \yii\web\Controller
               'height' => '800px',
               'width' => '1280px',
 //              'id' => 'rgline_'.$pcid,
-//+              'colors' => ['blue','green', 'orange', 'red', 'yellow'],
+//              'colors' => ['blue','green', 'orange', 'red', 'yellow'],
 //              'filled' => true,
               'clearto' => ['white'],
 /*              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,11,5);},
@@ -1102,6 +1088,125 @@ class ServerViewController extends \yii\web\Controller
               'keyPosition' => 'graph',
               'keyInteractive' => true,
 //              'ymax' => 100,
+              'backgroundColor' => $bg,
+/*              'contextmenu' => [
+                  ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
+                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
+                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
+                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detailAgg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detailAgg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+                 ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
+              ],
+*/           ]
+      ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
+      ;    
+    }
+  
+    public static function getPaintLineDrives($dataset) {
+        
+        $output = true;
+        $title = 'Drivespace Percent Free';
+        $stat = 'unknown';        
+/*        if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData')
+        ->where('Server=:srvr AND Counter_id=:pcid AND instance=:inst', array('srvr' => $srvr, 'pcid' => $pcid, 'inst' => $instance ))
+        ->orderBy('CaptureDate desc')->limit(1)->scalar();
+*/
+        switch ($stat) {
+          case 'unknown':
+              $bg = 'Gradient(lightgrey:white)'; break;
+          case 'green':
+              $bg = 'Gradient(lightgreen:white)'; break;
+          case 'yellow':
+              $bg = 'Gradient(yellow:white)'; break;
+          case 'red':
+              $bg = 'Gradient(orange:white)'; break;
+          default:
+              $bg = 'Gradient(lightgrey:white)';
+       }
+//      \yii\helpers\VarDumper::dump($dataset, 10, true);
+      if (empty($dataset)) return '';
+      if (is_Array($dataset)) 
+        $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
+      $unique = array();
+      foreach ($zeiten as $row) 
+        if (!in_array($row, $unique)) {
+                $unique[] = (string)$row;
+        }
+      $zeiten = $unique;
+      unset($unique);
+//      \yii\helpers\VarDumper::dump($zeiten, 10, true);
+      
+      $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
+
+      $cols = array_keys($dataset[1]);
+//      \yii\helpers\VarDumper::dump($cols, 10, true);
+
+      $rows = ArrayHelper::getColumn($dataset, "DriveLetter");
+      $unique = array();
+      foreach ($rows as $row) 
+        if (!in_array($row, $unique)) {
+                $unique[] = $row;
+        }
+      $keys = $unique;
+      unset($unique);
+//      \yii\helpers\VarDumper::dump($keys, 10, true);      
+
+      $rows = ArrayHelper::getColumn($dataset, "PercentFree");
+      $j = 0;
+      foreach ($keys as $key) {
+        $dat[] = array();
+        for ($i = 0; $i < count($dataset); $i++) {
+          if ($dataset[$i]['DriveLetter'] == $key) $dat[$j][] = $dataset[$i]['PercentFree'] ;     
+        }
+        $j++;
+      }      
+//      \yii\helpers\VarDumper::dump('$dat', 10, true);
+//      \yii\helpers\VarDumper::dump($dat, 10, true);
+     $tooltips = $zeiten;
+
+//       \yii\helpers\VarDumper::dump($tooltips, 10, true);
+//      \yii\helpers\VarDumper::dump($daten, 10, true);
+        
+      if ($output) return RGraphLine::widget([
+          'data' => !empty($dat) ? $dat : [ [0,0,0,0,0] ],
+          'allowDynamic' => true,
+          'allowTooltips' => true,
+          'allowContext' => true,
+          'allowKeys' => true,
+//          'id' => 'rgline_'.$pcid,
+          'htmlOptions' => [
+              'height' => '400px',
+              'width' => '640px',
+          ],
+          'options' => [
+              'height' => '400px',
+              'width' => '640px',
+//              'id' => 'rgline_'.$pcid,
+//+              'colors' => ['blue','green', 'orange', 'red', 'yellow'],
+//              'filled' => true,
+              'clearto' => ['white'],
+/*              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,11,5);},
+                                    ArrayHelper::getColumn($dataset,'CaptureDate')
+                          ) : [ 'No Data' ],
+*/             'labels' => $zeiten,
+              'crosshairs' => false,
+              'tooltips' => $tooltips,
+//              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
+//              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
+  //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
+  //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',
+              'textAngle' => 45,
+              'textSize' => 8,
+//              'gutter' => ['left' => 50, 'bottom' => 80, 'top' => 50],
+              'gutter' => ['left' =>  70, 'bottom' => 80, 'top' => 50, 'right' => 50],
+              'title' => !empty($title) ? $title : '',
+              'titleSize' => 12,
+              'titleBold' => false,
+              'tickmarks' => 'circle',
+              'key' => $keys,
+              'keyPosition' => 'graph',
+              'keyInteractive' => true,
+              'ymax' => 100,
               'backgroundColor' => $bg,
 /*              'contextmenu' => [
                   ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],

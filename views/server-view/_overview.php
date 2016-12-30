@@ -61,6 +61,6 @@ use klikar3\rgraph\RGraphBar;
   <?php echo app\controllers\ServerViewController::getNetLine($servername, $dataset_net, 'BytesTotalPersec', $id, 0); ?>
 </div>
 <div class="row">
-  <?php echo app\controllers\ServerViewController::getWaitBar($servername, $dataset_waits, 'BytesTotalPersec', $id, 0); ?>
+  <?php echo app\controllers\ServerViewController::getWaitBar($servername, $dataset_waits, 'Waits', $id, 0); ?>
         
 </div>

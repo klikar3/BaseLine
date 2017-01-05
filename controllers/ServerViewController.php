@@ -561,7 +561,7 @@ class ServerViewController extends \yii\web\Controller
       $values = ArrayHelper::getColumn($dataset,'value');
       $avgvals = ArrayHelper::getColumn($dataset,'AvgValue');
       $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
-      $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
+      $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
       $daten = [$values, $avgvals]; 
 //      \yii\helpers\VarDumper::dump($daten, 10, true);
 
@@ -592,8 +592,8 @@ class ServerViewController extends \yii\web\Controller
 /*              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,11,5);},
                                     ArrayHelper::getColumn($dataset,'CaptureDate')
                           ) : [ 'No Data' ],
-*/             'labels' => !empty($dataset) ? array_map(function($val) use ($detail){return substr($val,0,16);},
-                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),$anzahl),0)
+*/             'labels' => !empty($dataset) ? array_map(function($val) {return substr($val,0,16);},
+                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),count($zeiten)/$anzahl),0)
                           ) : [ 'No Data' ],
               'tooltips' => $tooltips,
 //              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
@@ -689,7 +689,7 @@ class ServerViewController extends \yii\web\Controller
       });     
       sort($zeiten);
 //      \yii\helpers\VarDumper::dump($zeiten, 10, true);
-      $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
+      $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
       $ymaxy = 0;
       for ($i = 0; $i < count($zeiten); $i++) {
         $ymax = 0.0;
@@ -758,7 +758,7 @@ class ServerViewController extends \yii\web\Controller
               'labelsAboveDecimals' => 2,
               'labelsAboveSize' => 8,
               'labels' => !empty($zeiten) ? array_map(function($val) {return substr($val,0,16);},
-                                    array_column(array_chunk($zeiten,$anzahl),0)
+                                    array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0)
                           ) : [ 'No Data' ],
               'tooltips' => $tooltips,
               'key' => $waittypes,
@@ -861,7 +861,7 @@ class ServerViewController extends \yii\web\Controller
       $avgvals = ArrayHelper::getColumn($dataset,'AvgValue');
       $bandWidth = ArrayHelper::getColumn($dataset,'CurrentBandwidth');
       $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
-      $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
+      $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
       $daten = [$values, $avgvals];  //   , $bandWidth
       $tooltips = $values + $zeiten;
 
@@ -888,7 +888,7 @@ class ServerViewController extends \yii\web\Controller
 //              'filled' => true,
               'clearto' => ['white'],
              'labels' => !empty($dataset) ? array_map(function($val) use ($detail){return substr($val,0,16);},
-                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),$anzahl),0)
+                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),count($zeiten)/$anzahl),0)
                           ) : [ 'No Data' ],
               'tooltips' => $tooltips,
               'textAngle' => 45,
@@ -952,7 +952,7 @@ class ServerViewController extends \yii\web\Controller
       $medvals = ArrayHelper::getColumn($dataset,'Median');      
       $stdvals = ArrayHelper::getColumn($dataset,'StdDev');      
       $zeiten = ArrayHelper::getColumn($dataset,'TimeSlotStart');
-      $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
+      $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
       $daten = [$minvals, $avgvals, $maxvals, $medvals, $stdvals]; 
       $tooltips = $medvals + $zeiten;
 
@@ -983,7 +983,7 @@ class ServerViewController extends \yii\web\Controller
                                     ArrayHelper::getColumn($dataset,'CaptureDate')
                           ) : [ 'No Data' ],
 */             'labels' => !empty($dataset) ? array_map(function($val) use ($detail){return substr($val,0,16);},
-                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),$anzahl),0)
+                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),count($zeiten)/$anzahl),0)
                           ) : [ 'No Data' ],
               'tooltips' => $tooltips,
 //              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
@@ -1032,7 +1032,11 @@ class ServerViewController extends \yii\web\Controller
 //      \yii\helpers\VarDumper::dump($dataset, 10, true);
       if (empty($dataset)) return '';
       $zeiten = ArrayHelper::getColumn($dataset,'TimeSlotStart');
-      $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
+      $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
+      $labels = array();
+      for ($i=1;$i<$anzahl;$i++) {
+        $labels[] = $zeiten[($i*count($zeiten))/$anzahl];
+      }
       $cols = array_keys($dataset[1]);
 //      \yii\helpers\VarDumper::dump($cols, 10, true);
       foreach ($cols as $col) {
@@ -1068,7 +1072,7 @@ class ServerViewController extends \yii\web\Controller
                                     ArrayHelper::getColumn($dataset,'CaptureDate')
                           ) : [ 'No Data' ],
 */             'labels' => !empty($dataset) ? array_map(function($val){return substr($val,0,16);},
-                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'TimeSlotStart'),$anzahl),0)
+                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'TimeSlotStart'),count($zeiten)/$anzahl),0)
                           ) : [ 'No Data' ],
               'crosshairs' => false,
               'tooltips' => $tooltips,
@@ -1136,8 +1140,12 @@ class ServerViewController extends \yii\web\Controller
       unset($unique);
 //      \yii\helpers\VarDumper::dump($zeiten, 10, true);
       
-      $anzahl = (count($zeiten)>10) ? count($zeiten)/10 : count($zeiten);
-
+      $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
+//      $labels = array();
+//      for ($i=1;$i<$anzahl;$i++) {
+//        $labels[] = $zeiten[($i*count($zeiten))/$anzahl];
+//      }
+      $labels = array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0);
       $cols = array_keys($dataset[1]);
 //      \yii\helpers\VarDumper::dump($cols, 10, true);
 
@@ -1188,7 +1196,7 @@ class ServerViewController extends \yii\web\Controller
 /*              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,11,5);},
                                     ArrayHelper::getColumn($dataset,'CaptureDate')
                           ) : [ 'No Data' ],
-*/             'labels' => $zeiten,
+*/             'labels' => $labels,
               'crosshairs' => false,
               'tooltips' => $tooltips,
 //              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],

@@ -19,6 +19,7 @@ use app\models\ConfigDataSearch;
 use app\models\DbData;
 use app\models\ServerConfig;
 use app\models\ServerData;
+use app\models\Win32EventLog;
 
 class ServerViewController extends \yii\web\Controller
 {
@@ -64,6 +65,10 @@ class ServerViewController extends \yii\web\Controller
             'query' => DbData::find()->where(['Server' => $servername, 'physicalFileName' => "_Total"])->andWhere(['CaptureDate' => $datum]),
             'pagination' => [ 'pageSize' => 15],
         ]);
+        $dataProvider_event = new ActiveDataProvider([
+            'query' => Win32EventLog::find()->where(['ServerId' => $id])->orderBy('TimeGenerated desc'),
+            'pagination' => [ 'pageSize' => 15],
+        ]);
 
         // -- Datasets
         date_default_timezone_set('Europe/Berlin'); 
@@ -77,6 +82,7 @@ class ServerViewController extends \yii\web\Controller
             'dataProvider' => $dataProvider,
             'dataProvider_sc' => $dataProvider_sc,
             'dataProvider_db' => $dataProvider_db,
+            'dataProvider_event' => $dataProvider_event,
             'datasets' => $this->getPerfmonDataset($servername,['SQLServer:Buffer Manager:Page Life Expectancy:',''], $dt ),
             'dataset_cpu' => $this->getPerfmonDataset($servername,'Instance: Cpu Utilization %',$dt),
             'dataset_pps' => $this->getPerfmonDataset($servername,'OS:Pages/Sec:_Total', $dt ),

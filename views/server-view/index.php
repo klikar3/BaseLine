@@ -54,6 +54,8 @@ $content_sc = $this->render('_sconfig', ['servername' => $servername,
                                                   'dataProvider_sc' => $dataProvider_sc]);
 $content_db = $this->render('_dbconfig', ['servername' => $servername,
                                                   'dataProvider_db' => $dataProvider_db]);
+$content_event = $this->render('_eventLog', ['servername' => $servername,
+                                                  'dataProvider_event' => $dataProvider_event]);
                                                   
 
 echo TabsX::widget([
@@ -76,6 +78,10 @@ echo TabsX::widget([
             'content'=>$content_db
         ],
         [
+            'label'=>'<i class="glyphicon glyphicon-list-alt"></i> Eventlog',
+            'content'=>$content_event
+        ],
+        [
             'label'=>'<i class="glyphicon glyphicon-chevron-right"></i> Weiteres',
             'items'=>[
                  [
@@ -83,13 +89,13 @@ echo TabsX::widget([
                      'encode'=>false,
                     'content'=>'',
                  ],
+                [
+                    'label'=>'<i class="glyphicon glyphicon-king"></i> Disabled',
+                    'encode'=>false,
+                    'content'=>'',
+                    'headerOptions' => ['class'=>'disabled'],
+                ],
             ],
-        ],
-        [
-            'label'=>'<i class="glyphicon glyphicon-king"></i> Disabled',
-            'encode'=>false,
-            'content'=>'',
-            'headerOptions' => ['class'=>'disabled'],
         ],
     ],
     'position'=>TabsX::POS_ABOVE,

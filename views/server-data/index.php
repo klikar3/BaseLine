@@ -59,7 +59,8 @@ $this->params['breadcrumbs'][] = $this->title;
 		        'stat_mem',
 		        'stat_disk',
 		        'stat_sess',	
-		        'stat_net',	
+		        'stat_net',
+            'lastEventlogSearch',	
             ['class' => 'yii\grid\ActionColumn',
               'options' => [ 'width' => '80px;']
             ],

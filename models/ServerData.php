@@ -48,7 +48,7 @@ class ServerData extends \yii\db\ActiveRecord
             [['Server', 'usr', 'pwd', 'usertyp', 'typ'], 'required'],
             ['Server', 'unique'],
             [['paused'], 'integer'],
-            [['Server', 'usertyp', 'user', 'usr', 'password', 'pwd', 'snmp_pw', 'typ', 'stat_wait', 'stat_queries', 'stat_cpu', 'stat_mem', 'stat_disk', 'stat_sess', 'stat_net'], 'string'],
+            [['Server', 'usertyp', 'user', 'usr', 'password', 'pwd', 'snmp_pw', 'typ', 'stat_wait', 'stat_queries', 'stat_cpu', 'stat_mem', 'stat_disk', 'stat_sess', 'stat_net', 'lastEventlogSearch'], 'string'],
             [['User_Encrypted', 'Password_Encrypted', 'Description'], 'string'],
             [['usr'], 'validateUser', 'skipOnEmpty' => false, 'skipOnError' => false],
 
@@ -100,6 +100,7 @@ class ServerData extends \yii\db\ActiveRecord
             'password' => Yii::t('app', 'Password'),
             'snmp_pw' => Yii::t('app', 'Snmp Pw'),
             'typ' => Yii::t('app', 'Typ'),
+            'stat_event' => Yii::t('app', 'Eventlog'),
             'stat_wait' => Yii::t('app', 'Wait'),
             'stat_queries' => Yii::t('app', 'Queries'),
             'stat_cpu' => Yii::t('app', 'Cpu'),
@@ -110,6 +111,7 @@ class ServerData extends \yii\db\ActiveRecord
             'User_Encrypted' => Yii::t('app', 'User Encrypted'),
 		        'Password_Encrypted' => Yii::t('app', 'Password Encrypted'),
             'paused' => Yii::t('app', 'paused'),
+            'lastEventlogSearch' => Yii::t('app', 'Last Eventlog Search'),
  		        ];
     }
     

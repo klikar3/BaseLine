@@ -43,6 +43,8 @@ use kartik\password\PasswordInput;
 
     <?= $form->field($model, 'Description')->textInput() ?>
 
+    <?= $form->field($model, 'lastEventlogSearch')->textInput() ?>
+
     <?= $form->field($model, 'paused')->checkBox() ?>
 
     <div class="form-group">

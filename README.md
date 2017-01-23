@@ -1,6 +1,29 @@
-Project BaseLine beruhend auf:
+# Project BaseLine 
+### based on Yii 2 Basic Project Template 
+(view further down)
+----
+Baseline is a monitoring solution mainly intended for monitoring Microsoft SQL 
+servers and associated windows servers.
+It is inspired by Confio Ignite, using monitoring scripts derived of the works of:
 
-Yii 2 Basic Project Template
+Erin Stellato: [Back to Basics: Capturing Baselines on Production SQL Servers](http://www.sqlservercentral.com/articles/baselines/94656/)
+Kendra Little  
+Paul Randal
+Brent Ozar
+
+
+
+
+
+
+
+
+
+
+
+----
+
+### Yii 2 Basic Project Template
 ============================
 
 Yii 2 Basic Project Template is a skeleton [Yii 2](http://www.yiiframework.com/) application best for

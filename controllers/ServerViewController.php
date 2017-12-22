@@ -794,7 +794,7 @@ class ServerViewController extends \yii\web\Controller
         ->all(); 
         
         $items = array_map(function($srv) use ($target,$id) {
-                            $srv['url'] = $target.$srv['url'];
+                            $srv['url'] = Url::home().$target.$srv['url'];
                             return $srv;} ,$dataset1);
 //        \yii\helpers\VarDumper::dump($items, 10, true);
 

@@ -66,8 +66,8 @@ class ServerViewController extends \yii\web\Controller
             'pagination' => [ 'pageSize' => 15],
         ]);
         $dataProvider_event = new ActiveDataProvider([
-            'query' => Win32EventLog::find()->where(['ServerId' => $id])->orderBy('TimeGenerated desc'),
-            'pagination' => [ 'pageSize' => 15],
+            'query' => Win32EventLog::find()->where(['ServerId' => $id])->orderBy('TimeGenerated desc')->limit(20),
+            'pagination' => false,
         ]);
 
         // -- Datasets
@@ -790,7 +790,7 @@ class ServerViewController extends \yii\web\Controller
      public static function getServersMenu($target,$id) {
               
         $dataset1 = (new \yii\db\Query())
-        ->select('Server as label, id as url')->from('ServerData')->orderBy('id')
+        ->select('Server as label, id as url')->from('ServerData')->where('paused <> 1')->orderBy('id')
         ->all(); 
         
         $items = array_map(function($srv) use ($target,$id) {

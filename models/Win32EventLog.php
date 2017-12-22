@@ -70,6 +70,7 @@ class Win32EventLog extends \yii\db\ActiveRecord
             'TimeWritten' => Yii::t('app', 'Time Written'),
             'Type' => Yii::t('app', 'Type'),
             'user' => Yii::t('app', 'User'),
+            'Time' => Yii::t('app', 'Zeitpunkt'),
         ];
     }
 
@@ -80,4 +81,11 @@ class Win32EventLog extends \yii\db\ActiveRecord
     {
         return $this->hasOne(ServerData::className(), ['id' => 'ServerId']);
     }
+
+    public function getTime()
+    {
+        $tg = $this->TimeGenerated;
+        return substr($tg,6,2).'.'.substr($tg,4,2).'.'.substr($tg,0,4).' '.substr($tg,8,2).':'.substr($tg,10,2).':'.substr($tg,12,2).substr($tg,14,4);
+    }
+
 }

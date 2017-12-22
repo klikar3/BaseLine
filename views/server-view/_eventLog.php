@@ -17,7 +17,7 @@ use kartik\grid\GridView;
     'dataProvider'=> $dataProvider_event,
     'condensed' => true,
 //    'filterModel' => $searchModel,
-    'columns' => ['server.Server','Logfile','Type','TimeGenerated','Message'],
+    'columns' => ['server.Server','Logfile','Type','Time','Message'],
     'responsive'=>true,
     'hover'=>true,
     'rowOptions'=>function ($model, $key, $index, $grid){

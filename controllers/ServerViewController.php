@@ -29,7 +29,7 @@ class ServerViewController extends \yii\web\Controller
         $servername = $this->getServername($id);
           
         $cmd = $connection
-      	       ->createCommand('SELECT MAX([CaptureDate]) FROM ConfigData WHERE [Server]=:srv');
+      	       ->createCommand("SELECT MAX([CaptureDate]) FROM ConfigData WHERE [Server]=:srv and Name='affinity mask';");
         $cmd->bindValue(':srv', $servername);
         $datum = $cmd->queryScalar(); 
         
@@ -49,11 +49,11 @@ class ServerViewController extends \yii\web\Controller
 
         // -- ServerConfig
         $cmd = $connection
-      	       ->createCommand('SELECT MAX([CaptureDate]) FROM ServerConfig WHERE [server]=:srv');
+      	       ->createCommand("SELECT MAX([CaptureDate]) FROM ServerConfig WHERE [server]=:srv AND Property = 'MachineName'");
         $cmd->bindValue(':srv', $servername);
         $datum = $cmd->queryScalar(); 
         $dataProvider_sc = new ActiveDataProvider([
-            'query' => ServerConfig::find()->where(['Server' => $servername])->andWhere(['CaptureDate' => $datum]),
+            'query' => ServerConfig::find()->where(['Server' => $servername])->andWhere('CaptureDate >= :datum',[ ':datum' => $datum]),
             'pagination' => [ 'pageSize' => 15],
         ]);
 ////        $posts_sc = $dataProvider_sc->getModels();
@@ -182,7 +182,7 @@ class ServerViewController extends \yii\web\Controller
             'dataset_7' => $this->getPerfmonDataset($servername,$cntrs[7],$dt),
             'dataset_8' => $this->getPerfmonDataset($servername,$cntrs[8],$dt),
             'dataset_9' => $this->getPerfmonDataset($servername,$cntrs[9],$dt),
-            'dataset_10' => $this->getDriveDataset($servername,$id,$dt),
+            'dataset_10' => $this->getDriveDataset($servername,$id,date('Y-m-d H:i:s',time() - 60 * 60 * 24 * 1)),
 /*            'dataset_11' => $this->getPerfmonDataset($servername,$cntrs[11],$dt),
 */        ]);
     }
@@ -270,7 +270,39 @@ class ServerViewController extends \yii\web\Controller
             'dataset' => $this->getNetPerfDataset($servername,$cntr,$dt),
         ]);
     }
-    
+ 
+     public function actionDetail_disk($cntr,$id,$days)
+    {
+        $cntr = json_decode($cntr);
+        $servername = $this->getServername($id);
+
+        date_default_timezone_set('Europe/Berlin'); 
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
+
+        return $this->render('detail_disk', [
+            'id' => $id,
+            'cntr' => $cntr,
+            'servername' => $servername,
+            'dataset' => $this->getDriveDataset($servername,$id,$dt),
+         ]);
+    }
+   
+     public function actionDetail_waits($cntr,$id,$days)
+    {
+        $cntr = json_decode($cntr);
+        $servername = $this->getServername($id);
+
+        date_default_timezone_set('Europe/Berlin'); 
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
+
+        return $this->render('detail_waits', [
+            'id' => $id,
+            'cntr' => $cntr,
+            'servername' => $servername,
+            'dataset' => $this->getWaitDataset($servername,$dt),
+         ]);
+    }
+   
     public function actionDetail_agg($cntr,$id,$days)
     {
         $cntr = json_decode($cntr);
@@ -438,7 +470,7 @@ class ServerViewController extends \yii\web\Controller
 
     public function getDriveDataset($srvr,$srvrId,$dt)
     {   
-        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * 7);    
+//        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * 7);    
         $pcid = (new \yii\db\Query())
         ->select('id')->from('ServerData WITH (READPAST)')->where('Server=:srvr', array('srvr' => $srvr))
         ->scalar();
@@ -462,11 +494,11 @@ class ServerViewController extends \yii\web\Controller
         ->scalar();
         
         $dataset = (new \yii\db\Query())
-        ->select('Waits.CaptureEnd, WaitTypes.WaitType, Waits.WaitCount, Waits.Percentage, SumWaitSecs')->from('Waits')
-        ->join('INNER JOIN','WaitTypes',
+        ->select('Waits.CaptureEnd, WaitTypes.WaitType, Waits.WaitCount, Waits.Percentage, SumWaitSecs')->from('Waits WITH (NOLOCK)')
+        ->join('INNER JOIN','WaitTypes WITH (NOLOCK)',
 				'WaitTypes.id = Waits.WaitTypeId')
         ->where('ServerId=:srvr AND CaptureEnd>:dt',
-        array('srvr' => $pcid, 'dt' => $dt ))
+        array('srvr' => $pcid, 'dt' => $dt ))->limit(50)
         ->orderBy('Waits.CaptureEnd, WaitTypes.WaitType,')
         ->all();
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
@@ -630,7 +662,7 @@ class ServerViewController extends \yii\web\Controller
       ;    
     }
   
-    public static function getWaitBar($srvr,$dataset,$id,$detail=0,$title='') {
+    public static function getWaitBar($srvr,$dataset,$cntr,$id,$detail=0,$title='') {
         
         $output = true;
         $detail = 1;
@@ -706,6 +738,7 @@ class ServerViewController extends \yii\web\Controller
                 $zeile = array(); 
               if ($dataset[$k]['WaitType'] == $waittypes[$j]) {
                 $zeile[$j] = intval(($dataset[$k]['SumWaitSecs']/100)*$dataset[$k]['Percentage']);
+//                $ymax = intval($dataset[$k]['SumWaitSecs']/100);
                 $ymax += intval(($dataset[$k]['SumWaitSecs']/100)*$dataset[$k]['Percentage']);
               }  
               else 
@@ -727,7 +760,7 @@ class ServerViewController extends \yii\web\Controller
         $tooltips[$i] = $waittypes;     
       }    
 
-//      \yii\helpers\VarDumper::dump($daten);
+//      \Yii::warning(\yii\helpers\VarDumper::dumpAsString($daten),'application');
         
       if ($output) return RGraphBar::widget([
           'data' => !empty($daten) ? $daten : [ [0,0, 0] ],
@@ -741,7 +774,7 @@ class ServerViewController extends \yii\web\Controller
           'id' => 'rgbar_Waits',
           'htmlOptions' => [
               'height' => ($detail==0) ? '180px' : '700px',
-              'width' => ($detail==0) ? '280px' : '1000px',
+              'width' => ($detail==0) ? '280px' : '1200px',
           ],
           'options' => [
               'grouping' => 'stacked',
@@ -775,14 +808,14 @@ class ServerViewController extends \yii\web\Controller
               'titleBold' => false,
               'ymax' => $ymaxy,
               'backgroundColor' => $bg,
-/*              'contextmenu' => [
-                  ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
-                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
-                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
-                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+              'contextmenu' => [
+                  ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail_waits','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
+                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_waits','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
+                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_waits','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
+/*                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
                   ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
                   ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $id ])."\");}") ],
-              ],*/
+*/              ],
           ],
       ]);    
     }
@@ -1112,10 +1145,11 @@ class ServerViewController extends \yii\web\Controller
       ;    
     }
   
-    public static function getPaintLineDrives($dataset) {
+    public static function getPaintLineDrives($dataset,$id=0) {
         
         $output = true;
         $title = 'Drivespace Percent Free';
+        $cntr = 'drivespace';
         $stat = 'unknown';        
 /*        if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData')
         ->where('Server=:srvr AND Counter_id=:pcid AND instance=:inst', array('srvr' => $srvr, 'pcid' => $pcid, 'inst' => $instance ))
@@ -1222,15 +1256,16 @@ class ServerViewController extends \yii\web\Controller
               'keyInteractive' => true,
               'ymax' => 100,
               'backgroundColor' => $bg,
-/*              'contextmenu' => [
-                  ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
-                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
-                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
-                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detailAgg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
-                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detailAgg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
-                 ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
+              'contextmenu' => [
+ //                 ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail_disk','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
+                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_disk','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
+                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_disk','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
+                  ['95 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_disk','cntr' => json_encode($cntr), 'id' => $id, 'days' => 95 ])."\");}") ],
+ //                 ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detailAgg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+ //                 ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detailAgg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+ //                ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
               ],
-*/           ]
+           ]
       ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
       ;    
     }

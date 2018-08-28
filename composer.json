@@ -1,10 +1,10 @@
 {
     "name": "klikar3/BaseLine",
     "description": "SQL Monitoring Tool",
-    "keywords": ["yii2", "Baseline", "klikar3"],
+    "keywords": ["yii2", "Baseline", "klikar3", "SQL Server", "Monitoring"],
     "homepage": "https://github.com/klikar3/BaseLine/",
     "type": "project",
-    "license": "GNU General Public License",
+    "license": "MIT",
     "support": {
         "issues": "https://github.com/klikar3/BaseLine/issues?state=open",
         "forum": "http://www.yiiframework.com/forum/",
@@ -26,8 +26,9 @@
         "kartik-v/yii2-krajee-base": "*",
         "kartik-v/yii2-detail-view": "*",
         "kartik-v/yii2-password": "*",
+        "kartik-v/yii2-context-menu": "dev-master",
         "klikar3/rgraph": "dev-master",
-        "fxp/composer-asset-plugin": "^1.2"
+        "fxp/composer-asset-plugin": "~1.4"
     },
     "require-dev": {
         "codeception/codeception": "*",
@@ -40,7 +41,7 @@
     },
     "config": {
         "process-timeout": 1800,
-        "github-protocols": ["https"]
+        "github-protocols": ["https", "http"]
     },
     "scripts": {
         "post-create-project-cmd": [

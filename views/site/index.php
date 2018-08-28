@@ -22,10 +22,11 @@ $this->title = 'BaseLine';
 
 ?>
 <div class="site-index">
-
-
     <div class="body-content">
-<div style="text-align: right"><?= 'Refreshed on '.date('d.m.Y H:i:s'); ?></div>
+       <div class="row">
+          <div style="text-align:left;padding-left:0px;font-size:9pt;color:green" class="col-md-8"><?= 'Code Version 0.1'; ?></div> 
+          <div style="text-align:right" class="col-md-4"><?= 'Refreshed on '.date('d.m.Y H:i:s'); ?></div>  
+      </div> 
        <div class="row">
           <?= GridView::widget([
               'dataProvider' => $dataProvider,

@@ -1,6 +1,7 @@
 <?php
 
 use yii\helpers\Html;
+use yii\helpers\Url;
 use yii\widgets\ActiveForm;
 
 use kartik\password\PasswordInput;
@@ -12,7 +13,7 @@ use kartik\password\PasswordInput;
 
 <div class="server-data-form">
 
-    <?php $form = ActiveForm::begin(); ?>
+    <?php $form = ActiveForm::begin(['enableClientValidation' => false]); ?>
 
     <?php echo $form->field($model, 'Server')->textInput() ?>
 
@@ -24,6 +25,12 @@ use kartik\password\PasswordInput;
     <?php // echo $form->field($model, 'password')->passwordInput() ?>
     <?php echo $form->field($model, 'pwd')->widget(
     PasswordInput::classname()) ?>
+        <?= Html::a(Yii::t('app', 'Generate new PW'), Url::toRoute(['/server-data/create', 'pwdgen' => true]),[
+        'data' => [
+            'method' => 'post'
+            ]
+        ,'class' => 'btn btn-primary'
+        ]) ?>
 
     <?= $form->field($model, 'snmp_pw')->textInput() ?>
 

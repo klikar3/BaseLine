@@ -207,4 +207,11 @@ class ServerData extends \yii\db\ActiveRecord
         return $this->hasMany(PerfmonDataAgg1H::className(), ['Server' => 'Server']);
     } 
     
+     /**
+      * @return \yii\db\ActiveQuery
+      */
+     public function getPhysDriveDatas()
+     {
+         return $this->hasMany(PhysDriveData::className(), ['ServerID' => 'id']);
+     }
 }

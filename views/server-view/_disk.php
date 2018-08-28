@@ -27,7 +27,7 @@ use klikar3\rgraph\RGraphLine;
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_7, $cntrs[7], $id, 0, "Phys. Transfers Per Sec"); ?>
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_8, $cntrs[8], $id, 0, "Phys. Reads Per Sec"); ?>
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_9, $cntrs[9], $id, 0, "Phys. Writes Per Sec"); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLineDrives($dataset_10 ); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLineDrives($dataset_10, $id ); ?>
   <?php // echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_11, $cntrs[11], $id, 0); ?>
 
 </div>

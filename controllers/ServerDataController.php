@@ -35,7 +35,7 @@ class ServerDataController extends Controller
                     [
                         'allow' => true,
                         'actions' => ['update','index'],
-                        'roles' => ['@'],
+                        'roles' => ['?'],
                     ],
                     [
                         'allow' => true,
@@ -85,33 +85,44 @@ class ServerDataController extends Controller
      * If creation is successful, the browser will be redirected to the 'view' page.
      * @return mixed
      */
-    public function actionCreate()
+    public function actionCreate($mod = null, $pwdgen = false )
     {
+        if ($pwdgen && (!empty($mod))) {
+          $model = $mod;
+          $model->pwd = trim(com_create_guid(), '{}');
+          return $this->render('create', [
+              'model' => $model, 
+          ]);
+        }
+        
         $model = new ServerData();
         
         //$data = Yii::$app->request->post();
-        //Yii::error($data['ServerData']['usr'],'application');
+        //Yii::warning(\yii\helpers\VarDumper::dump($data, 10, true),'application');
         //\yii\helpers\VarDumper::dump($data, 10, true)
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            try {
-                \Yii::$app->db->createCommand("USE BASELINEDATA; EXEC [dbo].[usp_getConfigData] '".$model->Server."'")
-                ->execute();
-            } catch (\yii\db\Exception $e) {
-                $model->addError('Server', Yii::t('app', 'Konnte Serverkonfiguration nicht auslesen.').$e->getmessage());
-                return $this->render('create', [
-                'model' => $model, 
-            ]);
-            }        
-            return $this->redirect(['view', 'id' => $model->id]);
-        } else {
+              try {
+                  \Yii::$app->db->createCommand("USE BASELINEDATA; EXEC [dbo].[usp_getConfigData] '".$model->Server."'")
+                  ->execute();
+              } catch (\yii\db\Exception $e) {
+                  $model->addError('Server', Yii::t('app', 'Konnte Serverkonfiguration nicht auslesen.').$e->getmessage());
+                  return $this->render('create', [
+                  'model' => $model, 
+              ]);
+              }        
+              return $this->redirect(['view', 'id' => $model->id]);
+        }
 //            $model->setUsr('iii') ;//$data['ServerData']['usr'];
 //            $model->setPwd('ooo'); //$data['ServerData']['pwd'];
 //            Yii::error($model['usr'],'application');
-            return $this->render('create', [
-                'model' => $model, 
-            ]);
-        }
+        $model->usr = 'ignite';
+        $model->pwd = trim(com_create_guid(), '{}');
+//        Yii::warning($model->usr, 'application'); 
+//        Yii::warning($model->pwd, 'application'); 
+        return $this->render('create', [
+            'model' => $model, 
+        ]);
     }
 
     /**

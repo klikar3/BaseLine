@@ -131,19 +131,16 @@ class ServerDataController extends Controller
      * @param string $id
      * @return mixed
      */
-    public function actionUpdate($id, $pwdgen = false)
+    public function actionUpdate($id)
     {
         $model = $this->findModel($id);
         $data = Yii::$app->request->post();
 //        Yii::info(\yii\helpers\VarDumper::dump($data, 10, true),'application');
 //        Yii::info(\yii\helpers\VarDumper::dump($data['ServerData']['usr'], 10, true),'application');
         if ($model->load($data) ) {
-            if ($pwdgen) { 
+            if (!is_null(\Yii::$app->request->post('pwsubmit'))) {
               $model->pwd = trim(com_create_guid(), '{}');
-              $data['ServerData']['pwd'] = $model->pwd;
-//              $model->Password_Encrypted = \Yii::$app->db->createCommand('OPEN SYMMETRIC KEY [key_DataShare] DECRYPTION BY CERTIFICATE [cert_keyProtection]; SELECT dbo.uf_encrypt_ServerData(:u, :srvr) ')
-//                        ->bindValues([':u' => $model->pwd, ':srvr' => $model->Server])->queryScalar();
-//              $model->save();
+              $model->setPwd(trim(com_create_guid(), '{}'));
               return $this->render('update', [
                   'model' => $model 
               ]);
@@ -162,7 +159,7 @@ class ServerDataController extends Controller
               return $this->redirect(['view', 'id' => $model->id]);
             } else {
 //                Yii::error('!!! no save','application');
-                Yii::info(\yii\helpers\VarDumper::dump($model, 10, true),'application'); 
+//                Yii::info(\yii\helpers\VarDumper::dump($model, 10, true),'application'); 
                 return $this->render('update', [
                     'model' => $model,
                 ]);
@@ -175,6 +172,29 @@ class ServerDataController extends Controller
                 'model' => $model,
             ]);
         }
+    }
+
+    public function actionNewpw($id, $modl = null)
+    {
+        $model = empty($modl) ? $this->findModel($id) : $modl;
+        $data = Yii::$app->request->post();
+//        Yii::info(\yii\helpers\VarDumper::dump($data, 10, true),'application');
+//        Yii::info(\yii\helpers\VarDumper::dump($data['ServerData']['usr'], 10, true),'application');
+        if ($model->load($data) ) {
+              $model->pwd = trim(com_create_guid(), '{}');
+              $model->setPwd(trim(com_create_guid(), '{}'));
+              return $this->render('update', [
+                  'model' => $model 
+              ]);
+        } else {
+//            Yii::error('no load','application');
+            $model->getUsr();
+            $model->getPwd();
+            return $this->render('update', [
+                'model' => $model,
+            ]);
+        }
+
     }
 
     /**

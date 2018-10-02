@@ -15,7 +15,10 @@ use kartik\password\PasswordInput;
 
     <?php $form = ActiveForm::begin([
       'enableClientValidation' => false,
-      'action' => ['server-data/update', 'pwdgen' => false, 'id' => $model->id]]); ?>
+//      'enableAjaxValidation' => true,
+      'action' => ['server-data/update', 'id' => $model->id
+                  ]
+      ]);       ?>
 
     <?php echo $form->field($model, 'Server')->textInput() ?>
 
@@ -27,13 +30,19 @@ use kartik\password\PasswordInput;
     <?php // echo $form->field($model, 'password')->passwordInput() ?>
     <?php echo $form->field($model, 'pwd')->widget(
     PasswordInput::classname()) ?>
-        <?= Html::a(Yii::t('app', 'Generate new PW'), $model->isNewRecord ? Url::toRoute(['/server-data/create', 'pwdgen' => true]) 
-                                                                          : Url::toRoute(['/server-data/update', 'id' => $model->id, 'pwdgen' => true]),[
-        'data' => [
-            'method' => 'post'
-            ]
-        ,'class' => 'btn btn-primary'
-        ]) ?>
+
+    <?php Html::a(Yii::t('app', 'Generate new PW'), $model->isNewRecord ? Url::toRoute(['/server-data/create', 'pwdgen' => true]) 
+//                                                                          : Url::toRoute(['/server-data/update', 'id' => $model->id, 'pwdgen' => true]),[
+                                                                      : Url::toRoute(['/server-data/newpw', 'id' => $model->id]),[
+    'data' => [
+        'method' => 'post', 
+        'params' => ['modl' => $model]
+        ]
+    ,'class' => 'btn btn-primary'
+    ]) ?>
+    
+    <?= Html::submitInput(Yii::t('app', 'Generate new PW'),['name' => 'pwsubmit', 'class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary'])
+    ?>
 
     <?= $form->field($model, 'snmp_pw')->textInput() ?>
 

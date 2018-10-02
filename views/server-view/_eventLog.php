@@ -13,17 +13,17 @@ use kartik\grid\GridView;
 ?>
 
 <div class="sconfig-data-form">
-<?= GridView::widget([
+<?php  echo  GridView::widget([
     'dataProvider'=> $dataProvider_event,
     'condensed' => true,
 //    'filterModel' => $searchModel,
-    'columns' => ['server.Server','Logfile','Type','Time','Message'],
+    'columns' => ['Logfile','Type','Time','Message'],
     'responsive'=>true,
     'hover'=>true,
     'rowOptions'=>function ($model, $key, $index, $grid){
            return ['class'=>$index%2 ? 'normal' : 'info'];
 		},
-]);
+]);  
 ?>
 
 </div>

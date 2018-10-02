@@ -13,7 +13,7 @@ use kartik\grid\GridView;
 ?>
 
 <div class="sconfig-data-form">
-<?= GridView::widget([
+<?php echo GridView::widget([
     'dataProvider'=> $dataProvider_db,
     'condensed' => true,
 //    'filterModel' => $searchModel,
@@ -23,7 +23,7 @@ use kartik\grid\GridView;
     'rowOptions'=>function ($model, $key, $index, $grid){
            return ['class'=>$index%2 ? 'normal' : 'info'];
 		},
-]);
+]); 
 ?>
 
 </div>

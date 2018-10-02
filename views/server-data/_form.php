@@ -13,7 +13,9 @@ use kartik\password\PasswordInput;
 
 <div class="server-data-form">
 
-    <?php $form = ActiveForm::begin(['enableClientValidation' => false]); ?>
+    <?php $form = ActiveForm::begin([
+      'enableClientValidation' => false,
+      'action' => ['server-data/update', 'pwdgen' => false, 'id' => $model->id]]); ?>
 
     <?php echo $form->field($model, 'Server')->textInput() ?>
 
@@ -25,7 +27,8 @@ use kartik\password\PasswordInput;
     <?php // echo $form->field($model, 'password')->passwordInput() ?>
     <?php echo $form->field($model, 'pwd')->widget(
     PasswordInput::classname()) ?>
-        <?= Html::a(Yii::t('app', 'Generate new PW'), Url::toRoute(['/server-data/create', 'pwdgen' => true]),[
+        <?= Html::a(Yii::t('app', 'Generate new PW'), $model->isNewRecord ? Url::toRoute(['/server-data/create', 'pwdgen' => true]) 
+                                                                          : Url::toRoute(['/server-data/update', 'id' => $model->id, 'pwdgen' => true]),[
         'data' => [
             'method' => 'post'
             ]

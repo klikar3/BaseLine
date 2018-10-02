@@ -13,7 +13,7 @@ use kartik\grid\GridView;
 ?>
 
 <div class="config-data-form">
-<?= GridView::widget([
+<?php  echo GridView::widget([
     'dataProvider'=> $dataProvider,
     'condensed' => true,
 //    'filterModel' => $searchModel,
@@ -28,7 +28,7 @@ use kartik\grid\GridView;
 //    ]
 //    'striped' => true,
 //    'tableOptions' =>['class' => 'table table-striped table-bordered'],
-]);
+]);  
 ?>
 <?php /* ListView::widget([
         'dataProvider' => $dataProvider,

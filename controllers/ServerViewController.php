@@ -59,8 +59,12 @@ class ServerViewController extends \yii\web\Controller
 ////        $posts_sc = $dataProvider_sc->getModels();
 
         // -- Datenbank-Daten
-        $datum = DbData::find()->select(['CaptureDate'])->where(['Server' => $servername])
-                  ->orderBy(['CaptureDate' => SORT_DESC])->scalar();
+//        $datum = DbData::find()->select(['CaptureDate'])->where(['Server' => $servername])
+//                  ->orderBy(['CaptureDate' => SORT_DESC])->scalar();
+        $cmd = $connection
+      	       ->createCommand("SELECT MAX([CaptureDate]) FROM DBData WHERE [server]=:srv ");
+        $cmd->bindValue(':srv', $servername);
+        $datum = $cmd->queryScalar(); 
         $dataProvider_db = new ActiveDataProvider([
             'query' => DbData::find()->where(['Server' => $servername, 'physicalFileName' => "_Total"])->andWhere(['CaptureDate' => $datum]),
             'pagination' => [ 'pageSize' => 15],

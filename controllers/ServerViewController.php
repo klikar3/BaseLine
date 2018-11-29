@@ -13,6 +13,8 @@ use yii\web\JsExpression;
 
 use klikar3\rgraph\RGraphLine;
 use klikar3\rgraph\RGraphBar;
+use klikar3\rgraph\RGraphRScatter;
+use klikar3\rgraph\RGraphScatter;
 
 use app\models\ConfigData;
 use app\models\ConfigDataSearch;
@@ -31,18 +33,21 @@ class ServerViewController extends \yii\web\Controller
         $cmd = $connection
       	       ->createCommand("SELECT MAX([CaptureDate]) FROM ConfigData WHERE [Server]=:srv and Name='affinity mask';");
         $cmd->bindValue(':srv', $servername);
-        $datum = $cmd->queryScalar(); 
+        try {
+          $datum = $cmd->queryScalar(); 
+          $dataProvider = new ActiveDataProvider([
+              'query' => ConfigData::find()->where(['Server' => $servername])->andWhere(['CaptureDate' => $datum]),
+              'pagination' => [
+                  'pageSize' => 15,
+              ],
+          ]);
+        } catch(Exception $e) {
+          Log::trace("Error : ".$e);
+          $dataprovider = emptyProvider();
+        }
         
-//        $searchModel = new ConfigDataSearch();
-//        $dataProvider = $searchModel->search(['ConfigDataSearch'=>['server'=>$servername]]);
-        $dataProvider = new ActiveDataProvider([
-//            'query' => $query->select('server')->from('ConfigData')->andFilterWhere([
-//                        'server' => $servername]),
-            'query' => ConfigData::find()->where(['Server' => $servername])->andWhere(['CaptureDate' => $datum]),
-            'pagination' => [
-                'pageSize' => 15,
-            ],
-        ]);
+          
+        
         // get the posts in the current page
 ////        $posts = $dataProvider->getModels();
 //        \yii\helpers\VarDumper::dump($dataProvider, 10, true);
@@ -51,11 +56,18 @@ class ServerViewController extends \yii\web\Controller
         $cmd = $connection
       	       ->createCommand("SELECT MAX([CaptureDate]) FROM ServerConfig WHERE [server]=:srv AND Property = 'MachineName'");
         $cmd->bindValue(':srv', $servername);
-        $datum = $cmd->queryScalar(); 
-        $dataProvider_sc = new ActiveDataProvider([
-            'query' => ServerConfig::find()->where(['Server' => $servername])->andWhere('CaptureDate >= :datum',[ ':datum' => $datum]),
-            'pagination' => [ 'pageSize' => 15],
-        ]);
+        try {
+          $datum = $cmd->queryScalar(); 
+          $dataProvider_sc = new ActiveDataProvider([
+              'query' => ServerConfig::find()->where(['Server' => $servername])->andWhere('CaptureDate >= :datum',[ ':datum' => $datum]),
+              'pagination' => [ 'pageSize' => 15],
+          ]);
+        } catch(Exception $e) {
+          Log::trace("Error : ".$e);
+          $dataprovider = emptyProvider();
+        }
+        
+
 ////        $posts_sc = $dataProvider_sc->getModels();
 
         // -- Datenbank-Daten
@@ -64,15 +76,26 @@ class ServerViewController extends \yii\web\Controller
         $cmd = $connection
       	       ->createCommand("SELECT MAX([CaptureDate]) FROM DBData WHERE [server]=:srv ");
         $cmd->bindValue(':srv', $servername);
-        $datum = $cmd->queryScalar(); 
-        $dataProvider_db = new ActiveDataProvider([
-            'query' => DbData::find()->where(['Server' => $servername, 'physicalFileName' => "_Total"])->andWhere(['CaptureDate' => $datum]),
-            'pagination' => [ 'pageSize' => 15],
-        ]);
-        $dataProvider_event = new ActiveDataProvider([
-            'query' => Win32EventLog::find()->where(['ServerId' => $id])->orderBy('TimeGenerated desc')->limit(20),
-            'pagination' => false,
-        ]);
+
+        try {
+          $datum = $cmd->queryScalar(); 
+          $dataProvider_db = new ActiveDataProvider([
+              'query' => DbData::find()->where(['Server' => $servername, 'physicalFileName' => "_Total"])->andWhere(['CaptureDate' => $datum]),
+              'pagination' => [ 'pageSize' => 15],
+          ]);
+        } catch(Exception $e) {
+          Log::trace("Error : ".$e);
+          $dataprovider = emptyProvider();
+        }
+        try {
+          $dataProvider_event = new ActiveDataProvider([
+              'query' => Win32EventLog::find()->where(['ServerId' => $id])->orderBy('TimeGenerated desc')->limit(20),
+              'pagination' => false,
+          ]);
+        } catch(Exception $e) {
+          Log::trace("Error : ".$e);
+          $dataProvider_event = emptyProvider();
+        }
 
         // -- Datasets
         date_default_timezone_set('Europe/Berlin'); 
@@ -93,6 +116,7 @@ class ServerViewController extends \yii\web\Controller
             'dataset_dql' => $this->getPerfmonDataset($servername,'OS:Disk Queue Length:_Total', $dt ),
             'dataset_net' => $this->getNetPerfDataset($servername,'BytesTotalPersec',$dt),
             'dataset_waits' => $this->getWaitDataset($servername,$dt),
+            'dataset_dbSizes' => $this->getDbSizesDataset($servername,date('Ymd',time() - 60 * 60 * 24 * 180)),            
         ]);
     }
 
@@ -361,26 +385,41 @@ class ServerViewController extends \yii\web\Controller
         $cmd = $lconn
               	->createCommand('SELECT [Server] FROM ServerData WHERE id=:id');
         $cmd->bindValue(':id', $id);
-        $servername = $cmd->queryScalar();
-        
+
+        try {
+          $servername = $cmd->queryScalar();
+        } catch(Exception $e) {
+          Log::trace("Error : ".$e);
+          $servername = '';
+        }
         return $servername;
     }
 
     public static function getPerfCounterDefaultId($counter) 
     {
+        try {
         $pcid = (new \yii\db\Query())
         ->select('id')->from('PerfCounterDefault WITH (READPAST)')->where('counter_name=:cntr', ['cntr' => $counter])
         ->scalar();
+        } catch(Exception $e) {
+          Log::trace("Error : ".$e);
+          $pcid = 0;
+        }
         return $pcid;
     }    
         
     public static function getPerfCounterPerServerId($srvr,$counter,$instance) 
     {    
-        $pcsid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterPerServer WITH (READPAST)')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
-          ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
-        ->scalar();
-        return $pcsid;
+      try {
+          $pcsid = (new \yii\db\Query())
+          ->select('id')->from('PerfCounterPerServer WITH (READPAST)')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
+            ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
+          ->scalar();
+      } catch(Exception $e) {
+        Log::trace("Error : ".$e);
+        $pcsid = 0;
+      }
+      return $pcsid;
     }    
     
     public function getPerfmonDataset($srvr,$cntr,$dt)
@@ -391,12 +430,17 @@ class ServerViewController extends \yii\web\Controller
         
         $pcid = $this->getPerfCounterDefaultId($counter);
         
+      try {
         $dataset = (new \yii\db\Query())
         ->select('value, AvgValue, CaptureDate')->from('PerfMonData')->where('Server=:srvr AND Counter_id=:pcid AND CaptureDate>:dt AND instance=:inst',
         array('srvr' => $srvr, 'pcid' => $pcid, 'dt' => $dt, 'inst' => $instance ))
         ->orderBy('CaptureDate')
         ->all();
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
+      } catch(Exception $e) {
+        Log::trace("Error : ".$e);
+//        $pcsid = 0;
+      }
         
         return !empty($dataset) ? $dataset : [ [0, 0, ''] ];
 
@@ -410,12 +454,17 @@ class ServerViewController extends \yii\web\Controller
         
         $pcid = $this->getPerfCounterDefaultId($counter);
         
+      try {
         $dataset = (new \yii\db\Query())
         ->select('TimeSlotStart, MinVal, AvgVal, MaxVal, Median, StdDev')->from('PerfMonDataAgg1H')->where('Server=:srvr AND Counter_id=:pcid AND TimeSlotStart>:dt AND instance=:inst',
         array('srvr' => $srvr, 'pcid' => $pcid, 'dt' => $dt, 'inst' => $instance ))
         ->orderBy('TimeSlotStart')
         ->all();
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
+      } catch(Exception $e) {
+          Log::trace("Error : ".$e);
+//        $pcsid = 0;
+      }
         
         return !empty($dataset) ? $dataset : [ ['', 0, 0, 0, 0, 0] ];
 
@@ -433,7 +482,7 @@ class ServerViewController extends \yii\web\Controller
             $dataset = $cmd->queryAll(); 
           }catch (Exception $e) {
             Log::trace("Error : ".$e);
-            throw new Exception("Error : ".$e);
+//            throw new Exception("Error : ".$e);
           }
         } 
                 
@@ -444,7 +493,7 @@ class ServerViewController extends \yii\web\Controller
             $dataset = $cmd->queryAll(); 
           }catch (Exception $e) {
             Log::trace("Error : ".$e);
-            throw new Exception("Error : ".$e);
+//            throw new Exception("Error : ".$e);
           }
         } 
                 
@@ -464,7 +513,7 @@ class ServerViewController extends \yii\web\Controller
             $dataset = $cmd->queryAll(); 
           }catch (Exception $e) {
             Log::trace("Error : ".$e);
-            throw new Exception("Error : ".$e);
+//            throw new Exception("Error : ".$e);
           }
         } 
                 
@@ -478,13 +527,18 @@ class ServerViewController extends \yii\web\Controller
         $pcid = (new \yii\db\Query())
         ->select('id')->from('ServerData WITH (READPAST)')->where('Server=:srvr', array('srvr' => $srvr))
         ->scalar();
-        
+      
+      try {  
         $dataset = (new \yii\db\Query())
         ->select('DriveLetter, PercentFree, CaptureDate')->from('DriveData')->where('ServerId=:srvrId AND CaptureDate>:dt',
         array('srvrId' => $srvrId, 'dt' => $dt ))
         ->orderBy('DriveLetter,CaptureDate')
         ->all();
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
+      } catch(Exception $e) {
+        Log::trace("Error : ".$e);
+//        $pcsid = 0;
+      }
         
         return !empty($dataset) ? $dataset : [ ['', 0, ''] ];
 
@@ -496,7 +550,8 @@ class ServerViewController extends \yii\web\Controller
         $pcid = (new \yii\db\Query())
         ->select('id')->from('ServerData WITH (NOLOCK)')->where('Server=:srvr', array('srvr' => $srvr))
         ->scalar();
-        
+      
+      try{  
         $dataset = (new \yii\db\Query())
         ->select('Waits.CaptureEnd, WaitTypes.WaitType, Waits.WaitCount, Waits.Percentage, SumWaitSecs')->from('Waits WITH (NOLOCK)')
         ->join('INNER JOIN','WaitTypes WITH (NOLOCK)',
@@ -506,9 +561,72 @@ class ServerViewController extends \yii\web\Controller
         ->orderBy('Waits.CaptureEnd, WaitTypes.WaitType,')
         ->all();
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
+      } catch(Exception $e) {
+        $dataset = emptyProvider();
+      }
         
         
       $waittypes = ArrayHelper::getColumn($dataset,'WaitType');
+//      \yii\helpers\VarDumper::dump($waittypes, 10, true);
+      
+      $unique = array();
+      foreach ($waittypes as $key => $value) {
+                if (!in_array($value, $unique)) {
+                    $unique[] = $value;
+                }
+                else {
+                  $waittypes[$key] = "ttt";
+                }
+          }
+      unset($value);  
+      unset($unique);
+//      \yii\helpers\VarDumper::dump($waittypes, 10, true);
+      $waittypes = array_filter($waittypes, function($e)  {
+          return ($e !== "ttt");
+      });     
+      sort($waittypes);
+//      \yii\helpers\VarDumper::dump($waittypes, 10, true);
+
+        return !empty($dataset) ? $dataset : [ [0, '', 0] ];
+
+    }
+
+       public function getDbSizesDataset($srvr,$dt)
+    {
+        
+        $pcid = (new \yii\db\Query())
+        ->select('id')->from('ServerData WITH (NOLOCK)')->where('Server=:srvr', array('srvr' => $srvr))
+        ->scalar();
+        
+      try {
+        $dataset = (new \yii\db\Query())
+        ->select('db, sizeMB, [CaptureDate]')->from('DbData WITH (NOLOCK)')
+        ->where('server=:srvr AND CaptureDate>:dt AND PhysicalFileName = :p and ((DAY([CaptureDate]) = 1) or ([CaptureDate] > (GETDATE()-1 )))',
+        array('srvr' => $srvr, 'dt' => $dt, 'p' => '_total' ))->orderBy('CaptureDate') //->limit(100)
+        //->orderBy('db, CaptureDate')
+        ->all();
+      } catch(Exception $e) {
+//        $pcsid = 0;
+      }
+
+/*        try {
+          $cmd = \Yii::$app->db->createCommand('exec dbo.[usp_get_DB_Sizes] @srvr=:s, @dt=:d;');               
+          $cmd->bindValues([':d' => $dt, ':s' => $srvr]);
+          $sql = $cmd->getRawSql();
+          \yii\helpers\VarDumper::dump($sql, 10, true);
+          $dataset = $cmd->query();
+ 
+        }catch (Exception $e) {
+          \yii\helpers\VarDumper::dump($sql, 10, true);
+          Log::trace("Error : ".$e);
+          throw new Exception("Error : ".$e);
+        }
+*/
+//        \yii\helpers\VarDumper::dump($dataset, 10, true);
+        
+        
+      $waittypes = ArrayHelper::getColumn($dataset,'db');
+
 //      \yii\helpers\VarDumper::dump($waittypes, 10, true);
       
       $unique = array();
@@ -1273,5 +1391,147 @@ class ServerViewController extends \yii\web\Controller
       ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
       ;    
     }
+
+    public static function getPaintLineDbSize($dataset,$id=0,$detail=0) {
+        
+        $output = true;
+        $title = 'Database Size';
+        $cntr = 'drivespace';
+        $stat = 'unknown';        
+/*        if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData')
+        ->where('Server=:srvr AND Counter_id=:pcid AND instance=:inst', array('srvr' => $srvr, 'pcid' => $pcid, 'inst' => $instance ))
+        ->orderBy('CaptureDate desc')->limit(1)->scalar();
+*/
+        switch ($stat) {
+          case 'unknown':
+              $bg = 'Gradient(lightgrey:white)'; break;
+          case 'green':
+              $bg = 'Gradient(lightgreen:white)'; break;
+          case 'yellow':
+              $bg = 'Gradient(yellow:white)'; break;
+          case 'red':
+              $bg = 'Gradient(orange:white)'; break;
+          default:
+              $bg = 'Gradient(lightgrey:white)';
+       }
+//      \yii\helpers\VarDumper::dump($dataset, 10, true);
+      if (empty($dataset)) return '';
+      if (is_Array($dataset)) 
+        $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
+      $unique = array();
+      foreach ($zeiten as $row) 
+        if (!in_array($row, $unique)) {
+                $unique[] = (string)$row;
+        }
+      $zeiten = $unique;
+      unset($unique);
+//      \yii\helpers\VarDumper::dump($zeiten, 10, true);
+      
+      $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
+//      $labels = array();
+//      for ($i=1;$i<$anzahl;$i++) {
+//        $labels[] = $zeiten[($i*count($zeiten))/$anzahl];
+//      }
+      $labels = array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0);
+      $cols = array_keys($dataset[1]);
+//      \yii\helpers\VarDumper::dump($cols, 10, true);
+
+      $rows = ArrayHelper::getColumn($dataset, "db");
+      $unique = array();
+      $colors = array();
+      $i = 0;
+      foreach ($rows as $row) 
+        if (!in_array($row, $unique)) {
+                $unique[] = trim(substr($row, 0, 50));
+                $colors[] = sprintf("#%03X", $i);
+                $i += 4;
+        }
+      $keys = $unique;
+      unset($unique);
+//      \yii\helpers\VarDumper::dump($keys, 10, true);      
+
+      $rows = ArrayHelper::getColumn($dataset, "sizeMB");
+      $j = 0;
+      foreach ($keys as $key) {
+        $dat[] = array();
+        for ($i = 0; $i < count($dataset); $i++) {
+          if ($dataset[$i]['db'] == $key) $dat[$j][] = $dataset[$i]['sizeMB'] ;     
+        }
+        $j++;
+      }      
+//      \yii\helpers\VarDumper::dump('$dat', 10, true);
+//      \yii\helpers\VarDumper::dump($dat, 10, true);
+     $tooltips = $zeiten;
+
+//       \yii\helpers\VarDumper::dump($tooltips, 10, true);
+//      \yii\helpers\VarDumper::dump($daten, 10, true);
+        
+      if ($output) return RGraphLine::widget([
+          'data' => !empty($dat) ? $dat : [ [0,0,0,0,0] ],
+          'allowDynamic' => true,
+          'allowTooltips' => true,
+          'allowContext' => true,
+          'allowKeys' => true,
+          'allowResizing' => true,
+          'id' => 'rgline_dbs_'.(string)$id,
+          'htmlOptions' => [
+              'height' => ($detail==0) ? '180px' : '1500px',
+              'width' => ($detail==0) ? '280px' : '1200px',
+          ],
+          'options' => [
+//              'line' =>  true,
+//              'id' => 'rgline_'.$pcid,
+              'colors' => $colors, //['blue','green', 'orange', 'red', 'yellow'],
+//              'filled' => true,
+              'clearto' => ['white'],
+              'labels' => $labels,
+              'crosshairs' => false,
+              'tooltips' => $tooltips,
+//              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
+//              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
+  //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
+  //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',
+              'textAngle' => 45,
+              'textSize' => 8,
+              'gutter' => ['left' =>  70, 'bottom' => 80, 'top' => 50, 'right' => 80],
+//              'hmargin' => '20',
+              'title' => !empty($title) ? $title : '',
+              'titleSize' => 12,
+              'titleBold' => false,
+              'tickmarks' => 'circle',
+              'key' => $keys,
+              'keyPosition' => 'graph',
+//              'keyPositionX' => '100',
+              'keyInteractive' => true,
+              'keyTextSize' => 6,
+//              'ymax' => 100,
+              'backgroundColor' => $bg,
+              'contextmenu' => [
+ //                 ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail_disk','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
+                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_disk','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
+                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_disk','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
+                  ['95 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_disk','cntr' => json_encode($cntr), 'id' => $id, 'days' => 95 ])."\");}") ],
+ //                 ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detailAgg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+ //                 ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detailAgg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+ //                ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
+              ],
+           ]
+      ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
+      ;    
+    }
   
+    public function emptyProvider() {
+      $data = [
+          ['id' => 1, 'name' => 'Prüfungen',],
+          ['id' => 2, 'name' => 'Programme',],
+      ];
+      
+      $provider = new ArrayDataProvider([
+          'allModels' => $data,
+          'pagination' => false,
+          'sort' => false,
+      ]);
+
+      return $provider;
+    }
 }

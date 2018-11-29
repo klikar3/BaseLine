@@ -81,5 +81,6 @@ use klikar3\rgraph\RGraphBar;
 </div>
 <div class="row">
   <?php echo app\controllers\ServerViewController::getWaitBar($servername, $dataset_waits, 'Waits', $id, 0); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLineDbSize($dataset_dbSizes, $id, 1); ?>
         
 </div>

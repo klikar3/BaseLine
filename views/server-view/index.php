@@ -47,7 +47,9 @@ $overview = $this->render('_overview', ['id' => $id,
                                         'dataset_pps' => $dataset_pps,
                                         'dataset_dql' => $dataset_dql,
                                         'dataset_net' => $dataset_net,
-                                        'dataset_waits' => $dataset_waits]);  
+                                        'dataset_waits' => $dataset_waits
+                                        , 'dataset_dbSizes' => $dataset_dbSizes
+                                        ]);  
 $content1 = $this->render('_config', ['servername' => $servername,
                                                   'dataProvider' => $dataProvider]);
 $content_sc = $this->render('_sconfig', ['servername' => $servername,

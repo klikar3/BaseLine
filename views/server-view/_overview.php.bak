@@ -52,10 +52,6 @@ use klikar3\rgraph\RGraphBar;
       $('[href=\"' + lastTab + '\"]').tab('show');
    }
 });
-alert = function (str)
-{
-    console.log(str);
-};
     "
     );
     date_default_timezone_set('Europe/Berlin'); 
@@ -76,7 +72,12 @@ alert = function (str)
     }
 </style>
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>
-
+    <pre class="code">
+alert = function (str)
+{
+    console.log(str);
+}
+</pre>
 <div class="row">
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, $datasets, ['Page Life Expectancy',''], $id, 0); ?>
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_cpu, 'Cpu Utilization %', $id, 0); ?>

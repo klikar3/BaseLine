@@ -15,19 +15,19 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": ">=5.4.0",
+        "php": ">=5.6.30",
         "yiisoft/yii2": ">=2.0.5",
         "yiisoft/yii2-bootstrap": "*",
         "yiisoft/yii2-swiftmailer": "*",
         "kartik-v/yii2-dropdown-x": "*",
-		    "kartik-v/yii2-grid": "*",
+        "kartik-v/yii2-grid": "*",
         "kartik-v/yii2-mpdf": "@dev",
-		    "kartik-v/yii2-tabs-x": "*",
+        "kartik-v/yii2-tabs-x": "*",
         "kartik-v/yii2-krajee-base": "*",
         "kartik-v/yii2-detail-view": "*",
         "kartik-v/yii2-password": "*",
         "kartik-v/yii2-context-menu": "dev-master",
-        "klikar3/rgraph": "dev-master",
+        "klikar3/rgraph": "*",
         "fxp/composer-asset-plugin": "~1.4"
     },
     "require-dev": {
@@ -41,7 +41,11 @@
     },
     "config": {
         "process-timeout": 1800,
-        "github-protocols": ["https", "http"]
+        "github-protocols": ["https", "http"],
+        "fxp-asset.installer-paths": {
+            "npm-asset-library": "vendor/npm",
+            "bower-asset-library": "vendor/bower"
+        }
     },
     "scripts": {
         "post-create-project-cmd": [

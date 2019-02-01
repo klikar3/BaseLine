@@ -872,7 +872,7 @@ class ServerViewController extends \yii\web\Controller
       }    
 
 //      \Yii::warning(\yii\helpers\VarDumper::dumpAsString($daten),'application');
-//        \Yii::warning($daten,'application');
+        \Yii::warning($daten,'application');
         
       if ($output) return RGraphBar::widget([
           'data' => !empty($daten) ? $daten : [ [0,0, 0] ],

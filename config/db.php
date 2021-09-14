@@ -6,4 +6,9 @@ return [
     'username' => 'ignite',
     'password' => 'ignite4vsa!',
     'charset' => 'utf8',
+    'attributes' => [
+        // use a bigger connection timeout
+        PDO::ATTR_TIMEOUT => 3600,
+    ],
+
 ];

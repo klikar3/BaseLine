@@ -78,8 +78,9 @@ alert = function (str)
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>
 
 <div class="row">
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $datasets, ['Page Life Expectancy',''], $id, 0); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_cpu, 'Cpu Utilization %', $id, 0); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_as, ['Instance: Active Session Count','_Total'], $id, 0, 'Instance: Active Session Count'); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $datasets, ['SQLServer:Buffer Manager:Page life expectancy:',''], $id, 0, 'SQL: Page life expectancy'); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_cpu, ['Instance: Cpu Utilization %','_Total'], $id, 0, 'Cpu Utilization %'); ?>
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_pps, 'OS: Pages/Sec', $id, 0); ?>
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_dql, 'OS:Disk Queue Length:_Total', $id, 0); ?>
   <?php echo app\controllers\ServerViewController::getNetLine($servername, $dataset_net, 'BytesTotalPersec', $id, 0); ?>

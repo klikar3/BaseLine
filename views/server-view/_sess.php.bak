@@ -18,12 +18,12 @@ use klikar3\rgraph\RGraphLine;
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>
 <div class="row">
   <?= app\controllers\ServerViewController::getPaintLine($servername, $dataset_0, $cntrs[0], $id, 0); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_1, $cntrs[1], $id, 0, "SQL: Transactions/sec"); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_1, $cntrs[1], $id, 0, "SQL:Transactions/sec"); ?>
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_2, $cntrs[2], $id, 0, "SQL: Processes blocked"); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_3, $cntrs[3], $id, 0, "SQL: Longest Running Transaction"); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_4, $cntrs[4], $id, 0, "SQL: Version Store Size (KB)"); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_5, $cntrs[5], $id, 0, "SQL: Version Generation rate (KB/s)"); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_6, $cntrs[6], $id, 0, "SQL: Version Cleanup rate (KB/s)"); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_3, $cntrs[3], $id, 0); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_4, $cntrs[4], $id, 0); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_5, $cntrs[5], $id, 0, ""); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_6, $cntrs[6], $id, 0, ""); ?>
   <?php //echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_7, $cntrs[7], $id, 0); ?>
   <?php // echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_8, $cntrs[8], $id, 0); ?>
   <?php // echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_9, $cntrs[9], $id, 0); ?>

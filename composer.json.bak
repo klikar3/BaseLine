@@ -27,7 +27,6 @@
         "kartik-v/yii2-detail-view": "*",
         "kartik-v/yii2-password": "*",
         "kartik-v/yii2-context-menu": "dev-master",
-        "kartik-v/yii2-widgets": "dev-master",
         "klikar3/rgraph": "*",
         "yidas/yii2-bower-asset": "2.0.13.1"
     },

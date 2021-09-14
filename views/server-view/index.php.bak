@@ -43,7 +43,6 @@ echo Html::endTag('div');
 $overview = $this->render('_overview', ['id' => $id,
                                         'servername' => $servername,
                                         'datasets' => $datasets,
-                                        'dataset_as' => $dataset_as,
                                         'dataset_cpu' => $dataset_cpu,
                                         'dataset_pps' => $dataset_pps,
                                         'dataset_dql' => $dataset_dql,

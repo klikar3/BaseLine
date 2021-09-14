@@ -127,7 +127,7 @@ $this->title = 'BaseLine';
                      'headerOptions' => ['style' => 'background-color: lightblue;'],
                     'contentOptions' => function ($model, $key, $index, $column) {
                             return ['style' => 'background-color:' 
-                                . ( strpos($model->stat_disk,'U')>0 ? 'khaki' : 'white')];
+                                . ( strpos($model->stat_disk,'U')>0 ? 'lightyellow' : 'white')];
                         },
 
                   ],
@@ -141,7 +141,7 @@ $this->title = 'BaseLine';
                      'headerOptions' => ['style' => 'background-color: lightblue;'],
                     'contentOptions' => function ($model, $key, $index, $column) {
                             return ['style' => 'background-color:' 
-                                . ( strpos($model->stat_sess,'U')>0 ? 'khaki' : 'white')];
+                                . ( strpos($model->stat_sess,'U')>0 ? 'lightyellow' : 'white')];
                         },
 
                   ],
@@ -155,7 +155,7 @@ $this->title = 'BaseLine';
                      'headerOptions' => ['style' => 'background-color: lightblue;'],
                      'contentOptions' => function ($model, $key, $index, $column) {
                             return ['style' => 'background-color:' 
-                                . ( strpos($model->stat_net,'U')>0 ? 'khaki' : 'white')];
+                                . ( strpos($model->stat_net,'U')>0 ? 'lightyellow' : 'white')];
                         },
 
                     ],

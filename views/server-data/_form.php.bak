@@ -67,7 +67,7 @@ use kartik\password\PasswordInput;
     <?= $form->field($model, 'paused')->checkBox() ?>
 
     <div class="form-group">
-        <?= Html::submitButton((Yii::$app->controller->action->id == 'create') ? Yii::t('app', 'Create') : Yii::t('app', 'Update'), ['class' => (Yii::$app->controller->action->id == 'create') ? 'btn btn-success' : 'btn btn-primary']) ?>
+        <?= Html::submitButton((Yii::$app->controller->action->id == 'create') ? Yii::t('app', 'Create') : Yii::t('app', 'Update'), ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
     </div>
     
     <?php ActiveForm::end(); ?>

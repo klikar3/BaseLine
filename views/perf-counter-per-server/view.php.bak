@@ -41,8 +41,6 @@ $this->params['breadcrumbs'][] = $this->title;
             'direction',
             'belongsto',
             'status',
-            'Avg5WeekAvg',
-            'Avg5WeekStdDev'
         ],
     ]) ?>
 

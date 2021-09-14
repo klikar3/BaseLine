@@ -51,8 +51,8 @@ echo Html::endTag('div');
 
 $cont = $this->render('_sess', [ 'dataset_0' => $dataset_0, 'dataset_1' => $dataset_1, 
                                 'dataset_2' => $dataset_2, 'dataset_3' => $dataset_3, 
-                                'dataset_4' => $dataset_4, 'dataset_5' => $dataset_5, 
-                                'dataset_6' => $dataset_6, 
+//                                'dataset_4' => $dataset_4, 'dataset_5' => $dataset_5, 
+//                                'dataset_6' => $dataset_6, 
 //                                'dataset_7' => $dataset_7, 
 //                                'dataset_8' => $dataset_8, 'dataset_9' => $dataset_9, 
 //                                'dataset_10' => $dataset_10, 'dataset_11' => $dataset_11, 

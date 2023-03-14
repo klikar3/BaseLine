@@ -13,7 +13,6 @@ use Yii;
  * @property string $user
  * @property string $password
  * @property string $snmp_pw
- * @property string $paused
  * @property string $typ
  * @property string $stat_wait
  * @property string $stat_queries

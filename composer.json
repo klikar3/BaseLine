@@ -36,7 +36,8 @@
         "yiisoft/yii2-gii": "*",
         "bizley/migration": "*",
         "c006/yii2-migration-utility": "dev-master",
-        "insolita/yii2-migration-generator": "~2.2"
+        "insolita/yii2-migration-generator": "~2.2",
+        "phpstan/phpstan": "^1.0"
     },
     "config": {
         "process-timeout": 1800,

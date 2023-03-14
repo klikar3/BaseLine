@@ -9,6 +9,8 @@ use yii\widgets\ActiveForm;
 ?>
 
 <div class="perf-counter-per-server-form">
+<div class="row">
+<div class="col col-lg-6">
 
     <?php $form = ActiveForm::begin(); ?>
 
@@ -19,10 +21,6 @@ use yii\widgets\ActiveForm;
     <?= $form->field($model, 'counter_name')->textInput() ?>
 
     <?= $form->field($model, 'instance')->textInput() ?>
-
-    <?= $form->field($model, 'AvgValue')->textInput() ?>
-
-    <?= $form->field($model, 'StdDevValue')->textInput() ?>
 
     <?= $form->field($model, 'WarnValue')->textInput() ?>
 
@@ -36,10 +34,25 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'status')->textInput() ?>
 
+</div>
+<div class="col col-lg-6">
+    <?= $form->field($model, 'server_id')->textInput() ?>
+
+    <?= $form->field($model, 'lastDate')->textInput() ?>
+
+    <?= $form->field($model, 'lastValue')->textInput() ?>
+
+    <?= $form->field($model, 'AvgValue')->textInput() ?>
+
+    <?= $form->field($model, 'StdDevValue')->textInput() ?>
+
     <?= $form->field($model, 'Avg5WeekAvg')->textInput() ?>
 
     <?= $form->field($model, 'Avg5WeekStdDev')->textInput() ?>
+        
 
+</div>
+</div>
     <div class="form-group">
         <?= Html::submitButton($model->isNewRecord ? Yii::t('app', 'Create') : Yii::t('app', 'Update'), ['class' => $model->isNewRecord ? 'btn btn-success' : 'btn btn-primary']) ?>
     </div>

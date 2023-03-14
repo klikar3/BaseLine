@@ -90,7 +90,7 @@ class PerfCounterPerServerController extends Controller
         }
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
-            return $this->redirect([$ziel, 'id' => $model->server_id]);
+            return $this->redirect(['view', 'id' => $model->server_id]);
         } else {
             return $this->render('update', [
                 'model' => $model,

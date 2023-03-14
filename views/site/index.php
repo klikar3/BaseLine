@@ -100,7 +100,7 @@ $this->title = 'BaseLine';
                     'headerOptions' => ['style' => 'background-color: lightblue;'],
                     'contentOptions' => function ($model, $key, $index, $column) {
                             return ['style' => 'background-color:' 
-                                . ( strpos($model->stat_cpu,'U')>0 ? 'khaki' : 'white')];
+                                . ( strpos($model->stat_cpu,'U')>0 ? 'khaki' : 'white'), 'title' => strpos($model->stat_cpu,'U')>0 ? 'Ungewöhnlicher Wert' : '' ];
                         },
                   ],
                   [ 'class' => 'yii\grid\DataColumn',

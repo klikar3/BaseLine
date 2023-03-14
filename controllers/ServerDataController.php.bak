@@ -216,59 +216,59 @@ class ServerDataController extends Controller
                 }
             }
             
-            foreach($model->DbData as $c){
+            foreach($this->DbData as $c){
                 if( !$c->delete() ){
                     throw new \Exception('Fehler beim löschen der zugehörigen DbData. Errors: '. 
-                                        join(', ', $model->getFirstErrors()));
+                                        join(', ', $this->getFirstErrors()));
                 }
             }
             
-            foreach($model->PerfmonDataAgg1H as $c){
+            foreach($this->PerfmonDataAgg1H as $c){
                 if( !$c->delete() ){
                     throw new \Exception('Fehler beim löschen der zugehörigen PerfmonDataAgg1H. Errors: '. 
-                                        join(', ', $model->getFirstErrors()));
+                                        join(', ', $this->getFirstErrors()));
                 }
             }
             
-            foreach($model->PerfMonData as $c){
+            foreach($this->PerfMonData as $c){
                 if( !$c->delete() ){
                     throw new \Exception('Fehler beim löschen der zugehörigen PerfMonData. Errors: '. 
-                                        join(', ', $model->getFirstErrors()));
+                                        join(', ', $this->getFirstErrors()));
                 }
             }
             
-            foreach($model->IoCounters as $c){
+            foreach($this->IoCounters as $c){
                 if( !$c->delete() ){
                     throw new \Exception('Fehler beim löschen der zugehörigen IoCounters. Errors: '. 
-                                        join(', ', $model->getFirstErrors()));
+                                        join(', ', $this->getFirstErrors()));
                 }
             }
             
-            foreach($model->NetMonData as $c){
+            foreach($this->NetMonData as $c){
                 if( !$c->delete() ){
                     throw new \Exception('Fehler beim löschen der zugehörigen NetMonData. Errors: '. 
-                                        join(', ', $model->getFirstErrors()));
+                                        join(', ', $this->getFirstErrors()));
                 }
             }
             
-            foreach($model->NetmonDataAgg1H as $c){
+            foreach($this->NetmonDataAgg1H as $c){
                 if( !$c->delete() ){
                     throw new \Exception('Fehler beim löschen der zugehörigen NetmonDataAgg1H. Errors: '. 
-                                        join(', ', $model->getFirstErrors()));
+                                        join(', ', $this->getFirstErrors()));
                 }
             }
             
-            foreach($model->PerfCounterDefaultServer as $c){
+            foreach($this->PerfCounterDefaultServer as $c){
                 if( !$c->delete() ){
                     throw new \Exception('Fehler beim löschen der zugehörigen PerfCounterDefaultServer. Errors: '. 
-                                        join(', ', $model->getFirstErrors()));
+                                        join(', ', $this->getFirstErrors()));
                 }
             }
             
-            foreach($model->ConfigData as $c){
+            foreach($this->ConfigData as $c){
                 if( !$c->delete() ){
                     throw new \Exception('Fehler beim löschen der zugehörigen ConfigData. Errors: '.
-                                        join(', ', $model->getFirstErrors()));
+                                        join(', ', $this->getFirstErrors()));
                 }
             }
             

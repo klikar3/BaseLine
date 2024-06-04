@@ -32,59 +32,56 @@ $items = app\controllers\ServerViewController::getServersMenu("/index.php?r=serv
 echo Html::button($servername.'&nbsp;<span class="caret"></span>', 
     ['type'=>'button', 'class'=>'btn btn-default', 'data-toggle'=>'dropdown']);
 echo DropdownX::widget([ 'items' => $items,]); 
-
-?></h4> <?php echo Html::endTag('div'); ?>
+?>
+</h4> <?php echo Html::endTag('div'); ?>
 <?php echo Html::beginTag('div', ['style'=>'text-align: right;']); 
-echo Html::a('Ressourcen',Url::toRoute(['res_cpu', 'id' => $id])); 
+echo Html::a('Ressourcen',Url::toRoute(['res_cpu', 'id' => $id, 'servertyp' => $servertyp])); 
 echo Html::endTag('div');
 ?>  
 <?php
 
 $overview = $this->render('_overview', ['id' => $id,
                                         'servername' => $servername,
-                                        'datasets' => $datasets,
+                                        'servertyp' => $servertyp,
+                                        'dt' => $dt,
+                                        'dtd' => $dtd,
+/*                                        'datasets' => $datasets,
                                         'dataset_as' => $dataset_as,
                                         'dataset_cpu' => $dataset_cpu,
                                         'dataset_pps' => $dataset_pps,
                                         'dataset_dql' => $dataset_dql,
                                         'dataset_net' => $dataset_net,
-                                        'dataset_waits' => $dataset_waits
-                                        , 'dataset_dbSizes' => $dataset_dbSizes
+*/                                        'dataset_waits' => $dataset_waits
+//                                        , 'dataset_dbSizes' => $dataset_dbSizes
+                                        ,  'tabnum' => 1
                                         ]);  
-$content1 = $this->render('_config', ['servername' => $servername,
-                                                  'dataProvider' => $dataProvider]);
-$content_sc = $this->render('_sconfig', ['servername' => $servername,
-                                                  'dataProvider_sc' => $dataProvider_sc]);
-$content_db = $this->render('_dbconfig', ['servername' => $servername,
-                                                  'dataProvider_db' => $dataProvider_db]);
-$content_event = $this->render('_eventLog', ['servername' => $servername,
-                                                  'dataProvider_event' => $dataProvider_event]);
-                                                  
-
-echo TabsX::widget([
-    'items'=> [
-        [
+$items = array();                                        
+$items[] = [
             'label'=>'<i class="glyphicon glyphicon-home"></i> &Uuml;bersicht',
             'content'=> $overview,
-            'active'=>true
-        ],
-        [
+            'active'=> $tabnum == 1?true:false,
+        ];
+$items[] = [                                        
             'label'=>'<i class="glyphicon glyphicon-user"></i> SQL-Konfiguration',
-            'content'=>$content1
-        ],
-        [
+            'content'=> $this->render('_config', ['servername' => $servername, 'dataProvider' => $dataProvider, 'tabnum' => 2]),
+            'active' => $tabnum == 2?true:false,
+        ];
+$items[] = [                                        
             'label'=>'<i class="glyphicon glyphicon-user"></i> Server-Konfiguration',
-            'content'=>$content_sc
-        ],
-        [
+            'content'=> $this->render('_sconfig', ['servername' => $servername, 'dataProvider_sc' => $dataProvider_sc, 'tabnum' => 3]),
+            'active' => $tabnum == 3?true:false,
+        ];
+$items[] = [                                        
             'label'=>'<i class="glyphicon glyphicon-list-alt"></i> Datenbanken',
-            'content'=>$content_db
-        ],
-        [
+            'content'=> $this->render('_dbconfig', ['servername' => $servername, 'dataProvider_db' => $dataProvider_db, 'tabnum' => 4]),
+            'active' => $tabnum == 4?true:false,
+        ];
+$items[] = [                                        
             'label'=>'<i class="glyphicon glyphicon-list-alt"></i> Eventlog',
-            'content'=>$content_event
-        ],
-        [
+            'content'=> $this->render('_eventLog', ['servername' => $servername, 'dataProvider_event' => $dataProvider_event, 'tabnum' => 5]),
+            'active' => $tabnum == 5?true:false,
+        ];
+$items[] = [                                        
             'label'=>'<i class="glyphicon glyphicon-chevron-right"></i> Weiteres',
             'items'=>[
                  [
@@ -99,8 +96,11 @@ echo TabsX::widget([
                     'headerOptions' => ['class'=>'disabled'],
                 ],
             ],
-        ],
-    ],
+        ];
+
+        
+echo TabsX::widget([
+    'items'=> $items,
     'position'=>TabsX::POS_ABOVE,
     'encodeLabels'=>false
 ]);

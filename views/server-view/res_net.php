@@ -49,37 +49,37 @@ echo Html::a('&Uuml;bersicht',Url::toRoute(['/server-view/index', 'id' => $id]))
 echo Html::endTag('div');
 ?><?php
 
-$cont = $this->render('_net', [ 'dataset_0' => $dataset_0, 'dataset_1' => $dataset_1,
-                                'dataset_2' => $dataset_2, 'cntrs' => $cntrs, 'id' => $id,
-                                'servername' => $servername,   ]);  
+$cont = $this->render('_net', [ /*'dataset_0' => $dataset_0, 'dataset_1' => $dataset_1,
+                                'dataset_2' => $dataset_2,*/ 'cntrs' => $cntrs, 'id' => $id,
+                                'servername' => $servername, 'dt' => $dt, 'servertyp' => $servertyp,   ]);  
 
 echo TabsX::widget([
     'items'=> [
         [
             'label'=>'<i class="glyphicon glyphicon-flash"></i> Cpu',
             'content'=> '',
-            'url'=>\yii\helpers\Url::toRoute(['res_cpu', 'id' => $id]),
+            'url'=>\yii\helpers\Url::toRoute(['res_cpu', 'id' => $id, 'servertyp' => $servertyp,]),
         ],
         [
             'label'=>'<i class="glyphicon glyphicon-oil"></i> Memory',
             'content' => '',
-            'url'=>\yii\helpers\Url::toRoute(['res_mem', 'id' => $id]),
+            'url'=>\yii\helpers\Url::toRoute(['res_mem', 'id' => $id, 'servertyp' => $servertyp,]),
         ],
         [
             'label'=>'<i class="glyphicon glyphicon-floppy-disk"></i> Disk',
             'content' => '',
-            'url'=>\yii\helpers\Url::toRoute(['res_disk', 'id' => $id]),
+            'url'=>\yii\helpers\Url::toRoute(['res_disk', 'id' => $id, 'servertyp' => $servertyp,]),
         ],
         [
             'label'=>'<i class="glyphicon glyphicon-transfer"></i> Network',
             'content' => $cont,
-            'url'=>\yii\helpers\Url::toRoute(['res_net', 'id' => $id]),
+            'url'=>\yii\helpers\Url::toRoute(['res_net', 'id' => $id, 'servertyp' => $servertyp,]),
             'active'=>true
         ],
         [
             'label'=>'<i class="glyphicon glyphicon-king"></i> Sessions',
             'content' => '',
-            'url'=>\yii\helpers\Url::toRoute(['res_sess', 'id' => $id]),
+            'url'=>\yii\helpers\Url::toRoute(['res_sess', 'id' => $id, 'servertyp' => $servertyp,]),
 //            'headerOptions' => ['class'=>'disabled']
         ],
     ],

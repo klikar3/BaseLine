@@ -22,6 +22,10 @@ use klikar3\rgraph\RGraphLine;
 
 $this->title = 'BaseLine';
 
+if (empty($dt)) {
+  date_default_timezone_set('Europe/Berlin'); 
+  $dt = date('Y-m-d H:i:s',time() - 60 * 60);
+}
 
 ?>
 
@@ -31,6 +35,10 @@ $this->title = 'BaseLine';
     <div class="body-content">
 
 <h3><?php echo 'Server: '.$servername ?></h3> 
+<?php echo Html::a(Yii::t('app', '<< Back'), Yii::$app->request->getReferrer(), [
+		            'onclick'=>"js:history.go(-1);return false;",'class'=>'btn btn-sm btn-primary',
+		        ]) 
+?>
 <?php echo Html::beginTag('div', ['style'=>'text-align: right;']); 
 echo Html::a('Ressourcen',Url::toRoute(['res_cpu', 'id' => $id])); 
 echo Html::endTag('div');
@@ -43,7 +51,7 @@ echo Html::endTag('div');
           ,10);
       \yii\helpers\VarDumper::dump($test, 10, true);
 */  ?>
-  <?=  app\controllers\ServerViewController::getPaintLine($servername, $dataset, $cntr, $id, 1);  ?>
+  <?php echo $output /* app\controllers\ServerViewController::getPaintLine($servername, $cntr, $id, 1, $dt);*/  ?>
 
 </div>
    </div>

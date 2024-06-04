@@ -18,9 +18,9 @@ use klikar3\rgraph\RGraphLine;
 ?>
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>
 <div class="row">
-  <?= app\controllers\ServerViewController::getPaintLine($servername, $dataset_0, $cntrs[0], $id, 0); ?>
-  <?php  echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_1, $cntrs[1], $id, 0); ?>
-  <?php  echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_2, $cntrs[2], $id, 0); ?>
-  <?php  echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_3, $cntrs[3], $id, 0); ?>
+  <?= app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_0,*/ $cntrs[0], $id, 0, $dt); ?>
+  <?php  echo app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_1,*/ $cntrs[1], $id, 0, $dt); ?>
+  <?php  echo app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_2,*/ $cntrs[2], $id, 0, $dt); ?>
+  <?php  echo app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_3,*/ $cntrs[3], $id, 0, $dt); ?>
 
 </div>

@@ -8,7 +8,8 @@ return [
     'charset' => 'utf8',
     'attributes' => [
         // use a bigger connection timeout
-        PDO::ATTR_TIMEOUT => 3600,
+        PDO::SQLSRV_ATTR_QUERY_TIMEOUT => 36,
+//        PDO::SQLSRV_ATTR_FETCHES_DATETIME_TYPE => true
     ],
 
 ];

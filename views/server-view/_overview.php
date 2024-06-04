@@ -13,27 +13,21 @@ use klikar3\rgraph\RGraphBar;
 /* @var $this yii\web\View */
 /* @var $model app\models\ConfigData */
 /* @var $form yii\widgets\ActiveForm */
+if (empty($dt)) {
+  date_default_timezone_set('Europe/Berlin'); 
+  $dt = date('Y-m-d H:i:s',time() - 60 * 60);
+}
+if (empty($dtd)) {
+  date_default_timezone_set('Europe/Berlin'); 
+  $dtd = date('Ymd',time() - 60 * 60 * 24 * 180);
+}
     ini_set('display_errors',0);
 
-//    register_shutdown_function('shutdown1');
 
-    function shutdown1() 
-    { 
-      if (0==1) {
-        print '<meta http-equiv="refresh" content="0; url=/index.php?r=server-view%2Findex&id=<?=$id?>">';
-        // just do a meta refresh. Haven't tested with header location, but
-        // this works fine.
-      }
-         if(!is_null($e = error_get_last()))
-        {
-          header('content-type: text/plain');
-          print "this is not html:\n\n". print_r($e,true);
-        }
-   }
-    
 //    ini_set('max_execution_time', 1);
 //    while(1) {/*nothing*/}
     // will die after 1 sec and print error
+
 ?>
 <?php
 
@@ -51,6 +45,7 @@ use klikar3\rgraph\RGraphBar;
    if (lastTab) {
       $('[href=\"' + lastTab + '\"]').tab('show');
    }
+   alert('ready');
 });
 alert = function (str)
 {
@@ -78,15 +73,15 @@ alert = function (str)
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>
 
 <div class="row">
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_as, ['Instance: Active Session Count','_Total'], $id, 0, 'Instance: Active Session Count'); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $datasets, ['SQLServer:Buffer Manager:Page life expectancy:',''], $id, 0, 'SQL: Page life expectancy'); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_cpu, ['Instance: Cpu Utilization %','_Total'], $id, 0, 'Cpu Utilization %'); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_pps, 'OS: Pages/Sec', $id, 0); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_dql, 'OS:Disk Queue Length:_Total', $id, 0); ?>
-  <?php echo app\controllers\ServerViewController::getNetLine($servername, $dataset_net, 'BytesTotalPersec', $id, 0); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_as,*/ ['Instance: Active Session Count','_Total'], $id, 0, $dt, 1, 'Instance: Active Session Count'); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername,/* $datasets,*/ ['SQLServer:Buffer Manager:Page life expectancy:',''], $id, 0, $dt, 1, 'SQL: Page life expectancy'); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_cpu,*/ ['Instance: Cpu Utilization %','_Total'], $id, 0, $dt, 1, 'Cpu Utilization %'); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_pps,*/ ['OS:Pages/Sec:','_Total'], $id, 0, $dt, 1); ?>
+  <?php echo app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_dql,*/ 'OS:Disk Queue Length:_Total', $id, 0, $dt, 1); ?>
+  <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getNetLine($servername, /*$dataset_net,*/ 'BytesTotalPersec', $id, 0); ?>
 </div>
 <div class="row">
-  <?php echo app\controllers\ServerViewController::getWaitBar($servername, $dataset_waits, 'Waits', $id, 0); ?>
-  <?php echo app\controllers\ServerViewController::getPaintLineDbSize($dataset_dbSizes, $id, 1); ?>
+  <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getWaitBar($servername, $dataset_waits, 'Waits', $id, 0); ?>
+  <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getPaintLineDbSize($servername, /*$dataset_dbSizes,*/ $id, 1,$dtd); ?>
         
 </div>

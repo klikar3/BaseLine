@@ -27,14 +27,14 @@ use app\models\Win32EventLog;
 
 class ServerViewController extends \yii\web\Controller
 {
-    public function actionIndex($id)
+    public function actionIndex($id, $tabnum=1)
     {
         $connection = \Yii::$app->db;        
         $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
           
         $cmd = $connection
       	       ->createCommand("SELECT TOP 1 [CaptureDate] /*MAX([CaptureDate])*/ FROM ConfigData WITH (READPAST) WHERE /*[Server]=:srv*/ [serverId]=:sid and Name='affinity mask' ORDER BY [CaptureDate] DESC;");
-    //    $cmd->bindValue(':srv', $servername);
         $cmd->bindValue(':sid', $id);
         try {
           $datum = $cmd->queryScalar(); 
@@ -57,7 +57,7 @@ class ServerViewController extends \yii\web\Controller
 
         // -- ServerConfig
         $cmd = $connection
-      	       ->createCommand("SELECT MAX([CaptureDate]) FROM ServerConfig WHERE [server]=:srv AND Property = 'MachineName'");
+      	       ->createCommand("SELECT MAX([CaptureDate]) FROM ServerConfig WITH (READPAST) WHERE [server]=:srv AND Property = 'MachineName'");
         $cmd->bindValue(':srv', $servername);
         try {
           $datum = $cmd->queryScalar(); 
@@ -102,31 +102,37 @@ class ServerViewController extends \yii\web\Controller
 
         // -- Datasets
         date_default_timezone_set('Europe/Berlin'); 
-        $dt = date('Y-m-d H:i:s',time() - 60 * 60);
+        $dt = date('Ymd H:i:s',time() - 60 * 60);
+        $dtd = date('Ymd',time() - 60 * 60 * 24 * 180);
 //        $dt->modify('-1 hour');
 //        \yii\helpers\VarDumper::dump($datasets, 10, true);
           
         return $this->render('index', [
             'id' => $id,
             'servername' => $servername,
+            'servertyp' => $servertyp,
             'dataProvider' => $dataProvider,
             'dataProvider_sc' => $dataProvider_sc,
             'dataProvider_db' => $dataProvider_db,
             'dataProvider_event' => $dataProvider_event,
-            'dataset_as' => $this->getPerfmonDataset($servername,['Instance: Active Session Count','_Total'], $dt ),
+            'dt' => $dt,
+            'dtd' => $dtd,
+ /*           'dataset_as' => $this->getPerfmonDataset($servername,['Instance: Active Session Count','_Total'], $dt ),
             'datasets' => $this->getPerfmonDataset($servername,['SQLServer:Buffer Manager:Page Life Expectancy:',''], $dt ),
             'dataset_cpu' => $this->getPerfmonDataset($servername,'Instance: Cpu Utilization %',$dt),
             'dataset_pps' => $this->getPerfmonDataset($servername,'OS:Pages/Sec:_Total', $dt ),
             'dataset_dql' => $this->getPerfmonDataset($servername,'OS:Disk Queue Length:_Total', $dt ),
-            'dataset_net' => $this->getNetPerfDataset($servername,'BytesTotalPersec',$dt),
+            'dataset_net' => $this->getNetPerfDataset($servername,'BytesTotalPersec',$dt),*/
             'dataset_waits' => $this->getWaitDataset($servername,$dt),
-            'dataset_dbSizes' => $this->getDbSizesDataset($servername,date('Ymd',time() - 60 * 60 * 24 * 180)),            
+//            'dataset_dbSizes' => $this->getDbSizesDataset($servername,date('Ymd',time() - 60 * 60 * 24 * 180)), 
+            'tabnum' => $tabnum,           
         ]);
     }
 
     public function actionRes_cpu($id)
     {
         $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
         $connection = \Yii::$app->db;        
 
         date_default_timezone_set('Europe/Berlin'); 
@@ -139,16 +145,19 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntrs' => $cntrs,
             'servername' => $servername,
-            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
+            'servertyp' => $servertyp,
+            'dt' => $dt,
+/*            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
             'dataset_1' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
             'dataset_2' => $this->getPerfmonDataset($servername,$cntrs[2],$dt),
-            'dataset_3' => $this->getPerfmonDataset($servername,$cntrs[3],$dt),
+            'dataset_3' => $this->getPerfmonDataset($servername,$cntrs[3],$dt),*/
         ]);
     }
 
     public function actionRes_mem($id)
     {
         $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
         $connection = \Yii::$app->db;        
 
         date_default_timezone_set('Europe/Berlin'); 
@@ -169,7 +178,9 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntrs' => $cntrs,
             'servername' => $servername,
-            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
+            'servertyp' => $servertyp,
+            'dt' => $dt,
+/*            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
             'dataset_1' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
             'dataset_2' => $this->getPerfmonDataset($servername,$cntrs[2],$dt),
             'dataset_3' => $this->getPerfmonDataset($servername,$cntrs[3],$dt),
@@ -184,12 +195,13 @@ class ServerViewController extends \yii\web\Controller
             'dataset_12' => $this->getPerfmonDataset($servername,$cntrs[12],$dt),
             'dataset_13' => $this->getPerfmonDataset($servername,$cntrs[13],$dt),
             'dataset_14' => $this->getPerfmonDataset($servername,$cntrs[14],$dt),
-        ]);
+*/        ]);
     }
 
     public function actionRes_disk($id)
     {
         $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
         $connection = \Yii::$app->db;        
 
         date_default_timezone_set('Europe/Berlin'); 
@@ -204,7 +216,9 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntrs' => $cntrs,
             'servername' => $servername,
-            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
+            'servertyp' => $servertyp,
+            'dt' => $dt,
+/*            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
             'dataset_1' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
             'dataset_2' => $this->getPerfmonDataset($servername,$cntrs[2],$dt),
             'dataset_3' => $this->getPerfmonDataset($servername,$cntrs[3],$dt),
@@ -214,7 +228,7 @@ class ServerViewController extends \yii\web\Controller
             'dataset_7' => $this->getPerfmonDataset($servername,$cntrs[7],$dt),
             'dataset_8' => $this->getPerfmonDataset($servername,$cntrs[8],$dt),
             'dataset_9' => $this->getPerfmonDataset($servername,$cntrs[9],$dt),
-            'dataset_10' => $this->getDriveDataset($servername,$id,date('Y-m-d H:i:s',time() - 60 * 60 * 24 * 1)),
+*/            'dataset_10' => $this->getDriveDataset($servername,$id,date('Y-m-d H:i:s',time() - 60 * 60 * 24 * 1)),
 /*            'dataset_11' => $this->getPerfmonDataset($servername,$cntrs[11],$dt),
 */        ]);
     }
@@ -222,6 +236,7 @@ class ServerViewController extends \yii\web\Controller
     public function actionRes_net($id)
     {
         $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
         $connection = \Yii::$app->db;        
 
         date_default_timezone_set('Europe/Berlin'); 
@@ -234,15 +249,18 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntrs' => $cntrs,
             'servername' => $servername,
-            'dataset_0' => $this->getNetPerfDataset($servername, $cntrs[0], $dt),
+            'servertyp' => $servertyp,
+            'dt' => $dt,
+/*            'dataset_0' => $this->getNetPerfDataset($servername, $cntrs[0], $dt),
             'dataset_1' => $this->getNetPerfDataset($servername, $cntrs[1], $dt),
             'dataset_2' => $this->getNetPerfDataset($servername, $cntrs[2], $dt),
-        ]);
+*/        ]);
     }
 
     public function actionRes_sess($id)
     {
         $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
         $connection = \Yii::$app->db;        
 
         date_default_timezone_set('Europe/Berlin'); 
@@ -258,14 +276,16 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntrs' => $cntrs,
             'servername' => $servername,
-            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
+            'servertyp' => $servertyp,
+            'dt' => $dt,
+/*            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
             'dataset_1' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
             'dataset_2' => $this->getPerfmonDataset($servername,$cntrs[2],$dt),
             'dataset_3' => $this->getPerfmonDataset($servername,$cntrs[3],$dt),
             'dataset_4' => $this->getPerfmonDataset($servername,$cntrs[4],$dt),
             'dataset_5' => $this->getPerfmonDataset($servername,$cntrs[5],$dt),
             'dataset_6' => $this->getPerfmonDataset($servername,$cntrs[6],$dt),
-/*            'dataset_7' => $this->getPerfmonDataset($servername,$cntrs[7],$dt),
+*//*            'dataset_7' => $this->getPerfmonDataset($servername,$cntrs[7],$dt),
             'dataset_8' => $this->getPerfmonDataset($servername,$cntrs[8],$dt),
             'dataset_9' => $this->getPerfmonDataset($servername,$cntrs[9],$dt),
             'dataset_10' => $this->getPerfmonDataset($servername,$cntrs[10],$dt),
@@ -275,24 +295,35 @@ class ServerViewController extends \yii\web\Controller
 
     public function actionDetail($cntr,$id,$days)
     {
-        $cntr = json_decode($cntr);
+/*        if (is_array($cntr)) {$cntr = $cntr[0]; $instance = $cntr[1];}
+        //else $counter = $cntr;
+*/      $cntr = json_decode($cntr);
         $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
 
+        $output = $this->getPaintLine($servername, /*$dataset,*/ $cntr, $id, 1, $dt);
+        
         return $this->render('detail', [
             'id' => $id,
             'cntr' => $cntr,
             'servername' => $servername,
-            'dataset' => $this->getPerfmonDataset($servername,$cntr,$dt),
+            'servertyp' => $servertyp,
+            'days' => $days,
+            'dt' => $dt,
+            'output' => $output, 
+ //           'dataset' => $this->getPerfmonDataset($servername,$counter,$dt),
         ]);
     }
     
     public function actionDetail_net($cntr,$id,$days)
     {
+        if (is_array($cntr)) {$cntr = $cntr[0];}
         $cntr = json_decode($cntr);
         $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
@@ -301,14 +332,18 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntr' => $cntr,
             'servername' => $servername,
-            'dataset' => $this->getNetPerfDataset($servername,$cntr,$dt),
+            'servertyp' => $servertyp,
+            'dt' => $dt,
+//            'dataset' => $this->getNetPerfDataset($servername,$cntr,$dt),
         ]);
     }
  
      public function actionDetail_disk($cntr,$id,$days)
     {
+        if (is_array($cntr)) {$cntr = $cntr[0];}
         $cntr = json_decode($cntr);
         $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
@@ -317,14 +352,17 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntr' => $cntr,
             'servername' => $servername,
+            'servertyp' => $servertyp,
             'dataset' => $this->getDriveDataset($servername,$id,$dt),
          ]);
     }
    
-     public function actionDetail_dbSize($cntr,$id,$days)
+     public function actionDetail_dbsize($cntr,$id,$days)
     {
+        if (is_array($cntr)) {$cntr = $cntr[0];}
         $cntr = json_decode($cntr);
         $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
@@ -333,8 +371,10 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntr' => $cntr,
             'servername' => $servername,
+            'servertyp' => $servertyp,
+            'dt' => $dt,
 //            'dataset' => $this->getDbSizesDataset($servername,$id,$dt),
-            'dataset' => $this->getDbSizesDataset($id,$dt),
+//            'dataset_dbSizes' => $this->getDbSizesDataset($servername,$dt),
          ]);
     }
    
@@ -342,6 +382,7 @@ class ServerViewController extends \yii\web\Controller
     {
         $cntr = json_decode($cntr);
         $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
@@ -350,6 +391,7 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntr' => $cntr,
             'servername' => $servername,
+            'servertyp' => $servertyp,
             'dataset' => $this->getWaitDataset($servername,$dt),
          ]);
     }
@@ -358,6 +400,7 @@ class ServerViewController extends \yii\web\Controller
     {
         $cntr = json_decode($cntr);
         $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
 
         date_default_timezone_set('Europe/Berlin'); 
         $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
@@ -366,6 +409,7 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntr' => $cntr,
             'servername' => $servername,
+            'servertyp' => $servertyp,
             'dataset' => $this->getPerfmonDatasetAgg($servername,$cntr,$dt),
         ]);
     }
@@ -418,11 +462,30 @@ class ServerViewController extends \yii\web\Controller
         return $servername;
     }
 
-    public static function getPerfCounterDefaultId($counter) 
+   public static function getServertyp($id)
     {
+        $lconn = \Yii::$app->db;        
+        $cmd = $lconn
+              	->createCommand('SELECT [typ] FROM ServerData WHERE id=:id');
+        $cmd->bindValue(':id', $id);
+
+        try {
+          $servertyp = $cmd->queryScalar();
+        } catch(\Exception $e) {
+          \Yii::trace("Error : ".$e);
+          $servertyp = '';
+        }
+        return $servertyp;
+    }
+
+    public static function getPerfCounterDefaultId($cntr) 
+    {
+        if (is_array($cntr)) {$cntr = $cntr[0]; }
+        $cntr = $cntr . '%';
         try {
         $pcid = (new \yii\db\Query())
-        ->select('id')->from('PerfCounterDefault WITH (READPAST)')->where('counter_name=:cntr', ['cntr' => $counter])
+        ->select('id')->from('PerfCounterDefault WITH (READPAST)')->where('counter_name like :cntr', ['cntr' => $cntr])
+        ->limit(1)
         ->scalar();
         } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
@@ -431,16 +494,20 @@ class ServerViewController extends \yii\web\Controller
         return $pcid;
     }    
         
-    public static function getPerfCounterPerServerId($srvr,$counter,$instance) 
+    public static function getPerfCounterPerServerId($srvr,$cntr,$instance) 
     {    
-        $counter = $counter . '%';
+ //       \Yii::warning("Counter:");
+ //       \Yii::warning($cntr);
+        /*if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
+        else*/ $counter = $cntr;
+       $counter = $counter . '%';
 //        \Yii::warning($srvr);
-//        \Yii::warning($counter);
 //        \Yii::warning($instance);
       try {
           $pcsid = (new \yii\db\Query())
           ->select('id')->from('PerfCounterPerServer WITH (READPAST)')->where('Server=:srvr AND counter_name like :cntr AND instance = :inst', 
             ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
+          ->limit(1)
           ->scalar();
       } catch(\Exception $e) {
         \Yii::trace("Error : ".$e);
@@ -449,24 +516,31 @@ class ServerViewController extends \yii\web\Controller
       return $pcsid;
     }    
     
-    public function getPerfmonDataset($srvr,$cntr,$dt)
-    {
-        $instance='_Total';
-        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
-        else $counter = $cntr;
-        
-        $pcid = $this->getPerfCounterDefaultId($counter);
-        
+//    public static function getPerfmonDataset($srvr,$cntr,$dt)
+    public static function getPerfmonDataset($srvr,$pcid,$dt,$instance='_Total')    {
+//        $instance='_Total';
+//        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
+//        else $counter = $cntr;
+//        $counter = json_decode($counter);
+                
+//        $pcid = ServerViewController::getPerfCounterDefaultId($cntr);
+//        date_default_timezone_set('Europe/Berlin'); 
+  
       try {
         $dataset = (new \yii\db\Query())
         ->select('value, AvgValue, CaptureDate')->from('PerfMonData WITH (READPAST)')->where('Server=:srvr AND Counter_id=:pcid AND CaptureDate>:dt AND instance=:inst',
         array('srvr' => $srvr, 'pcid' => $pcid, 'dt' => $dt, 'inst' => $instance ))
         ->orderBy('CaptureDate')
         ->all();
+/*        $dataset = (new \yii\db\Query())
+        ->select('value, AvgValue, CaptureDate')->from('PerfMonData WITH (READPAST)')->where('Server=:srvr AND Counter_id=:pcid AND CaptureDate>:dt',
+        array('srvr' => $srvr, 'pcid' => $pcid, 'dt' => $dt ))
+        ->orderBy('CaptureDate')
+        ->all();*/
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
       } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $dataset = $this->emptyProvider();
+          $dataset = new ActiveDataProvider(); // emptyProvider();
       }
         
         return !empty($dataset) ? $dataset : [ [0, 0, ''] ];
@@ -621,7 +695,7 @@ class ServerViewController extends \yii\web\Controller
 
     }
 
-       public function getDbSizesDataset($srvr,$dt)
+       public static function getDbSizesDataset($srvr,$dt)
     {
         
         $pcid = (new \yii\db\Query())
@@ -689,6 +763,30 @@ class ServerViewController extends \yii\web\Controller
           $status = "unknown";
         switch ($status) {
           case 'unknown':
+              $img = '@web/images/question-frame_open_commons.png'; $alt = 'unknown'; break;
+          case 'grey':
+              $img = '@web/images/alarm_unknown.png'; $alt = 'neutral'; break;
+          case 'green':
+              $img = '@web/images/check_16.png'; $alt = 'green'; break;
+          case 'yellow':
+              $img = '@web/images/warning_16.png'; $alt = 'yellow'; break;
+          case 'red':
+              $img = '@web/images/delete_angled_16.png'; $alt = 'red'; break;
+          case 'greyU':
+              $img = '@web/images/alarm_unknown.png'; $alt = 'neutral'; break;
+          case 'greenU':
+              $img = '@web/images/check_16.png'; $alt = 'green'; break;
+          case 'yellowU':
+              $img = '@web/images/warning_16.png'; $alt = 'yellow'; break;
+          case 'redU':
+              $img = '@web/images/delete_angled_16.png'; $alt = 'red'; break;
+          default:
+              $img = '@web/images/alarm_unknown.png'; $alt = 'neutral'; break;
+        }
+        return Html::a(Html::img($img, ['alt' => $alt, 'data-toggle'=>'tooltip','data-placement'=>'left','title' => 'alert']), [$ziel, 'id' => $id]);
+        
+                switch ($status) {
+          case 'unknown':
               return Html::a(Html::img('@web/images/question-frame_open_commons.png', ['alt' => 'unknown', 'data-toggle'=>'tooltip','data-placement'=>'left','title' => 'unknown','style'=>'cursor:default;']), [$ziel, 'id' => $id]);
           case 'grey':
               return Html::a(Html::img('@web/images/alarm_unknown.png', ['alt' => 'neutral', 'data-toggle'=>'tooltip','data-placement'=>'left','title' => 'neutral']), [$ziel, 'id' => $id]);
@@ -733,17 +831,29 @@ class ServerViewController extends \yii\web\Controller
         return Html::a(Html::img('@web/images/WaitTimeMeter_3.png', ['alt' => 'red']), [$ziel, 'id' => $id]);
    }
             
-    public static function getPaintLine($srvr,$dataset,$cntr,$id,$detail=0,$title='') {
+    public static function getPaintLine($srvr,$cntr,$id,$detail=0,$dt='',$days=1,$title='') {
         
         $output = true;
+//        \Yii::warning($cntr);
+        
+        if (empty($dt)) {
+          date_default_timezone_set('Europe/Berlin'); 
+          $dt = date('Y-m-d H:i:s',time() - 60 * 60);
+        }
         
         $instance='_Total';
         if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
         else $counter = $cntr;
-        
+/*        \Yii::warning("Counter:");
+        \Yii::warning($counter);
+        \Yii::warning($cntr);
+*/         
         $pcid = ServerViewController::getPerfCounterDefaultId($counter);
-        
+//        \Yii::warning($pcid);        
+       
         $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $counter, $instance);
+//        $dataset = ServerViewController::getPerfmonDataset($srvr,$counter,$dt);
+        $dataset = ServerViewController::getPerfmonDataset($srvr,$pcid,$dt, $instance);
         
         $stat = 'unknown';  
         try{      
@@ -788,15 +898,15 @@ class ServerViewController extends \yii\web\Controller
 //      \yii\helpers\VarDumper::dump('Counter: '.$counter, 10, true);
         
       if ($output) return RGraphLine::widget([
-          'data' => !empty($daten) ? $daten : [ [0,0] ],
+          'data' => !empty($daten) ? $daten : [ [0,0],[1,1] ],
           'allowDynamic' => true,
           'allowTooltips' => true,
           'allowContext' => true,
-//          'id' => 'rgline_'.$pcid,
           'htmlOptions' => [
+//              'id' => 'rgline_'.$pcid,
               'height' => ($detail==0) ? '180px' : '600px',
               'width' => ($detail==0) ? '280px' : '800px',
-              'background-color' => 'lightblue',
+//              'style' => 'background-color:lightblue;',
           ],
           'options' => [
 //              'height' => ($detail==0) ? '180px' : '600px',
@@ -805,24 +915,24 @@ class ServerViewController extends \yii\web\Controller
               'colors' => ['blue','green'],
 //              'filled' => true,
 //              'clearto' => ['white'],
-/*              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,11,5);},
-                                    ArrayHelper::getColumn($dataset,'CaptureDate')
-                          ) : [ 'No Data' ],
-*/             'labels' => $labels,
+              'xaxisLabels' => $labels,
+              'xaxisLabelsAngle' => 45,
+              'xaxisLabelsSize' => 7,
               'tooltips' => $tooltips,
 //              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
 //              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
   //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
   //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',
-              'textAngle' => 45,
-              'textSize' => 7,
 //              'textFonts' => 'arial condensed',
 //              'gutter' => ['left' => 50, 'bottom' => 80, 'top' => 50],
-              'gutter' => ['left' => ($detail==0) ? 50 : 50, 'bottom' => ($detail==0) ? 62 : 100, 'top' => 50],
+//              'gutter' => ['left' => ($detail==0) ? 50 : 50, 'bottom' => ($detail==0) ? 62 : 100, 'top' => 50],
+              'marginBottom' => ($detail==0) ? 62 : 100,
+              'marginLeft' => ($detail==0) ? 50 : 50,
+              'marginTop' => 50,
               'title' => !empty($title) ? $title : $counter,
               'titleSize' => 12,
               'titleBold' => false,
-              'tickmarks' => 'circle',
+              'tickmarksStyle' => 'circle',
 //              'ymax' => 100,
               'backgroundColor' => $bg,
               'contextmenu' => [
@@ -831,9 +941,10 @@ class ServerViewController extends \yii\web\Controller
                   ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
                   ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
                   ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+                  null,
                   ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
               ],
-          ]
+          ] 
       ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
       ;    
     }
@@ -952,8 +1063,8 @@ class ServerViewController extends \yii\web\Controller
 //              'linewidth' => 2,
 //              'textAccessible' => true,
 //              'strokestyle' => 'white',
-              'hmargin' => 5,
-              'hmarginGrouped' => 2,
+              'marginInner' => 5,
+              'marginGrouped' => 2,
 //              'clearto' => 'white',              
 //              'height' => ($detail==0) ? '180px' : '700px',
 //              'width' => ($detail==0) ? '280px' : '1000px',
@@ -1011,7 +1122,7 @@ class ServerViewController extends \yii\web\Controller
         return $items;
     }
     
-    public function getNetPerfDataset($srvr,$cntr,$dt,$adapter='_Total')
+    public static function getNetPerfDataset($srvr,$cntr,$dt,$adapter='_Total')
     {
 /*        $instance='_Total';
         if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
@@ -1028,7 +1139,7 @@ class ServerViewController extends \yii\web\Controller
           ->scalar();
         } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $machine = $this->emptyProvider();
+          $machine = new ActiveDataProvider();;
         }
   
         if ($cntr == 'BytesTotalPersec') $fields = 'CaptureDate, BytesTotalPersec/(1024) AS Value, AvgBytesTotalPersec/(1024) AS AvgValue, CurrentBandwidth/(1024) AS CurrentBandwidth';
@@ -1042,7 +1153,7 @@ class ServerViewController extends \yii\web\Controller
           ->all();
         } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $dataset = $this->emptyProvider();
+          $dataset = new ActiveDataProvider();
         }
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
         
@@ -1050,7 +1161,7 @@ class ServerViewController extends \yii\web\Controller
 
     }
 
-    public static function getNetLine($srvr,$dataset,$cntr,$id,$detail=0,$title='') {
+    public static function getNetLine($srvr,/*$dataset,*/$cntr,$id,$detail=0,$dt='',$title='') {
         
         $output = true;
 
@@ -1058,10 +1169,16 @@ class ServerViewController extends \yii\web\Controller
         if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
         else $counter = $cntr;
         
+        if (empty($dt)) {
+          date_default_timezone_set('Europe/Berlin'); 
+          $dt = date('Y-m-d H:i:s',time() - 60 * 60);
+        }
 /*        $pcid = ServerViewController::getPerfCounterDefaultId($counter)
         
         $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $counter, $instance);
-*/        
+*/
+        $dataset =  ServerViewController::getNetPerfDataset($srvr, $cntr, $dt);   
+             
         $stat = 'unknown';        
         $stat = (new \yii\db\Query())
                 ->select('status')->from('PerfCounterPerServer WITH (READPAST)')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
@@ -1102,18 +1219,21 @@ class ServerViewController extends \yii\web\Controller
               'colors' => ['blue','green'], //    ,'orange'
 //              'filled' => true,
               'clearto' => ['white'],
-             'labels' => !empty($dataset) ? array_map(function($val) /*use ($detail)*/ {return substr($val,0,16);},
+              'xaxisLabels' => !empty($dataset) ? array_map(function($val) /*use ($detail)*/ {return substr($val,0,16);},
                                     array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),count($zeiten)/$anzahl),0)
                           ) : [ 'No Data' ],
               'tooltips' => $tooltips,
-              'textAngle' => 45,
-              'textSize' => 7,
+              'xaxisLabelsAngle' => 45,
+              'xaxisLabelsSize' => 7,
               'textFonts' => 'arial condensed',
-              'gutter' => ['left' => ($detail==0) ? 60 : 60, 'bottom' => ($detail==0) ? 62 : 62, 'top' => 50],
+//              'gutter' => ['left' => ($detail==0) ? 60 : 60, 'bottom' => ($detail==0) ? 62 : 62, 'top' => 50],
+              'marginBottom' => ($detail==0) ? 62 : 62,
+              'marginLeft' => ($detail==0) ? 60 : 60,
+              'marginTop' => 50,
               'title' => !empty($title) ? $title : 'Net k'.$cntr,
               'titleSize' => 12,
               'titleBold' => false,
-              'tickmarks' => 'none', //'circle',
+              'tickmarkStyle' => 'none', //'circle',
 //              'ymax' => 100,
               'backgroundColor' => $bg,
               'contextmenu' => [
@@ -1335,6 +1455,7 @@ class ServerViewController extends \yii\web\Controller
 //      \yii\helpers\VarDumper::dump($zeiten, 10, true);
       
       $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
+      if ($anzahl < 1) $anzahl = 1; 
 //      $labels = array();
 //      for ($i=1;$i<$anzahl;$i++) {
 //        $labels[] = $zeiten[($i*count($zeiten))/$anzahl];
@@ -1390,21 +1511,25 @@ class ServerViewController extends \yii\web\Controller
 /*              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,11,5);},
                                     ArrayHelper::getColumn($dataset,'CaptureDate')
                           ) : [ 'No Data' ],
-*/             'labels' => $labels,
+*/             'xaxisLabels' => $labels,
               'crosshairs' => false,
               'tooltips' => $tooltips,
 //              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
 //              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
   //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
   //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',
-              'textAngle' => 45,
-              'textSize' => 8,
+              'xaxisLabelsAngle' => 45,
+              'xaxisLabelsSize' => 8,
 //              'gutter' => ['left' => 50, 'bottom' => 80, 'top' => 50],
-              'gutter' => ['left' =>  70, 'bottom' => 80, 'top' => 50, 'right' => 50],
+//              'gutter' => ['left' =>  70, 'bottom' => 80, 'top' => 50, 'right' => 50],
+              'marginLeft' => 70,
+              'marginBottom' => 80,
+              'marginTop' => 50,
+              'marginRight' => 50,              
               'title' => !empty($title) ? $title : '',
               'titleSize' => 12,
               'titleBold' => false,
-              'tickmarks' => 'circle',
+              'tickmarksStyle' => 'circle',
               'key' => $keys,
               'keyPosition' => 'graph',
               'keyInteractive' => true,
@@ -1424,26 +1549,42 @@ class ServerViewController extends \yii\web\Controller
       ;    
     }
 
-    public static function getPaintLineDbSize($dataset,$id=0,$detail=0) {
+    public static function getPaintLineDbSize($srvr,/*$dataset,*/$id=0,$detail=0, $dt) {
       
       $output = true;
-      $title = 'Database Size 180 d';
+      $title = 'Database Sizes';
       $cntr = 'drivespace';
       $stat = 'unknown';        
       $bg = ServerViewController::getBackground($stat);
+      
+//      \Yii::warning($srvr,'application');
+//      \Yii::warning($dt,'application');  
+      $dataset =  ServerViewController::getDbSizesDataset($srvr, $dt);   
+//      \Yii::warning($dataset,'application');  
+
 //      \yii\helpers\VarDumper::dump($dataset, 10, true);
       if (empty($dataset)) return '';
+//       \Yii::warning($dataset,'application');      
       if (is_Array($dataset)) 
-        $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
+      $zeiten = array_values(array_unique(ArrayHelper::getColumn($dataset,'CaptureDate')));
+//       \Yii::warning($zeiten,'application');      
       if (empty($zeiten)) return '';
-      $unique = array();
-      foreach ($zeiten as $row)
-        if (empty($row)) return ''; 
-        if (!in_array($row, $unique)) {
-                $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i:s.u", $row),"d.m.Y H:i");
+      $j = 0;
+      foreach ($zeiten as $zeit) {
+        $toolt[] = array();
+        for ($i = 0; $i < count($dataset); $i++) {
+          if ($dataset[$i]['CaptureDate'] == $zeit) $toolt[$j][] =  $dataset[$i]['db'] ."\n". $dataset[$i]['sizeMB']  ."\n". $dataset[$i]['CaptureDate'];    
         }
+        $j++;
+      }      
+      $unique = array();
+      foreach ($zeiten as $row) {
+        if (empty($row)) return ''; 
+        $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i:s.u", $row),"d.m.Y H:i");
+      }
       $zeiten = $unique;
       unset($unique);
+//       \Yii::warning($zeiten,'application');
 //      \yii\helpers\VarDumper::dump($zeiten, 10, true);
       
       $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
@@ -1451,7 +1592,8 @@ class ServerViewController extends \yii\web\Controller
 //      for ($i=1;$i<$anzahl;$i++) {
 //        $labels[] = $zeiten[($i*count($zeiten))/$anzahl];
 //      }
-      $labels = array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0);
+      $labels = $zeiten;
+//       \Yii::warning(\yii\helpers\VarDumper::dump($labels),'application');      
       $cols = array_keys($dataset[1]);
 //      \yii\helpers\VarDumper::dump($cols, 10, true);
 
@@ -1474,14 +1616,14 @@ class ServerViewController extends \yii\web\Controller
       foreach ($keys as $key) {
         $dat[] = array();
         for ($i = 0; $i < count($dataset); $i++) {
-          if ($dataset[$i]['db'] == $key) $dat[$j][] = $dataset[$i]['sizeMB'] ;     
+          if ($dataset[$i]['db'] == $key) $dat[$j][] = $dataset[$i]['sizeMB'] ; 
         }
         $j++;
       }      
-//      \yii\helpers\VarDumper::dump('$dat', 10, true);
-//      \yii\helpers\VarDumper::dump($dat, 10, true);
-     $tooltips = $zeiten;
-
+    //   \Yii::warning($dat,'application');      
+      $tooltips = $toolt;
+    //  \Yii::warning($toolt,'application');
+       
 //       \yii\helpers\VarDumper::dump($tooltips, 10, true);
 //      \yii\helpers\VarDumper::dump($daten, 10, true);
         
@@ -1503,8 +1645,10 @@ class ServerViewController extends \yii\web\Controller
               'colors' => $colors, //['blue','green', 'orange', 'red', 'yellow'],
 //              'filled' => true,
               'clearto' => ['white'],
-              'labels' => $labels,
               'crosshairs' => false,
+              'xaxisLabels' => $labels,
+              'xaxisLabelsAngle' => 45,
+              'xaxisLabelsSize' => 7,
               'tooltips' => $tooltips,
 //              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
 //              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
@@ -1512,12 +1656,15 @@ class ServerViewController extends \yii\web\Controller
   //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',
               'textAngle' => 45,
               'textSize' => 8,
-              'gutter' => ['left' =>  70, 'bottom' => 80, 'top' => 50, 'right' => 80],
+//              'gutter' => ['left' =>  70, 'bottom' => 80, 'top' => 50, 'right' => 80],
+              'marginBottom' => ($detail==0) ? 62 : 100,
+              'marginLeft' => ($detail==0) ? 80 : 60,
+              'marginTop' => 50,
 //              'hmargin' => '20',
               'title' => !empty($title) ? $title : '',
               'titleSize' => 12,
               'titleBold' => false,
-              'tickmarks' => 'circle',
+              'tickmarksStyle' => 'circle',
               'key' => $keys,
               'keyPosition' => 'graph',
 //              'keyPositionX' => '100',

@@ -1,0 +1,71 @@
+{
+    "name": "klikar3/base-line",
+    "description": "SQL Monitoring Tool",
+    "keywords": ["yii2", "Baseline", "klikar3", "SQL Server", "Monitoring"],
+    "homepage": "https://github.com/klikar3/BaseLine/",
+    "type": "project",
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/klikar3/BaseLine/issues?state=open",
+        "forum": "http://www.yiiframework.com/forum/",
+        "wiki": "http://www.yiiframework.com/wiki/",
+        "irc": "irc://irc.freenode.net/yii",
+        "source": "https://github.com/klikar3/BaseLine"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "require": {
+        "php": ">=5.6.30",
+        "yiisoft/yii2": "~2.0.43",
+        "yiisoft/yii2-bootstrap": "*",
+        "yiisoft/yii2-swiftmailer": "*",
+        "kartik-v/yii2-dropdown-x": "*",
+        "kartik-v/yii2-grid": "*",
+        "kartik-v/yii2-mpdf": "@dev",
+        "kartik-v/yii2-tabs-x": "*",
+        "kartik-v/yii2-krajee-base": "*",
+        "kartik-v/yii2-detail-view": "*",
+        "kartik-v/yii2-password": "*",
+        "kartik-v/yii2-context-menu": "dev-master",
+        "klikar3/rgraph": "*",
+        "yidas/yii2-bower-asset": "2.0.13.1"
+    },
+    "require-dev": {
+        "yiisoft/yii2-debug": "*",
+        "yiisoft/yii2-gii": "*",
+        "bizley/migration": "*",
+        "c006/yii2-migration-utility": "dev-master",
+        "insolita/yii2-migration-generator": "~2.2"
+    },
+    "config": {
+        "process-timeout": 1800,
+        "github-protocols": ["https", "http"],
+        "fxp-asset.installer-paths": {
+            "npm-asset-library": "vendor/npm",
+            "bower-asset-library": "vendor/bower"
+        }
+    },
+    "scripts": {
+        "post-create-project-cmd": [
+            "yii\\composer\\Installer::postCreateProject"
+        ]
+    },
+    "extra": {
+        "yii\\composer\\Installer::postCreateProject": {
+            "setPermission": [
+                {
+                    "runtime": "0777",
+                    "web/assets": "0777",
+                    "yii": "0755"
+                }
+            ],
+            "generateCookieValidationKey": [
+                "config/web.php"
+            ]
+        },
+        "asset-installer-paths": {
+            "npm-asset-library": "vendor/npm",
+            "bower-asset-library": "vendor/bower"
+        }
+    }
+}

@@ -43,7 +43,7 @@ $this->title = 'BaseLine';
           ,10);
       \yii\helpers\VarDumper::dump($test, 10, true);
 */  ?>
-  <?=  app\controllers\ServerViewController::getPaintLineRep($dataset,$title);  ?>
+  <?=  app\controllers\ServerViewController::getPaintLineRep($cntr,$days,$title);  ?>
 
 </div>
    </div>

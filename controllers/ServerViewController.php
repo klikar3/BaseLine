@@ -426,7 +426,8 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntr' => $cntr,
             'title' => 'OS:Physical I/O Rate (Kb/sec):_Total',
-            'dataset' => $this->getPerfmonDatasetRep($cntr,$days),
+            'days' => $days,
+//            'dataset' => $this->getPerfmonDatasetRep($cntr,$days),
         ]);
     }
     
@@ -442,7 +443,8 @@ class ServerViewController extends \yii\web\Controller
             'id' => $id,
             'cntr' => $cntr,
             'title' => 'BytesTotalPersec',
-            'dataset' => $this->getPerfmonDatasetRep($cntr,$days),
+            'days' => $days,
+//            'dataset' => $this->getPerfmonDatasetRep($cntr,$days),
         ]);
     }
     
@@ -571,7 +573,7 @@ class ServerViewController extends \yii\web\Controller
 
     }
 
-    public function getPerfmonDatasetRep($cntr,$days=2)
+    public static function getPerfmonDatasetRep($cntr,$days=2)
     {
         if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
         else $counter = $cntr;
@@ -831,123 +833,6 @@ class ServerViewController extends \yii\web\Controller
         return Html::a(Html::img('@web/images/WaitTimeMeter_3.png', ['alt' => 'red']), [$ziel, 'id' => $id]);
    }
             
-    public static function getPaintLine($srvr,$cntr,$id,$detail=0,$dt='',$days=1,$title='') {
-        
-        $output = true;
-//        \Yii::warning($cntr);
-        
-        if (empty($dt)) {
-          date_default_timezone_set('Europe/Berlin'); 
-          $dt = date('Y-m-d H:i:s',time() - 60 * 60);
-        }
-        
-        $instance='_Total';
-        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
-        else $counter = $cntr;
-/*        \Yii::warning("Counter:");
-        \Yii::warning($counter);
-        \Yii::warning($cntr);
-*/         
-        $pcid = ServerViewController::getPerfCounterDefaultId($counter);
-//        \Yii::warning($pcid);        
-       
-        $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $counter, $instance);
-//        $dataset = ServerViewController::getPerfmonDataset($srvr,$counter,$dt);
-        $dataset = ServerViewController::getPerfmonDataset($srvr,$pcid,$dt, $instance);
-        
-        $stat = 'unknown';  
-        try{      
-          if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData WITH (READPAST)')
-          ->where('Server=:srvr AND Counter_id=:pcid AND instance=:inst', array('srvr' => $srvr, 'pcid' => $pcid, 'inst' => $instance ))
-          ->orderBy('CaptureDate desc')->limit(1)->scalar();
-        } catch(\Exception $e) {
-          \Yii::trace("Error : ".$e);
-          $dataProvider_event = self::emptyProvider();
-        }
-
-      $bg = ServerViewController::getBackground($stat);
-        
-//      \yii\helpers\VarDumper::dump($dataset, 10, true);
-      if ((empty($dataset)) or ($dataset == null)) return 'hä?';
-//        \Yii::warning($counter,'application');
-//        \Yii::warning($dataset,'application');
-      $values = ArrayHelper::getColumn($dataset,'value');
-      $avgvals = ArrayHelper::getColumn($dataset,'AvgValue');
-      $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
-      $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
-      $labels = array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0);
-//        \Yii::warning($labels,'application');
-      $unique = array();
-      foreach ($labels as $row) {
-//                \Yii::warning(\yii\helpers\VarDumper::dump($row),'application');
-                if (!empty($row)) {
-                    $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i", substr($row,0,16)),"d.m.Y H:i");
-                }
-      }          
-      $labels = $unique;
-      unset($unique);
-
-      $daten = [$values, $avgvals]; 
-//      \yii\helpers\VarDumper::dump($daten, 10, true);
-
-      $tooltips = $values + $zeiten;
-
-      for ($i = 0; $i < count($zeiten); ++$i) {
-        $tooltips[$i] = $tooltips[$i] . '<br>'. substr($zeiten[$i],0,16);     
-      }    
-//      \yii\helpers\VarDumper::dump('Counter: '.$counter, 10, true);
-        
-      if ($output) return RGraphLine::widget([
-          'data' => !empty($daten) ? $daten : [ [0,0],[1,1] ],
-          'allowDynamic' => true,
-          'allowTooltips' => true,
-          'allowContext' => true,
-          'htmlOptions' => [
-//              'id' => 'rgline_'.$pcid,
-              'height' => ($detail==0) ? '180px' : '600px',
-              'width' => ($detail==0) ? '280px' : '800px',
-//              'style' => 'background-color:lightblue;',
-          ],
-          'options' => [
-//              'height' => ($detail==0) ? '180px' : '600px',
-//              'width' => ($detail==0) ? '280px' : '800px',
-//              'id' => 'rgline_'.$pcid,
-              'colors' => ['blue','green'],
-//              'filled' => true,
-//              'clearto' => ['white'],
-              'xaxisLabels' => $labels,
-              'xaxisLabelsAngle' => 45,
-              'xaxisLabelsSize' => 7,
-              'tooltips' => $tooltips,
-//              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
-//              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
-  //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
-  //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',
-//              'textFonts' => 'arial condensed',
-//              'gutter' => ['left' => 50, 'bottom' => 80, 'top' => 50],
-//              'gutter' => ['left' => ($detail==0) ? 50 : 50, 'bottom' => ($detail==0) ? 62 : 100, 'top' => 50],
-              'marginBottom' => ($detail==0) ? 62 : 100,
-              'marginLeft' => ($detail==0) ? 50 : 50,
-              'marginTop' => 50,
-              'title' => !empty($title) ? $title : $counter,
-              'titleSize' => 12,
-              'titleBold' => false,
-              'tickmarksStyle' => 'circle',
-//              'ymax' => 100,
-              'backgroundColor' => $bg,
-              'contextmenu' => [
-                  ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
-                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
-                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
-                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
-                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
-                  null,
-                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
-              ],
-          ] 
-      ]) //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
-      ;    
-    }
   
     public static function getWaitBar($srvr,$dataset,$cntr,$id,$detail=0,$title='') {
         
@@ -1094,10 +979,10 @@ class ServerViewController extends \yii\web\Controller
                   ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail_waits','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
                   ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_waits','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
                   ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_waits','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
-/*                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
-                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
-                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $id ])."\");}") ],
-*/              ],
+//                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+//                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+//                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $id ])."\");}") ],
+              ],
           ],
       ]);    
     }
@@ -1338,10 +1223,13 @@ class ServerViewController extends \yii\web\Controller
       ;    
     }
 
-    public static function getPaintLineRep($dataset, $title='') {
+    public static function getPaintLineRep($cntr,$days, $title='') {
         
         $output = true;
-        $stat = 'unknown';        
+        $stat = 'unknown';  
+        
+      $dataset = ServerViewController::getPerfmonDatasetRep($cntr,$days);       
+           
       $bg = ServerViewController::getBackground($stat);
 //      \yii\helpers\VarDumper::dump($dataset, 10, true);
       if (empty($dataset)) return '';
@@ -1391,10 +1279,10 @@ class ServerViewController extends \yii\web\Controller
 //              'colors' => ['blue','green', 'orange', 'red', 'yellow'],
 //              'filled' => true,
               'clearto' => ['white'],
-/*              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,11,5);},
-                                    ArrayHelper::getColumn($dataset,'CaptureDate')
-                          ) : [ 'No Data' ],
-*/             'labels' => !empty($dataset) ? array_map(function($val){return substr($val,0,16);},
+//              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,11,5);},
+//                                    ArrayHelper::getColumn($dataset,'CaptureDate')
+//                          ) : [ 'No Data' ],
+             'labels' => !empty($dataset) ? array_map(function($val){return substr($val,0,16);},
                                     array_column(array_chunk(ArrayHelper::getColumn($dataset,'TimeSlotStart'),count($zeiten)/$anzahl),0)
                           ) : [ 'No Data' ],
               'crosshairs' => false,
@@ -1721,6 +1609,135 @@ class ServerViewController extends \yii\web\Controller
               $bg = 'Gradient(lightgrey:white)';
       }
       return $bg;
+    }
+
+    public static function getPaintLine($srvr,$cntr,$id,$detail=0,$dt='',$days=1,$title='') {
+        
+        $output = true;
+//        \Yii::warning($cntr);
+        
+        if (empty($dt)) {
+          date_default_timezone_set('Europe/Berlin'); 
+          $dt = date('Y-m-d H:i:s',time() - 60 * 60);
+        }
+        
+        $instance='_Total';
+        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
+        else $counter = $cntr;
+//        \Yii::warning("Counter:");
+//        \Yii::warning($counter);
+//        \Yii::warning($cntr);
+//         
+        $pcid = ServerViewController::getPerfCounterDefaultId($counter);
+//        \Yii::warning($pcid);        
+       
+        $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $counter, $instance);
+//        $dataset = ServerViewController::getPerfmonDataset($srvr,$counter,$dt);
+        $dataset = ServerViewController::getPerfmonDataset($srvr,$pcid,$dt, $instance);
+        
+        $stat = 'unknown';  
+        try{      
+          if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData WITH (READPAST)')
+          ->where('Server=:srvr AND Counter_id=:pcid AND instance=:inst', array('srvr' => $srvr, 'pcid' => $pcid, 'inst' => $instance ))
+          ->orderBy('CaptureDate desc')->limit(1)->scalar();
+        } catch(\Exception $e) {
+          \Yii::trace("Error : ".$e);
+          $dataProvider_event = self::emptyProvider();
+        }
+
+      $bg = ServerViewController::getBackground($stat);
+        
+//      \yii\helpers\VarDumper::dump($dataset, 10, true);
+      if ((empty($dataset)) or ($dataset == null)) return 'hä?';
+//        \Yii::warning($counter,'application');
+//        \Yii::warning($dataset,'application');
+      $values = ArrayHelper::getColumn($dataset,'value');
+      $avgvals = ArrayHelper::getColumn($dataset,'AvgValue');
+      $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
+      $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
+      $labels = array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0);
+//        \Yii::warning($labels,'application');
+      $unique = array();
+      foreach ($labels as $row) {
+//                \Yii::warning(\yii\helpers\VarDumper::dump($row),'application');
+                if (!empty($row)) {
+                    $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i", substr($row,0,16)),"d.m.Y H:i");
+                }
+      }          
+      $labels = $unique;
+      unset($unique);
+
+      $daten = [$values, $avgvals]; 
+//      \yii\helpers\VarDumper::dump($daten, 10, true);
+
+      $tooltips = $values + $zeiten;
+
+      for ($i = 0; $i < count($zeiten); ++$i) {
+        $tooltips[$i] = $tooltips[$i] . '<br>'. substr($zeiten[$i],0,16);     
+      }    
+//      \yii\helpers\VarDumper::dump('Counter: '.$counter, 10, true);
+        
+      if ($output) return RGraphLine::widget([
+          'data' => !empty($daten) ? $daten : [ [0,0],[1,1] ],
+          'allowDynamic' => true,
+          'allowTooltips' => true,
+          'allowContext' => true,
+          'htmlOptions' => [
+//              'id' => 'rgline_'.$pcid,
+              'height' => ($detail==0) ? '180px' : '600px',
+              'width' => ($detail==0) ? '280px' : '800px',
+//              'style' => 'background-color:lightblue;',
+          ],
+          'options' => [
+//              'height' => ($detail==0) ? '180px' : '600px',
+//              'width' => ($detail==0) ? '280px' : '800px',
+//              'id' => 'rgline_'.$pcid,
+              'colors' => ['blue','green'],
+//              'filled' => true,
+//              'clearto' => ['white'],
+              'xaxisLabels' => $labels,
+              'xaxisLabelsAngle' => 45,
+              'xaxisLabelsSize' => 7,
+              'tooltips' => $tooltips,
+//              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
+//              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
+  //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
+  //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',
+//              'textFonts' => 'arial condensed',
+//              'gutter' => ['left' => 50, 'bottom' => 80, 'top' => 50],
+//              'gutter' => ['left' => ($detail==0) ? 50 : 50, 'bottom' => ($detail==0) ? 62 : 100, 'top' => 50],
+              'marginBottom' => ($detail==0) ? 62 : 100,
+              'marginLeft' => ($detail==0) ? 50 : 50,
+              'marginTop' => 50,
+              'title' => !empty($title) ? $title : $counter,
+              'titleSize' => 12,
+              'titleBold' => false,
+              'tickmarksStyle' => 'circle',
+//              'ymax' => 100,
+              'backgroundColor' => $bg,
+              'contextmenu' => [
+                  ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
+                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
+                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
+                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+                  null,
+                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $pcsid ])."\");}") ],
+                  null,
+                  ['Copy', new JsExpression("function go() {  const canvas = RGraph.Registry.get('contextmenu').__canvas__
+  canvas.toBlob(blob => {
+    // eslint-disable-next-line no-undef
+    const clipItem = [];
+     clipItem['image/png'] = blob;
+     navigator.clipboard.write([clipItem]).then(() => {
+      console.log('Copied')
+    })
+  });}") ],
+              ],
+          ] 
+      ]) 
+      //."<li>". Html::a('Settings', ['perf-counter-per-server/update', 'id' => $pcsid], ['class' => 'profile-link'])."</div>"
+      ;    
     }
     
 }

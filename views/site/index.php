@@ -54,10 +54,11 @@ $this->title = 'BaseLine';
                     'attribute' => 'usertyp',
                     'options' => [ 'width' => '80px;'],
                   ],
-*/                  [ 'class' => 'yii\grid\DataColumn',
+*/                  [ 'class' => 'kartik\grid\DataColumn',
                     'attribute' => 'typ',
                     'options' => [ 'width' => '80px;'],
-                     'headerOptions' => ['style' => 'background-color: lightblue;']
+                     'headerOptions' => ['style' => 'background-color: lightblue;'],
+                     'group' => true,
                   ],
                   [ 'attribute' => 'paused',
                     'format' => 'raw',

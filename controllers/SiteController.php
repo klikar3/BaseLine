@@ -55,6 +55,9 @@ class SiteController extends Controller
         $searchModel = new ServerDataSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         $dataProvider->query->where('paused <> 1');
+        $dataProvider->query->orderBy = ['typ' => SORT_ASC];
+        $dataProvider->pagination = ['pageSize' => 25];
+
 
         return $this->render('index', [
             'searchModel' => $searchModel,

@@ -215,4 +215,10 @@ class ServerData extends \yii\db\ActiveRecord
      {
          return $this->hasMany(PhysDriveData::className(), ['ServerID' => 'id']);
      }
+
+    public function getWartungsfenster()
+    {
+        return $this->hasMany(Wartungsfenster::className(), ['ServerID' => 'id']);
+    } 
+    
 }

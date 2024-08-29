@@ -102,16 +102,36 @@ class ServerDataController extends Controller
         //\yii\helpers\VarDumper::dump($data, 10, true)
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {
+            if ($model->typ == 'sql') {
               try {
                   \Yii::$app->db->createCommand("USE BASELINEDATA; EXEC [dbo].[usp_getConfigData] '".$model->Server."'")
                   ->execute();
               } catch (\yii\db\Exception $e) {
-                  $model->addError('Server', Yii::t('app', 'Konnte Serverkonfiguration nicht auslesen.').$e->getmessage());
+                  $model->addError('Server', Yii::t('app', 'Konnte SQL-Konfiguration nicht auslesen - wurde der SQL-User schon angelegt und mit Berechtigungen versehen?').$e->getmessage());
                   return $this->render('create', [
-                  'model' => $model, 
-              ]);
+                    'model' => $model, 
+                  ]);
               }        
-              return $this->redirect(['view', 'id' => $model->id]);
+              try {
+                  \Yii::$app->db->createCommand("USE BASELINEDATA; EXEC [dbo].[usp_getServerData] '".$model->Server."'")
+                  ->execute();
+              } catch (\yii\db\Exception $e) {
+                  $model->addError('Server', Yii::t('app', 'Konnte Serverkonfiguration nicht auslesen - wurde der SQL-User schon angelegt und mit Berechtigungen versehen?').$e->getmessage());
+                  return $this->render('create', [
+                    'model' => $model, 
+                  ]);
+              }        
+              try {
+                  \Yii::$app->db->createCommand("USE BASELINEDATA; EXEC [dbo].[usp_getSecurity] '".$model->Server."'")
+                  ->execute();
+              } catch (\yii\db\Exception $e) {
+                  $model->addError('Server', Yii::t('app', 'Konnte Sicherheit nicht auslesen - wurde der SQL-User schon angelegt und mit Berechtigungen versehen?').$e->getmessage());
+                  return $this->render('create', [
+                    'model' => $model, 
+                  ]);
+              }
+            }          
+            return $this->redirect(['view', 'id' => $model->id]);
         }
 //            $model->setUsr('iii') ;//$data['ServerData']['usr'];
 //            $model->setPwd('ooo'); //$data['ServerData']['pwd'];
@@ -119,7 +139,9 @@ class ServerDataController extends Controller
         $model->usr = 'ignite';
         $model->pwd = trim(com_create_guid(), '{}');
 //        Yii::warning($model->usr, 'application'); 
-//        Yii::warning($model->pwd, 'application'); 
+//        Yii::warning($model->pwd, 'application');
+
+ 
         return $this->render('create', [
             'model' => $model, 
         ]);

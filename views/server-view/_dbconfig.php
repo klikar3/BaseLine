@@ -11,20 +11,21 @@ use kartik\grid\GridView;
 /* @var $model app\models\ConfigData */
 /* @var $form yii\widgets\ActiveForm */
 
-$dataProvider_db->pagination->pageSize = 90;
+$dataProvider_db->setPagination(['pageSize' => '90']);
+//$dataProvider_db->pagination->pageSize = 90;
 ?>
 
 <div class="sconfig-data-form">
-<?php echo GridView::widget([
+<?php  echo GridView::widget([
     'dataProvider'=> $dataProvider_db,
     'condensed' => true,
 //    'filterModel' => $searchModel,
     'columns' => [
         ['class' => 'yii\grid\SerialColumn'],
         'db', 'Description', 'Contact', 'SLA', 'sizeMB',
-        [ 'attribute' => 'CaptureDate'  ,
-          'options' => [ 'width' => '300px;']
-        ],
+//        [ 'attribute' => 'CaptureDate'  ,
+//          'options' => [ 'width' => '300px;']
+//        ],
      ],   
     'responsive'=>true,
     'hover'=>true,

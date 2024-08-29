@@ -105,4 +105,64 @@ class SiteController extends Controller
     {
         return $this->render('about');
     }
+    
+    public function actionWartung()
+    {
+        // Wartungsfenster
+/*        $sql = "SELECT sj.*, 
+	CASE
+        WHEN sja.start_execution_date IS NULL THEN 'Not running'
+        WHEN sja.start_execution_date IS NOT NULL AND sja.stop_execution_date IS NULL THEN 'Running'
+        WHEN sja.start_execution_date IS NOT NULL AND sja.stop_execution_date IS NOT NULL THEN 'Not running'
+    END AS 'RunStatus'
+FROM msdb.dbo.sysjobs sj
+JOIN msdb.dbo.sysjobactivity sja
+ON sj.job_id = sja.job_id
+WHERE session_id = ( SELECT MAX(session_id) FROM msdb.dbo.sysjobactivity) and sj.name like 'RST-Check-%'";
+
+        try { 
+          $dataProvider = new SqlDataProvider([
+              'sql' => $sql, //ConfigData::find()->where(['Server' => $servername])->andWhere(['CaptureDate' => $datum]),
+              'db' => Yii::$app->db,
+                'pagination' => [
+                  'pageSize' => 15,
+              ],
+          ]);
+        } catch(\Exception $e) {
+          \Yii::trace("Error : ".$e);
+          $dataProvider = $this->emptyProvider();
+        }
+
+*/
+
+        $searchModel = new ServerDataSearch();
+        $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
+        $dataProvider->query->where('paused <> 1');
+        $dataProvider->query->orderBy = ['typ' => SORT_ASC];
+        $dataProvider->pagination = ['pageSize' => 25];
+
+
+        return $this->render('wartung', [
+            'searchModel' => $searchModel,
+            'dataProvider' => $dataProvider,
+        ]);
+//        return $this->render('index');
+    }
+
+    public static function emptyProvider() {
+      $data = [
+          ['id' => 1, 'name' => 'Prüfungen',],
+          ['id' => 2, 'name' => 'Programme',],
+      ];
+      
+      $provider = new ArrayDataProvider([
+          'allModels' => $data,
+          'pagination' => false,
+          'sort' => false,
+      ]);
+
+      return $provider;
+    }
+    
+    
 }

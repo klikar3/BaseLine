@@ -9,7 +9,10 @@ return [
     'attributes' => [
         // use a bigger connection timeout
         PDO::SQLSRV_ATTR_QUERY_TIMEOUT => 36,
-//        PDO::SQLSRV_ATTR_FETCHES_DATETIME_TYPE => true
+        PDO::SQLSRV_ATTR_FETCHES_DATETIME_TYPE => true
     ],
+    'on afterOpen' => function ($event) {
+        $event->sender->createCommand("SET DATEFORMAT ymd")->execute();
+    }
 
 ];

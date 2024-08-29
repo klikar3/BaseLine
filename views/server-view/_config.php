@@ -10,6 +10,9 @@ use kartik\form\ActiveForm;
 /* @var $this yii\web\View */
 /* @var $model app\models\ConfigData */
 /* @var $form yii\widgets\ActiveForm */
+
+$dataProvider->setPagination(['pageSize' => '90']);
+
 ?>
 
 <div class="config-data-form">
@@ -17,7 +20,9 @@ use kartik\form\ActiveForm;
     'dataProvider'=> $dataProvider,
     'condensed' => true,
 //    'filterModel' => $searchModel,
-    'columns' => ['Name','Value','ValueInUse','CaptureDate'],
+    'columns' => [
+        ['class' => 'yii\grid\SerialColumn'],
+        'Name','Value','ValueInUse' /*,'CaptureDate'*/],
     'responsive'=>true,
     'hover'=>true, 
     'rowOptions'=>function ($model, $key, $index, $grid){

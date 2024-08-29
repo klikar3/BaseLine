@@ -4,6 +4,7 @@ namespace app\controllers;
 
 //use Yii;
 use yii\data\ActiveDataProvider;
+use yii\data\SqlDataProvider;
 use yii\data\ArrayDataProvider;
 use yii\db\Query;
 use yii\db\ActiveQuery;
@@ -15,6 +16,8 @@ use yii\web\JsExpression;
 
 use klikar3\rgraph\RGraphLine;
 use klikar3\rgraph\RGraphBar;
+use klikar3\rgraph\RGraphBarC1;
+use klikar3\rgraph\RGraphBarC2;
 use klikar3\rgraph\RGraphRScatter;
 use klikar3\rgraph\RGraphScatter;
 
@@ -29,30 +32,33 @@ class ServerViewController extends \yii\web\Controller
 {
     public function actionIndex($id, $tabnum=1)
     {
+        // Datumsformatierung am SQL Server einstellen
+        \Yii::$app->db->createCommand("SET DATEFORMAT ymd")->execute();
+        
         $connection = \Yii::$app->db;        
         $servername = $this->getServername($id);
         $servertyp = $this->getServertyp($id);
-          
+         
+        // ConfigData  
         $cmd = $connection
       	       ->createCommand("SELECT TOP 1 [CaptureDate] /*MAX([CaptureDate])*/ FROM ConfigData WITH (READPAST) WHERE /*[Server]=:srv*/ [serverId]=:sid and Name='affinity mask' ORDER BY [CaptureDate] DESC;");
         $cmd->bindValue(':sid', $id);
+        
         try {
           $datum = $cmd->queryScalar(); 
+          $datum = (string)date_format($datum,"Y-m-d H:i:s.v");
           $dataProvider = new ActiveDataProvider([
-              'query' => ConfigData::find()->where(['Server' => $servername])->andWhere(['CaptureDate' => $datum]),
+              'query' => ConfigData::find()->select('Name, Value, ValueInUse')->where(['ServerID' => $id])->andWhere(['CaptureDate' => $datum]),
               'pagination' => [
-                  'pageSize' => 15,
+                  'pageSize' => 22,
               ],
           ]);
         } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $dataprovider = $this->emptyProvider();
+          $dataProvider = $this->emptyProvider();
         }
         
-          
-        
-        // get the posts in the current page
-////        $posts = $dataProvider->getModels();
+//        \Yii::warning($dataProvider);          
 //        \yii\helpers\VarDumper::dump($dataProvider, 10, true);
 
         // -- ServerConfig
@@ -61,13 +67,14 @@ class ServerViewController extends \yii\web\Controller
         $cmd->bindValue(':srv', $servername);
         try {
           $datum = $cmd->queryScalar(); 
+          $datum = (string)date_format($datum,"Y-m-d H:i:s.v");
           $dataProvider_sc = new ActiveDataProvider([
-              'query' => ServerConfig::find()->where(['Server' => $servername])->andWhere('CaptureDate >= :datum',[ ':datum' => $datum]),
-              'pagination' => [ 'pageSize' => 15],
+              'query' => ServerConfig::find()->select('Server,Property,Value')->where(['Server' => $servername])->andWhere('CaptureDate >= :datum',[ ':datum' => $datum]),
+              'pagination' => [ 'pageSize' => 22],
           ]);
         } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $dataprovider_sc = $this->emptyProvider();
+          $dataProvider_sc = $this->emptyProvider();
         }
         
 
@@ -82,13 +89,14 @@ class ServerViewController extends \yii\web\Controller
 
         try {
           $datum = $cmd->queryScalar(); 
+          $datum = (string)date_format($datum,"Y-m-d H:i:s.v");
           $dataProvider_db = new ActiveDataProvider([
-              'query' => DbData::find()->where(['Server' => $servername, 'physicalFileName' => "_Total"])->andWhere(['CaptureDate' => $datum]),
-              'pagination' => [ 'pageSize' => 15],
+              'query' => DbData::find()->select('db, Description, Contact, SLA, sizeMB')->where(['Server' => $servername, 'physicalFileName' => "_Total"])->andWhere(['CaptureDate' => $datum]),
+              'pagination' => [ 'pageSize' => 22],
           ]);
         } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $dataprovider_db = $this->emptyProvider();
+          $dataProvider_db = $this->emptyProvider();
         }
         try {
           $dataProvider_event = new ActiveDataProvider([
@@ -528,12 +536,17 @@ class ServerViewController extends \yii\web\Controller
 //        $pcid = ServerViewController::getPerfCounterDefaultId($cntr);
 //        date_default_timezone_set('Europe/Berlin'); 
   
+        // Datumsformatierung am SQL Server einstellen
+        \Yii::$app->db->createCommand("SET DATEFORMAT ymd")->execute();
+        
       try {
-        $dataset = (new \yii\db\Query())
+        $dataset = /*new ActiveDataProvider([
+            'query' =>*/ (new \yii\db\Query())
         ->select('value, AvgValue, CaptureDate')->from('PerfMonData WITH (READPAST)')->where('Server=:srvr AND Counter_id=:pcid AND CaptureDate>:dt AND instance=:inst',
         array('srvr' => $srvr, 'pcid' => $pcid, 'dt' => $dt, 'inst' => $instance ))
         ->orderBy('CaptureDate')
-        ->all();
+        ->all(); /*,
+        ]);*/
 /*        $dataset = (new \yii\db\Query())
         ->select('value, AvgValue, CaptureDate')->from('PerfMonData WITH (READPAST)')->where('Server=:srvr AND Counter_id=:pcid AND CaptureDate>:dt',
         array('srvr' => $srvr, 'pcid' => $pcid, 'dt' => $dt ))
@@ -542,7 +555,8 @@ class ServerViewController extends \yii\web\Controller
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
       } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $dataset = new ActiveDataProvider(); // emptyProvider();
+//          $dataset = new ActiveDataProvider(); // emptyProvider();
+          $dataset = [ [0, 0, ''] ]; //ServerViewController::emptyProvider();
       }
         
         return !empty($dataset) ? $dataset : [ [0, 0, ''] ];
@@ -621,7 +635,7 @@ class ServerViewController extends \yii\web\Controller
           }
         } 
                 
-        return !empty($dataset) ? $dataset : [ [0, 0, 0, 0, 0] ];
+        return !empty($dataset) ? $dataset : $this->emptyProvider(); //[ [0, 0, 0, 0, 0] ];
 
     }
 
@@ -644,7 +658,7 @@ class ServerViewController extends \yii\web\Controller
 //        $pcsid = 0;
       }
         
-        return !empty($dataset) ? $dataset : [ ['', 0, ''] ];
+        return !empty($dataset) ? $dataset : $this->emptyProvider(); //[ ['', 0, ''] ];
 
     }
 
@@ -987,6 +1001,270 @@ class ServerViewController extends \yii\web\Controller
       ]);    
     }
   
+    public static function getWartungBar($srvrId,$wTyp='Mo-Fr') {
+        
+        $output = true;
+        $detail = 0;
+               
+        $stat = 'unknown'; 
+        
+        $title = 'Wartungsfenster '.$wTyp;
+               
+        $bg = ServerViewController::getBackground($stat);
+        
+        try {
+          $dataset = (new \yii\db\Query())
+          ->select('quarter, w_value')->from('[dbo].[Wartungsfenster] WITH (READPAST)')->where('ServerID=:srvr AND [Mo-Fr] = 1',
+          array('srvr' => $srvrId ))
+          ->orderBy('quarter')
+          ->all();
+  //        \yii\helpers\VarDumper::dump($dataset, 10, true);
+        } catch(\Exception $e) {
+            \Yii::trace("Error : ".$e);
+            $dataset = new ActiveDataProvider(); // emptyProvider();
+        }
+        
+        //return !empty($dataset) ? $dataset : [ [0, 0, ''] ];
+        
+//        \Yii::warning($dataset);
+         
+        if (empty($dataset)) return '';
+        $waittypes = ArrayHelper::getColumn($dataset,'w_value');
+        $waittypes2 = ArrayHelper::getColumn($dataset,'w_value');
+        $labels = ArrayHelper::getColumn($dataset,'w_value');
+        $unique = array();
+
+        foreach ($waittypes as $key => $value) {
+                  if ($value == 'k') {
+                      $unique[] = 0;                  
+                  }
+                  else {
+                    $unique[] = 4;                                     
+                  } 
+            }
+        unset($value); 
+        $waittypes = $unique; 
+        unset($unique);
+        
+        $unique = array();
+
+        foreach ($waittypes2 as $key => $value) {
+                  if ($value == 'k') {
+                      $unique[] = 4;                  
+                  }
+                  else {
+                    $unique[] = 0;                                     
+                  } 
+            }
+        unset($value); 
+        $waittypes2 = $unique; 
+        unset($unique);
+        
+        \Yii::warning($waittypes);
+        \Yii::warning($waittypes2);
+        \Yii::warning($labels);
+  //      \yii\helpers\VarDumper::dump($waittypes, 10, true);
+//        $waittypes = array_filter($waittypes, function($e)  {
+//            return ($e !== "ttt");
+//        });     
+//        sort($waittypes);
+  //      \yii\helpers\VarDumper::dump($waittypes, 10, true);
+        $zeiten = ArrayHelper::getColumn($dataset,'quarter');
+/*        $unique = array();
+
+  //        \Yii::warning($zeiten,'application');
+        foreach ($zeiten as $row) 
+          if (!in_array($row, $unique)) {
+  //                $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i:s.u", $row),"d.m.Y H:i");
+                  if (!empty($row)) {
+                    $unique[] = $row;
+                  }
+          }
+        $zeiten = $unique;  
+        unset($unique);
+        sort($zeiten);
+  //      \yii\helpers\VarDumper::dump($zeiten, 10, true);
+  //        \Yii::warning($zeiten,'application');       
+*/
+        // Breite berechnen
+        $xPixels = (count($zeiten) * 8);
+        
+        $anzahl = count($zeiten);
+        $ymaxy = 50;
+/*
+        for ($i = 0; $i < count($zeiten); $i++) {
+                if (!isset($zeile)) 
+                  $zeile = array(); 
+
+        for ($i = 0; $i < count($zeiten); $i++) {
+          $ymax = 0.0;
+          for ($j = 0; $j < count($waittypes); $j++) {
+            for ($k = 0; $k < count($dataset); $k++) {  
+              if ($dataset[$k]['CaptureEnd'] == $zeiten[$i]) {
+                if (!isset($zeile)) 
+                  $zeile = array(); 
+                if ($dataset[$k]['WaitType'] == $waittypes[$j]) {
+  //                $zeile[$j] = intval(($dataset[$k]['SumWaitSecs']/100)*$dataset[$k]['Percentage']);
+                  $wl =  intval($dataset[$k]['Waitlength']);
+                  $zeile[$j] = $wl;
+  //                $ymax = intval($dataset[$k]['SumWaitSecs']/100);
+  //                $ymax += intval(($dataset[$k]['SumWaitSecs']/100)*$dataset[$k]['Percentage']);
+                  $ymax += $wl;
+                }  
+                else 
+                  if (!isset($zeile[$j])) 
+                    $zeile[$j] = 0;
+              }
+            }          
+          }
+          $daten[] = $zeile;
+          unset($zeile);
+          if ($ymax > $ymaxy) $ymaxy = $ymax;       
+        }  
+        
+        
+        $ymaxy = intval($ymaxy * 1.2);  
+  //      $avgvals = ArrayHelper::getColumn($dataset,'Percentage');
+  //      $daten = [$values, $avgvals]; 
+*/        $tooltips = array();
+        foreach ( range( 0, 1440, 15 ) as $timestamp ) {
+
+                $hour_mins = gmdate( 'i:s', $timestamp).' - '.gmdate( 'i:s', $timestamp + 15);
+
+                $tooltips[] = $hour_mins;
+        }
+        \Yii::warning($tooltips);
+//        for ($i = 0; $i < count($zeiten); ++$i) {
+//          $tooltips[$i] = '00:00' + $i * '00:15';     
+//        }
+        
+/*        $labels = !empty($zeiten) ? array_map(function($val) {return substr($val,0,16);},
+                                      array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0)
+                            ) : [ 'No Data' ] ;   
+*/
+  //      \Yii::warning(\yii\helpers\VarDumper::dumpAsString($daten),'application');
+  //        \Yii::warning($daten,'application');
+          
+        if ($output) return RGraphBar::widget([
+            'data' => !empty($waittypes) ? $waittypes : [ [0,0, 0] ],
+            'allowDynamic' => true,
+            'allowTooltips' => true,
+            'allowKeys' => true,
+            'allowResizing' => true,
+            'id' => 'wartung'.$srvrId,
+            'htmlOptions' => [
+                'height' => '80px', //($detail==0) ? '180px' : '700px',
+                'width' => '800', //($detail==0) ? '280px' : $xPixels.'px',
+            ],
+            'options' => [
+                'grouping' => false, //'stacked',
+                'resizable' => true,
+                'yaxis' => false,
+//                'yaxisLabelsSpecific' => ['Wartung', 'Keine Wartung'],
+                'marginBottom' => 10,
+                'marginLeft' => 10,
+//                'marginInner' => 2,
+                'backgroundGrid' => false,
+  //              'id' => 'rgbar1_'.$id,
+//                'id' => 'rgbar1_'.$srvrId,
+                'colors' => ['green'],
+                'textAngle' => 45,
+                'textSize' => 7,
+                'textFonts' => 'arial condensed',
+                'labelsAbove' => true,
+                'labelsAboveSize' => 8,
+                'labelsAboveSpecific' => $labels,
+                'tooltips' => $tooltips,
+                'tooltipsEvent' => 'onmousemove',
+                'key' => ['Wartung', 'keine Wartung'],
+                'gutter' => ['left' => ($detail==0) ? 50 : 80, 'bottom' => ($detail==0) ? 80 : 100, 'top' => 50],
+//                'tickmarks' => 'none', //'circle',
+//                'xaxisTickmarksCount' => '10',
+//                'yaxisTickmarksCount' => '10',
+                'title' => '', //!empty($title) ? $title : $cntr,
+                'titleSize' => 12,
+                'titleBold' => false,
+//                'ymax' => $ymaxy,
+                'backgroundColor' => $bg,
+                'onclick' => new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail_waits', 'id' => $srvrId, 'days' => 1 ]).'");}') ,
+                'contextmenu' => [
+//                    ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail_waits','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
+//                    ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_waits','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
+//                    ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_waits','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
+  //                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+  //                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+  //                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $id ])."\");}") ],
+                ],
+            ],
+        ]). RGraphBar::widget([
+            'data' => !empty($waittypes2) ? $waittypes2 : [ [0,0, 0] ],
+            'allowDynamic' => true,
+            'allowTooltips' => true,
+  //          'allowContext' => true,
+            'allowKeys' => true,
+            'allowResizing' => true,
+  //          'allowEffects' => true,
+  //          'allowAnnotate' => true,
+            'id' => 'wartung'.$srvrId,
+            'htmlOptions' => [
+                'height' => '0px', //($detail==0) ? '180px' : '700px',
+                'width' => '0px', //($detail==0) ? '280px' : $xPixels.'px',
+            ],
+            'options' => [
+                'grouping' => false, //'stacked',
+                'resizable' => true,
+                'yaxis' => false,
+//                'yaxisLabelsSpecific' => ['Wartung', 'Keine Wartung'],
+//                'yaxisLabels' => false,                
+                'marginBottom' => 10,
+                'marginLeft' => 10,
+                'backgroundGrid' => false,
+  //              'linewidth' => 2,
+  //              'textAccessible' => true,
+  //              'strokestyle' => 'white',
+//                'marginInner' => 5,
+//                'marginGrouped' => 2,
+  //              'clearto' => 'white',              
+  //              'height' => ($detail==0) ? '180px' : '700px',
+  //              'width' => ($detail==0) ? '280px' : '1000px',
+//                'id' => 'rgbar1_'.$srvrId,
+                'colors' => ['blue'],
+  //              'filled' => true,
+                'textAngle' => 45,
+                'textSize' => 7,
+                'textFonts' => 'arial condensed',
+                'labelsAbove' => true,
+//                'labelsAboveDecimals' => 0,
+                'labelsAboveSize' => 8,
+                'labelsAboveSpecific' => $labels,
+                'tooltips' => $tooltips,
+                'tooltipsEvent' => 'onmousemove',
+//                'key' => ['Wartung', 'keine Wartung'],
+//                'keyInteractive' => true,
+                'gutter' => ['left' => ($detail==0) ? 50 : 80, 'bottom' => ($detail==0) ? 80 : 100, 'top' => 50],
+//                'tickmarks' => 'none', //'circle',
+//                'xaxisTickmarksCount' => '10',
+//                'yaxisTickmarksCount' => '10',
+                'title' => '', //!empty($title) ? $title : $cntr,
+                'titleSize' => 12,
+                'titleBold' => false,
+//                'ymax' => $ymaxy,
+                'backgroundColor' => false, //$bg,
+                'onclick' => new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail_waits', 'id' => $srvrId, 'days' => 1 ]).'");}') ,
+                'contextmenu' => [
+//                    ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail_waits','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
+//                    ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_waits','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
+//                    ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_waits','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
+  //                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+  //                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+  //                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $id ])."\");}") ],
+                ],
+            ],
+        ]);    
+
+
+    }
+  
      public static function getServersMenu($target,$id) {
               
       try{
@@ -1015,6 +1293,10 @@ class ServerViewController extends \yii\web\Controller
         
         $pcid = $this->getPerfCounterDefaultId($counter)
 */      
+
+        // Datumsformatierung am SQL Server einstellen
+        \Yii::$app->db->createCommand("SET DATEFORMAT ymd")->execute();
+        
         try {
           $machine = (new \yii\db\Query())
           ->select('Value')->from('ServerConfig WITH (READPAST)')->where('server=:sr AND Property=:prop', 
@@ -1024,25 +1306,27 @@ class ServerViewController extends \yii\web\Controller
           ->scalar();
         } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $machine = new ActiveDataProvider();;
+          $machine = new ActiveDataProvider();
         }
   
         if ($cntr == 'BytesTotalPersec') $fields = 'CaptureDate, BytesTotalPersec/(1024) AS Value, AvgBytesTotalPersec/(1024) AS AvgValue, CurrentBandwidth/(1024) AS CurrentBandwidth';
         if ($cntr == 'BytesReceivedPersec') $fields = 'CaptureDate, BytesReceivedPersec/(1024) AS Value, AvgBytesReceivedPersec/(1024) AS AvgValue, CurrentBandwidth/(1024) AS CurrentBandwidth';
         if ($cntr == 'BytesSentPersec') $fields = 'CaptureDate, BytesSentPersec/(1024) AS Value, AvgBytesSentPersec/(1024) AS AvgValue, CurrentBandwidth/(1024) AS CurrentBandwidth';        
+ 
         try {
-          $dataset = (new \yii\db\Query())
+          $dataset = /*new ActiveDataProvider([
+            'query' =>*/ (new \yii\db\Query())
           ->select($fields)->from('NetMonData')->where('Server=:srvr AND CaptureDate>:dt AND wmiNetAdapterName = :adapter',
           array('srvr' => $machine, 'dt' => $dt, 'adapter' => $adapter ))
-          ->orderBy('CaptureDate')
-          ->all();
+          ->orderBy('CaptureDate')->all(); /*,
+          ]);*/
         } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $dataset = new ActiveDataProvider();
+          $dataset = [ [0, 0, 0, 0] ]; //ServerViewController::emptyProvider();
         }
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
-        
-        return !empty($dataset) ? $dataset : [ [0, 0] ];
+//        \Yii::warning($dataset);
+        return !empty($dataset) ? $dataset : [ [0, 0, 0, 0] ];
 
     }
 
@@ -1067,13 +1351,13 @@ class ServerViewController extends \yii\web\Controller
         $stat = 'unknown';        
         $stat = (new \yii\db\Query())
                 ->select('status')->from('PerfCounterPerServer WITH (READPAST)')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
-          ['srvr' => $srvr, 'cntr' => "Network Utilization", 'inst' => $instance])
+          ['srvr' => $srvr, 'cntr' => $cntr/*"Network Utilization"*/, 'inst' => $instance])
         ->scalar();
 
       $bg = ServerViewController::getBackground($stat);
 //      \yii\helpers\VarDumper::dump($stat, 10, true);
 
-      if (empty($dataset)) return '';
+      if (empty($dataset) /*or ($dataset->getCount() == 0)*/) return '';
       $values = ArrayHelper::getColumn($dataset,'Value');
       $avgvals = ArrayHelper::getColumn($dataset,'AvgValue');
       $bandWidth = ArrayHelper::getColumn($dataset,'CurrentBandwidth');
@@ -1081,9 +1365,11 @@ class ServerViewController extends \yii\web\Controller
       $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
       $daten = [$values, $avgvals];  //   , $bandWidth
       $tooltips = $values + $zeiten;
-
+//  \Yii::warning($values);
+//  \Yii::warning($zeiten);
       for ($i = 0; $i < count($zeiten); ++$i) {
-        $tooltips[$i] = $tooltips[$i] . '<br>'. substr($zeiten[$i],0,16);     
+//        $tooltips[$i] = $tooltips[$i] . '<br>'. substr($zeiten[$i],0,16);     
+        $tooltips[$i] = $tooltips[$i] . '<br>'. (string)date_format($zeiten[$i],"d.m.Y H:i");
       }    
 //      \yii\helpers\VarDumper::dump('Counter: '.$counter, 10, true);
         
@@ -1104,7 +1390,7 @@ class ServerViewController extends \yii\web\Controller
               'colors' => ['blue','green'], //    ,'orange'
 //              'filled' => true,
               'clearto' => ['white'],
-              'xaxisLabels' => !empty($dataset) ? array_map(function($val) /*use ($detail)*/ {return substr($val,0,16);},
+              'xaxisLabels' => !empty($dataset) ? array_map(function($val) /*use ($detail)*/ {return (string)date_format($val,"d.m.Y H:i");},
                                     array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),count($zeiten)/$anzahl),0)
                           ) : [ 'No Data' ],
               'tooltips' => $tooltips,
@@ -1335,8 +1621,9 @@ class ServerViewController extends \yii\web\Controller
       $unique = array();
       foreach ($zeiten as $row) 
         if (!in_array($row, $unique)) {
-            if (date_create_from_format("Y-m-d H:i:s.u", $row))
-                $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i:s.u", $row),"d.m.Y H:i");
+            $unique[] = (string)date_format($row,"d.m.Y H:i.v");
+//            if (date_create_from_format("Y-m-d H:i:s.u", $row))
+//                $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i:s.u", $row),"d.m.Y H:i");
         }
       $zeiten = $unique;
       unset($unique);
@@ -1454,21 +1741,21 @@ class ServerViewController extends \yii\web\Controller
       if (empty($dataset)) return '';
 //       \Yii::warning($dataset,'application');      
       if (is_Array($dataset)) 
-      $zeiten = array_values(array_unique(ArrayHelper::getColumn($dataset,'CaptureDate')));
+        $zeiten = array_values(array_unique(ArrayHelper::getColumn($dataset,'CaptureDate'), SORT_REGULAR));
 //       \Yii::warning($zeiten,'application');      
       if (empty($zeiten)) return '';
       $j = 0;
       foreach ($zeiten as $zeit) {
         $toolt[] = array();
         for ($i = 0; $i < count($dataset); $i++) {
-          if ($dataset[$i]['CaptureDate'] == $zeit) $toolt[$j][] =  $dataset[$i]['db'] ."\n". $dataset[$i]['sizeMB']  ."\n". $dataset[$i]['CaptureDate'];    
+          if ($dataset[$i]['CaptureDate'] == $zeit) $toolt[$j][] =  $dataset[$i]['db'] ."\n". $dataset[$i]['sizeMB']  ."\n". (string)date_format($dataset[$i]['CaptureDate'],"d.m.Y H:i.v");    
         }
         $j++;
       }      
       $unique = array();
       foreach ($zeiten as $row) {
         if (empty($row)) return ''; 
-        $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i:s.u", $row),"d.m.Y H:i");
+        $unique[] = (string)date_format($row,"d.m.Y H:i.v");
       }
       $zeiten = $unique;
       unset($unique);
@@ -1634,6 +1921,7 @@ class ServerViewController extends \yii\web\Controller
         $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $counter, $instance);
 //        $dataset = ServerViewController::getPerfmonDataset($srvr,$counter,$dt);
         $dataset = ServerViewController::getPerfmonDataset($srvr,$pcid,$dt, $instance);
+//        \Yii::warning($dataset);
         
         $stat = 'unknown';  
         try{      
@@ -1661,7 +1949,7 @@ class ServerViewController extends \yii\web\Controller
       foreach ($labels as $row) {
 //                \Yii::warning(\yii\helpers\VarDumper::dump($row),'application');
                 if (!empty($row)) {
-                    $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i", substr($row,0,16)),"d.m.Y H:i");
+                    $unique[] = (string)date_format($row,"d.m.Y H:i.v");
                 }
       }          
       $labels = $unique;
@@ -1673,7 +1961,7 @@ class ServerViewController extends \yii\web\Controller
       $tooltips = $values + $zeiten;
 
       for ($i = 0; $i < count($zeiten); ++$i) {
-        $tooltips[$i] = $tooltips[$i] . '<br>'. substr($zeiten[$i],0,16);     
+        $tooltips[$i] = $tooltips[$i] . '<br>'. (string)date_format($zeiten[$i],"d.m.Y H:i");     
       }    
 //      \yii\helpers\VarDumper::dump('Counter: '.$counter, 10, true);
         

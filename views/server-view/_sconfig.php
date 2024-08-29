@@ -13,11 +13,13 @@ use kartik\grid\GridView;
 ?>
 
 <div class="sconfig-data-form">
-<?= GridView::widget([
+<?php  echo GridView::widget([
     'dataProvider'=> $dataProvider_sc,
     'condensed' => true,
 //    'filterModel' => $searchModel,
-    'columns' => ['Server','Property','Value','CaptureDate'],
+    'columns' => [
+        ['class' => 'yii\grid\SerialColumn'],
+        'Server','Property','Value','CaptureDate'],
     'responsive'=>true,
     'hover'=>true,
     'rowOptions'=>function ($model, $key, $index, $grid){

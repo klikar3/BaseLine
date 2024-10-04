@@ -55,21 +55,8 @@ alert = function (str)
     );
     date_default_timezone_set('Europe/Berlin'); 
 ?>
-<style>
-    .RGraph_tooltip img {
-        display: none;
-    }
+<?php echo app\controllers\ServerViewController::getCss(); ?>
 
-    .RGraph_tooltip {
-        box-shadow: none ! important;
-        border: 2px solid blue ! important;
-        background-color: white ! important;
-        padding: 3px ! important;
-        text-align: center;
-        font-weight: bold;
-        font-family: Verdana;
-    }
-</style>
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>
 
 <div class="row">

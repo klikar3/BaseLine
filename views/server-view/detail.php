@@ -28,6 +28,7 @@ if (empty($dt)) {
 }
 
 ?>
+<?php echo app\controllers\ServerViewController::getCss(); ?>
 
 <div class="site-index">
 

@@ -2,7 +2,10 @@
 
 use yii\helpers\Html;
 use yii\grid\GridView;
+use yii\widgets\Pjax; 
 
+//use kartik\grid\GridView;
+		
 /* @var $this yii\web\View */
 /* @var $searchModel app\models\ServerDataSearch */
 /* @var $dataProvider yii\data\ActiveDataProvider */
@@ -31,11 +34,14 @@ $this->params['breadcrumbs'][] = $this->title;
         <?= Html::a(Yii::t('app', 'Create Server Data'), ['create'], ['class' => 'btn btn-success']) ?>
     </p>
 
+   <?php Pjax::begin(); ?> 
+		
     <?= GridView::widget([
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
-            [ 'attribute' => 'id',
+            ['class' => 'yii\grid\SerialColumn'],
+		    [ 'attribute' => 'id',
               'class' => 'yii\grid\DataColumn',
               'value' => 'id',
               'options' => [ 'width' => '50px;']
@@ -60,11 +66,12 @@ $this->params['breadcrumbs'][] = $this->title;
 		        'stat_disk',
 		        'stat_sess',	
 		        'stat_net',
-            'lastEventlogSearch',	
-            ['class' => 'yii\grid\ActionColumn',
+//            'lastEventlogSearch',	
+           ['class' => 'yii\grid\ActionColumn',
               'options' => [ 'width' => '80px;']
             ],
         ],
     ]); ?>
-
+ 	   <?php Pjax::end(); ?> 
+	
 </div>

@@ -19,7 +19,8 @@ class ServerDataSearch extends ServerData
     {
         return [
             [['id'], 'integer'],
-            [['Server', 'usertyp', 'user', 'password', 'snmp_pw', 'typ', 'stat_wait', 'stat_queries', 'stat_cpu', 'stat_mem', 'stat_disk', 'stat_sess'], 'safe'],
+            [['Server', 'usertyp', 'user', 'password', 'snmp_pw', 'typ', 'stat_event', 'stat_wait', 'stat_queries', 'stat_cpu', 
+                'stat_mem', 'stat_disk', 'stat_sess', 'stat_net', 'User_Encrypted', 'Password_Encrypted', 'Description', 'lastEventlogSearch'], 'safe'],
         ];
     }
 
@@ -57,7 +58,9 @@ class ServerDataSearch extends ServerData
 
         $query->andFilterWhere([
             'id' => $this->id,
-        ]);
+           'paused' => $this->paused, 
+		    'lastEventlogSearch' => $this->lastEventlogSearch, 
+	        ]);
 
         $query->andFilterWhere(['like', 'Server', $this->Server])
             ->andFilterWhere(['like', 'usertyp', $this->usertyp])
@@ -70,8 +73,13 @@ class ServerDataSearch extends ServerData
             ->andFilterWhere(['like', 'stat_cpu', $this->stat_cpu])
             ->andFilterWhere(['like', 'stat_mem', $this->stat_mem])
             ->andFilterWhere(['like', 'stat_disk', $this->stat_disk])
-            ->andFilterWhere(['like', 'stat_sess', $this->stat_sess]);
-
+            ->andFilterWhere(['like', 'stat_sess', $this->stat_sess])
+           ->andFilterWhere(['like', 'stat_sess', $this->stat_sess])
+           ->andFilterWhere(['like', 'stat_net', $this->stat_net])
+           ->andFilterWhere(['like', 'User_Encrypted', $this->User_Encrypted])
+           ->andFilterWhere(['like', 'Password_Encrypted', $this->Password_Encrypted])
+           ->andFilterWhere(['like', 'Description', $this->Description]);
+	
         return $dataProvider;
     }
 }

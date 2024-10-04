@@ -20,6 +20,8 @@ if (!empty($dt)) {
   $dt = date('Ymd H:i:s',time() - 60 * 60);
 }
 ?>
+<?php echo app\controllers\ServerViewController::getCss(); ?>
+
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>
 <div class="row">
   <?= app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_0,*/ $cntrs[0], $id, 0, $dt, 1, "SQL: Page Life Expectancy"); ?>

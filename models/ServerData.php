@@ -7,13 +7,12 @@ use Yii;
 /**
  * This is the model class for table "ServerData".
  *
- * @property string $id
+ * @property int $id
  * @property string $Server
  * @property string $usertyp
- * @property string $user
- * @property string $password
- * @property string $snmp_pw
- * @property string $paused
+ * @property string|null $user
+ * @property string|null $password
+ * @property string|null $snmp_pw
  * @property string $typ
  * @property string $stat_wait
  * @property string $stat_queries
@@ -21,10 +20,24 @@ use Yii;
  * @property string $stat_mem
  * @property string $stat_disk
  * @property string $stat_sess
- * @property string $stat_net
- * @property resource $User_Encrypted 
- * @property resource $Password_Encrypted 
- */
+ * @property string|null $stat_net
+  * @property string|null $User_Encrypted
+  * @property string|null $Password_Encrypted
+  * @property string|null $Description
+  * @property int|null $paused
+  * @property string|null $lastEventlogSearch
+  *
+  * @property ConfigData[] $configDatas
+  * @property DriveData[] $driveDatas
+  * @property DriveData[] $driveDatas0
+  * @property PerfCounterPerServer[] $perfCounterPerServers
+  * @property PerfMonData[] $perfMonDatas
+  * @property PhysDriveData[] $physDriveDatas
+  * @property SecurityAudit[] $securityAudits
+  * @property Wartungsfenster[] $wartungsfensters
+  * @property Win32EventLog[] $win32EventLogs
+  * @property string|null $lastEventlogSearch
+*/
 class ServerData extends \yii\db\ActiveRecord
 {
     /**
@@ -49,7 +62,7 @@ class ServerData extends \yii\db\ActiveRecord
             [['Server', 'usr', 'pwd', 'usertyp', 'typ'], 'required'],
             ['Server', 'unique'],
             [['paused'], 'integer'],
-            [['Server', 'usertyp', 'user', 'usr', 'password', 'pwd', 'snmp_pw', 'typ', 'stat_wait', 'stat_queries', 'stat_cpu', 'stat_mem', 'stat_disk', 'stat_sess', 'stat_net', 'lastEventlogSearch'], 'string'],
+            [['lastEventlogSearch'], 'safe'],
             [['User_Encrypted', 'Password_Encrypted', 'Description'], 'string'],
             [['usr'], 'validateUser', 'skipOnEmpty' => false, 'skipOnError' => false],
 
@@ -110,7 +123,7 @@ class ServerData extends \yii\db\ActiveRecord
             'stat_sess' => Yii::t('app', 'Sess'),
             'stat_net' => Yii::t('app', 'Net'),
             'User_Encrypted' => Yii::t('app', 'User Encrypted'),
-		        'Password_Encrypted' => Yii::t('app', 'Password Encrypted'),
+		    'Password_Encrypted' => Yii::t('app', 'Password Encrypted'),
             'paused' => Yii::t('app', 'paused'),
             'lastEventlogSearch' => Yii::t('app', 'Last Eventlog Search'),
  		        ];

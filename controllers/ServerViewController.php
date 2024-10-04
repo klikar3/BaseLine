@@ -935,7 +935,8 @@ class ServerViewController extends \yii\web\Controller
         $tooltips[$i] = $waittypes;     
       }
       
-      $labels = !empty($zeiten) ? array_map(function($val) {return substr($val,0,16);},
+      $labels = !empty($zeiten) ? array_map(function($val) {return (string)date_format($val,"d.m.Y H:i") //substr($val,0,16)
+                                                            ;},
                                     array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0)
                           ) : [ 'No Data' ] ;   
 
@@ -1364,13 +1365,18 @@ class ServerViewController extends \yii\web\Controller
       $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
       $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
       $daten = [$values, $avgvals];  //   , $bandWidth
-      $tooltips = $values + $zeiten;
+      $tooltips = [];
+     for ($i = 0; $i < count($zeiten); ++$i) {
+//        $tooltips[$i] = $tooltips[$i] . '<br>'. substr($zeiten[$i],0,16);     
+        $tooltips[$i] = (string)date_format($zeiten[$i],"d.m.Y H:i");
+      } 
+//      $tooltips = $values + $zeiten;
 //  \Yii::warning($values);
 //  \Yii::warning($zeiten);
-      for ($i = 0; $i < count($zeiten); ++$i) {
+/*      for ($i = 0; $i < count($zeiten); ++$i) {
 //        $tooltips[$i] = $tooltips[$i] . '<br>'. substr($zeiten[$i],0,16);     
         $tooltips[$i] = $tooltips[$i] . '<br>'. (string)date_format($zeiten[$i],"d.m.Y H:i");
-      }    
+      } */   
 //      \yii\helpers\VarDumper::dump('Counter: '.$counter, 10, true);
         
       if ($output) return RGraphLine::widget([
@@ -1393,7 +1399,9 @@ class ServerViewController extends \yii\web\Controller
               'xaxisLabels' => !empty($dataset) ? array_map(function($val) /*use ($detail)*/ {return (string)date_format($val,"d.m.Y H:i");},
                                     array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),count($zeiten)/$anzahl),0)
                           ) : [ 'No Data' ],
-              'tooltips' => $tooltips,
+              'zeiten' => $tooltips,
+              'tooltips' => 'Zeit: %{property:zeiten[%{index}]}<br>Wert: %{value_formatted} kB', 
+//              'tooltips' => $tooltips,
               'xaxisLabelsAngle' => 45,
               'xaxisLabelsSize' => 7,
               'textFonts' => 'arial condensed',
@@ -1744,18 +1752,20 @@ class ServerViewController extends \yii\web\Controller
         $zeiten = array_values(array_unique(ArrayHelper::getColumn($dataset,'CaptureDate'), SORT_REGULAR));
 //       \Yii::warning($zeiten,'application');      
       if (empty($zeiten)) return '';
-      $j = 0;
+/*      $j = 0;
       foreach ($zeiten as $zeit) {
         $toolt[] = array();
         for ($i = 0; $i < count($dataset); $i++) {
-          if ($dataset[$i]['CaptureDate'] == $zeit) $toolt[$j][] =  $dataset[$i]['db'] ."\n". $dataset[$i]['sizeMB']  ."\n". (string)date_format($dataset[$i]['CaptureDate'],"d.m.Y H:i.v");    
+          if ($dataset[$i]['CaptureDate'] == $zeit) $toolt[$j][] =  $dataset[$i]['db'] ."\n". $dataset[$i]['sizeMB']  ." MB\n". (string)date_format($dataset[$i]['CaptureDate'],"d.m.Y H:i");    
         }
         $j++;
       }      
-      $unique = array();
+       \Yii::warning($toolt,'application');
+*/     $unique = array();
       foreach ($zeiten as $row) {
         if (empty($row)) return ''; 
-        $unique[] = (string)date_format($row,"d.m.Y H:i.v");
+//        $unique[] = (string)date_format($row,"d.m.Y H:i");
+        $unique[] = (string)date_format($row,"d.m.Y");
       }
       $zeiten = $unique;
       unset($unique);
@@ -1796,8 +1806,7 @@ class ServerViewController extends \yii\web\Controller
         $j++;
       }      
     //   \Yii::warning($dat,'application');      
-      $tooltips = $toolt;
-    //  \Yii::warning($toolt,'application');
+//      $tooltips = $toolt;
        
 //       \yii\helpers\VarDumper::dump($tooltips, 10, true);
 //      \yii\helpers\VarDumper::dump($daten, 10, true);
@@ -1824,7 +1833,18 @@ class ServerViewController extends \yii\web\Controller
               'xaxisLabels' => $labels,
               'xaxisLabelsAngle' => 45,
               'xaxisLabelsSize' => 7,
-              'tooltips' => $tooltips,
+              'tooltips' => '%{property:xaxisLabels[%{index}]}<br>%{property:key[%{dataset}]}<br>%{value_formatted} MB', //       $tooltips,
+/*              'tooltipsCss' => [
+                  'box-shadow' =>  'none ! important',
+                  'border' => '2px solid blue ! important',
+                  'backgrund-color' => 'lightblue ! important',
+                  'padding' => '3px ! important',
+                  'text-align' => 'center',
+                  'font-weight' => 'bold',
+                  'font-family' => 'Verdana',
+                  'color' => 'darkblue',
+                  'font-size' => '15pt',
+              ],*/
 //              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
 //              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
   //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
@@ -1898,7 +1918,7 @@ class ServerViewController extends \yii\web\Controller
       return $bg;
     }
 
-    public static function getPaintLine($srvr,$cntr,$id,$detail=0,$dt='',$days=1,$title='') {
+    public static function getPaintLine($srvr,$cntr,$id=0,$detail=0,$dt='',$days=1,$title='') {
         
         $output = true;
 //        \Yii::warning($cntr);
@@ -1949,7 +1969,7 @@ class ServerViewController extends \yii\web\Controller
       foreach ($labels as $row) {
 //                \Yii::warning(\yii\helpers\VarDumper::dump($row),'application');
                 if (!empty($row)) {
-                    $unique[] = (string)date_format($row,"d.m.Y H:i.v");
+                    $unique[] = (string)date_format($row,"d.m.Y H:i");
                 }
       }          
       $labels = $unique;
@@ -1958,11 +1978,11 @@ class ServerViewController extends \yii\web\Controller
       $daten = [$values, $avgvals]; 
 //      \yii\helpers\VarDumper::dump($daten, 10, true);
 
-      $tooltips = $values + $zeiten;
+/*      $tooltips = $values + $zeiten;
 
       for ($i = 0; $i < count($zeiten); ++$i) {
         $tooltips[$i] = $tooltips[$i] . '<br>'. (string)date_format($zeiten[$i],"d.m.Y H:i");     
-      }    
+      } */   
 //      \yii\helpers\VarDumper::dump('Counter: '.$counter, 10, true);
         
       if ($output) return RGraphLine::widget([
@@ -1970,6 +1990,7 @@ class ServerViewController extends \yii\web\Controller
           'allowDynamic' => true,
           'allowTooltips' => true,
           'allowContext' => true,
+          'id' => 'rgline_'.(string)$pcid,
           'htmlOptions' => [
 //              'id' => 'rgline_'.$pcid,
               'height' => ($detail==0) ? '180px' : '600px',
@@ -1986,9 +2007,8 @@ class ServerViewController extends \yii\web\Controller
               'xaxisLabels' => $labels,
               'xaxisLabelsAngle' => 45,
               'xaxisLabelsSize' => 7,
-              'tooltips' => $tooltips,
-//              'tooltips' => !empty($dataset) ? array_map('strval',ArrayHelper::getColumn($dataset,'value')) : [ 'No Data' ],
-//              'tooltips' => ['Link:<a href=\''.Url::to(['/test']).'\'>aaa</a>'],
+              'tooltips' => 'Zeit: %{property:xaxisLabels[%{index}]}<br>Wert: %{value_formatted}', //       $tooltips,
+//              'tooltips' => '%{property:xaxisLabels[%{index}]}<br>%{property:key[%{dataset}]}<br>%{value_formatted}', //       $tooltips,
   //            'eventsClick' => 'function (e) {window.open(\'http://news.bbc.co.uk\', \'_blank\');} ',
   //            'eventsMousemove' => 'function (e) {e.target.style.cursor = \'pointer\';}',
 //              'textFonts' => 'arial condensed',
@@ -2028,4 +2048,25 @@ class ServerViewController extends \yii\web\Controller
       ;    
     }
     
+    public static function getCss () {
+        return '<style>
+    .RGraph_tooltip img {
+        display: none;
+    }
+
+    .RGraph_tooltip {
+        box-shadow: none !important;
+        border: 2px solid blue !important;
+        background-color: lightcyan !important;
+        padding: 3px !important;
+        text-align: left !important;
+        white-space: nowrap;
+        font-weight: bold;
+        font-family: Verdana;
+        color: black !important;
+        font-size: 15pt;
+    }
+</style>
+';
+    }
 }

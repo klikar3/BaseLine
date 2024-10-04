@@ -24,6 +24,7 @@ $this->title = 'BaseLine';
 
 
 ?>
+<?php echo app\controllers\ServerViewController::getCss(); ?>
 
 <div class="site-index">
 

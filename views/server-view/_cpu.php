@@ -16,6 +16,7 @@ use klikar3\rgraph\RGraphLine;
 /* @var $form yii\widgets\ActiveForm */
 
 ?>
+<?php echo app\controllers\ServerViewController::getCss(); ?>
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>
 <div class="row">
   <?= app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_0,*/ $cntrs[0], $id, 0, $dt); ?>

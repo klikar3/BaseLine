@@ -14,14 +14,12 @@ $this->title = Yii::t('app', 'Serverdaten');
 $this->params['breadcrumbs'][] = $this->title;
 ?>
 <?php
-
-    $this->registerJs(
-       'var autoRefresh = setInterval( function ()
+    $js = 'var autoRefresh = setInterval( function ()
     {
        window.location.reload();
-    }, 20000); // this will reload page after every 1 minute.
-'
-    );
+    }, '.$refreshTime.'000); // this will reload page after every 1 minute.';
+
+    $this->registerJs($js);
     date_default_timezone_set('Europe/Berlin'); 
 
 ?>

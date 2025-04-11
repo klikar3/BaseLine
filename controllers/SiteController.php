@@ -52,6 +52,14 @@ class SiteController extends Controller
 
     public function actionIndex()
     {
+        $session = Yii::$app->session;
+        if ($session->has('refreshTime')) {
+          $refreshTime = $session->get('refreshTime');
+        } else {
+          $refreshTime = 60;
+          $session->set('refreshTime','60');          
+        }
+        
         $searchModel = new ServerDataSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
         $dataProvider->query->where('paused <> 1');
@@ -62,6 +70,7 @@ class SiteController extends Controller
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'refreshTime' => $refreshTime,          
         ]);
 //        return $this->render('index');
     }
@@ -109,6 +118,15 @@ class SiteController extends Controller
     public function actionWartung()
     {
         // Wartungsfenster
+
+        $session = Yii::$app->session;
+        if ($session->has('refreshTime')) {
+          $refreshTime = $session->get('refreshTime');
+        } else {
+          $refreshTime = 60;
+          $session->set('refreshTime','60');          
+        }
+        
 /*        $sql = "SELECT sj.*, 
 	CASE
         WHEN sja.start_execution_date IS NULL THEN 'Not running'
@@ -145,6 +163,7 @@ WHERE session_id = ( SELECT MAX(session_id) FROM msdb.dbo.sysjobactivity) and sj
         return $this->render('wartung', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'refreshTime' => $refreshTime,          
         ]);
 //        return $this->render('index');
     }

@@ -14,14 +14,12 @@ use app\controllers\ServerViewController;
 $this->title = 'BaseLine';
 ?>
 <?php
-
-    $this->registerJs(
-       'var autoRefresh = setInterval( function ()
+    $js = 'var autoRefresh = setInterval( function ()
     {
        window.location.reload();
-    }, 200000); // this will reload page after every 1 minute.
-'
-    );
+    }, '.$refreshTime.'000); // this will reload page after every 1 minute.';
+
+    $this->registerJs($js);
     date_default_timezone_set('Europe/Berlin'); 
 
 ?>

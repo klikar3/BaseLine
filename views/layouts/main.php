@@ -23,7 +23,15 @@ AppAsset::register($this);
 </head>
 <body>
 <?php $this->beginBody() ?>
-
+<?php
+    $session = Yii::$app->session;
+    if ($session->has('refreshTime')) {
+      $refreshTime = $session->get('refreshTime');
+    } else {
+      $refreshTime = 60;
+      $session->set('refreshTime','60');          
+    }
+?>
 <div class="wrap">
     <?php
     NavBar::begin([
@@ -63,10 +71,51 @@ AppAsset::register($this);
     NavBar::end();
     ?>
 
+
     <div class="container">
         <?= Breadcrumbs::widget([
             'links' => isset($this->params['breadcrumbs']) ? $this->params['breadcrumbs'] : [],
         ]) ?>
+<div class="row">        
+  <div class="round-time-bar col-lg-10" data-style="smooth" style="--duration: <?=$refreshTime?>;">
+    <div></div>
+  </div>
+  <div class="col-lg-1"><?=$refreshTime?> Sec. </div>
+</div>
+<style type="text/css">
+
+.round-time-bar {
+  margin: 1rem;
+  overflow: hidden;
+}
+.round-time-bar div {
+  height: 5px;
+  animation: roundtime calc(var(--duration) * 1s) steps(var(--duration))
+    forwards;
+  transform-origin: left center;
+  background: linear-gradient(to bottom, blue, #900);
+}
+
+.round-time-bar[data-style="smooth"] div {
+  animation: roundtime calc(var(--duration) * 1s) linear forwards;
+}
+
+.round-time-bar[data-style="fixed"] div {
+  width: calc(var(--duration) * 5%);
+}
+
+.round-time-bar[data-color="blue"] div {
+  background: linear-gradient(to bottom, #64b5f6, #1565c0);
+}
+
+@keyframes roundtime {
+  to {
+    /* More performant than `width` */
+    transform: scaleX(0);
+  }
+}
+
+</style>
         <?= $content ?>
     </div>
 </div>

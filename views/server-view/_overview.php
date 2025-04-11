@@ -30,12 +30,10 @@ if (empty($dtd)) {
 
 ?>
 <?php
-
-    $this->registerJs(
-       "var autoRefresh = setInterval( function ()
+    $js = "var autoRefresh = setInterval( function ()
     {
        window.location.reload();
-    }, 150000); // this will reload page after every 2,5 minutes.
+    }, ".$refreshTime."000); // this will reload page after every 2,5 minutes.
     
     $(document).ready(function() { 
    $('a[data-toggle=\"tab\"]').on('show.bs.tab', function (e) {
@@ -45,16 +43,18 @@ if (empty($dtd)) {
    if (lastTab) {
       $('[href=\"' + lastTab + '\"]').tab('show');
    }
-   alert('ready');
-});
+   // alert('ready');
+
 alert = function (str)
 {
     console.log(str);
 };
-    "
-    );
+});    ";
+
+    $this->registerJs($js);
     date_default_timezone_set('Europe/Berlin'); 
 ?>
+
 <?php echo app\controllers\ServerViewController::getCss(); ?>
 
 <?= 'Refreshed on '.date('d.m.Y H:i:s'); ?>

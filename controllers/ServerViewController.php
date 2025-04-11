@@ -30,8 +30,18 @@ use app\models\Win32EventLog;
 
 class ServerViewController extends \yii\web\Controller
 {
+    
     public function actionIndex($id, $tabnum=1)
     {
+        $session = \Yii::$app->session;
+        if ($session->has('refreshTime')) {
+          $refreshTime = $session->get('refreshTime');
+        } else {
+          $refreshTime = 60;
+          $session->set('refreshTime','60');          
+        }
+
+        
         // Datumsformatierung am SQL Server einstellen
         \Yii::$app->db->createCommand("SET DATEFORMAT ymd")->execute();
         
@@ -46,7 +56,7 @@ class ServerViewController extends \yii\web\Controller
         
         try {
           $datum = $cmd->queryScalar(); 
-          $datum = (string)date_format($datum,"Y-m-d H:i:s.v");
+          //$datum = (string)date_format($datum,"Y-m-d H:i:s.v");
           $dataProvider = new ActiveDataProvider([
               'query' => ConfigData::find()->select('Name, Value, ValueInUse')->where(['ServerID' => $id])->andWhere(['CaptureDate' => $datum]),
               'pagination' => [
@@ -67,7 +77,7 @@ class ServerViewController extends \yii\web\Controller
         $cmd->bindValue(':srv', $servername);
         try {
           $datum = $cmd->queryScalar(); 
-          $datum = (string)date_format($datum,"Y-m-d H:i:s.v");
+          //$datum = (string)date_format($datum,"Y-m-d H:i:s.v");
           $dataProvider_sc = new ActiveDataProvider([
               'query' => ServerConfig::find()->select('Server,Property,Value')->where(['Server' => $servername])->andWhere('CaptureDate >= :datum',[ ':datum' => $datum]),
               'pagination' => [ 'pageSize' => 22],
@@ -89,7 +99,7 @@ class ServerViewController extends \yii\web\Controller
 
         try {
           $datum = $cmd->queryScalar(); 
-          $datum = (string)date_format($datum,"Y-m-d H:i:s.v");
+          //$datum = (string)date_format($datum,"Y-m-d H:i:s.v");
           $dataProvider_db = new ActiveDataProvider([
               'query' => DbData::find()->select('db, Description, Contact, SLA, sizeMB')->where(['Server' => $servername, 'physicalFileName' => "_Total"])->andWhere(['CaptureDate' => $datum]),
               'pagination' => [ 'pageSize' => 22],
@@ -133,12 +143,15 @@ class ServerViewController extends \yii\web\Controller
             'dataset_net' => $this->getNetPerfDataset($servername,'BytesTotalPersec',$dt),*/
             'dataset_waits' => $this->getWaitDataset($servername,$dt),
 //            'dataset_dbSizes' => $this->getDbSizesDataset($servername,date('Ymd',time() - 60 * 60 * 24 * 180)), 
-            'tabnum' => $tabnum,           
+            'tabnum' => $tabnum, 
+            'refreshTime' => $refreshTime,          
         ]);
     }
 
     public function actionRes_cpu($id)
     {
+        $refreshTime = 60;
+        
         $servername = $this->getServername($id);
         $servertyp = $this->getServertyp($id);
         $connection = \Yii::$app->db;        
@@ -155,6 +168,7 @@ class ServerViewController extends \yii\web\Controller
             'servername' => $servername,
             'servertyp' => $servertyp,
             'dt' => $dt,
+            'refreshTime' => $refreshTime,          
 /*            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
             'dataset_1' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
             'dataset_2' => $this->getPerfmonDataset($servername,$cntrs[2],$dt),
@@ -164,6 +178,8 @@ class ServerViewController extends \yii\web\Controller
 
     public function actionRes_mem($id)
     {
+        $refreshTime = 60;
+        
         $servername = $this->getServername($id);
         $servertyp = $this->getServertyp($id);
         $connection = \Yii::$app->db;        
@@ -188,6 +204,7 @@ class ServerViewController extends \yii\web\Controller
             'servername' => $servername,
             'servertyp' => $servertyp,
             'dt' => $dt,
+            'refreshTime' => $refreshTime,          
 /*            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
             'dataset_1' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
             'dataset_2' => $this->getPerfmonDataset($servername,$cntrs[2],$dt),
@@ -208,6 +225,8 @@ class ServerViewController extends \yii\web\Controller
 
     public function actionRes_disk($id)
     {
+        $refreshTime = 60;
+        
         $servername = $this->getServername($id);
         $servertyp = $this->getServertyp($id);
         $connection = \Yii::$app->db;        
@@ -226,6 +245,7 @@ class ServerViewController extends \yii\web\Controller
             'servername' => $servername,
             'servertyp' => $servertyp,
             'dt' => $dt,
+            'refreshTime' => $refreshTime,          
 /*            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
             'dataset_1' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
             'dataset_2' => $this->getPerfmonDataset($servername,$cntrs[2],$dt),
@@ -243,6 +263,8 @@ class ServerViewController extends \yii\web\Controller
 
     public function actionRes_net($id)
     {
+        $refreshTime = 60;
+        
         $servername = $this->getServername($id);
         $servertyp = $this->getServertyp($id);
         $connection = \Yii::$app->db;        
@@ -259,6 +281,7 @@ class ServerViewController extends \yii\web\Controller
             'servername' => $servername,
             'servertyp' => $servertyp,
             'dt' => $dt,
+            'refreshTime' => $refreshTime,          
 /*            'dataset_0' => $this->getNetPerfDataset($servername, $cntrs[0], $dt),
             'dataset_1' => $this->getNetPerfDataset($servername, $cntrs[1], $dt),
             'dataset_2' => $this->getNetPerfDataset($servername, $cntrs[2], $dt),
@@ -267,6 +290,8 @@ class ServerViewController extends \yii\web\Controller
 
     public function actionRes_sess($id)
     {
+        $refreshTime = 60;
+        
         $servername = $this->getServername($id);
         $servertyp = $this->getServertyp($id);
         $connection = \Yii::$app->db;        
@@ -286,6 +311,7 @@ class ServerViewController extends \yii\web\Controller
             'servername' => $servername,
             'servertyp' => $servertyp,
             'dt' => $dt,
+            'refreshTime' => $refreshTime,          
 /*            'dataset_0' => $this->getPerfmonDataset($servername,$cntrs[0],$dt),
             'dataset_1' => $this->getPerfmonDataset($servername,$cntrs[1],$dt),
             'dataset_2' => $this->getPerfmonDataset($servername,$cntrs[2],$dt),
@@ -303,6 +329,8 @@ class ServerViewController extends \yii\web\Controller
 
     public function actionDetail($cntr,$id,$days)
     {
+        $refreshTime = 60;
+        
 /*        if (is_array($cntr)) {$cntr = $cntr[0]; $instance = $cntr[1];}
         //else $counter = $cntr;
 */      $cntr = json_decode($cntr);
@@ -322,12 +350,15 @@ class ServerViewController extends \yii\web\Controller
             'days' => $days,
             'dt' => $dt,
             'output' => $output, 
+            'refreshTime' => $refreshTime,          
  //           'dataset' => $this->getPerfmonDataset($servername,$counter,$dt),
         ]);
     }
     
     public function actionDetail_net($cntr,$id,$days)
     {
+        $refreshTime = 60;
+        
         if (is_array($cntr)) {$cntr = $cntr[0];}
         $cntr = json_decode($cntr);
         $servername = $this->getServername($id);
@@ -342,12 +373,15 @@ class ServerViewController extends \yii\web\Controller
             'servername' => $servername,
             'servertyp' => $servertyp,
             'dt' => $dt,
+            'refreshTime' => $refreshTime,          
 //            'dataset' => $this->getNetPerfDataset($servername,$cntr,$dt),
         ]);
     }
  
      public function actionDetail_disk($cntr,$id,$days)
     {
+        $refreshTime = 60;
+        
         if (is_array($cntr)) {$cntr = $cntr[0];}
         $cntr = json_decode($cntr);
         $servername = $this->getServername($id);
@@ -362,11 +396,14 @@ class ServerViewController extends \yii\web\Controller
             'servername' => $servername,
             'servertyp' => $servertyp,
             'dataset' => $this->getDriveDataset($servername,$id,$dt),
+            'refreshTime' => $refreshTime,          
          ]);
     }
    
      public function actionDetail_dbsize($cntr,$id,$days)
     {
+        $refreshTime = 60;
+        
         if (is_array($cntr)) {$cntr = $cntr[0];}
         $cntr = json_decode($cntr);
         $servername = $this->getServername($id);
@@ -381,6 +418,7 @@ class ServerViewController extends \yii\web\Controller
             'servername' => $servername,
             'servertyp' => $servertyp,
             'dt' => $dt,
+            'refreshTime' => $refreshTime,          
 //            'dataset' => $this->getDbSizesDataset($servername,$id,$dt),
 //            'dataset_dbSizes' => $this->getDbSizesDataset($servername,$dt),
          ]);
@@ -388,6 +426,8 @@ class ServerViewController extends \yii\web\Controller
    
      public function actionDetail_waits($cntr,$id,$days)
     {
+        $refreshTime = 60;
+        
         $cntr = json_decode($cntr);
         $servername = $this->getServername($id);
         $servertyp = $this->getServertyp($id);
@@ -401,11 +441,14 @@ class ServerViewController extends \yii\web\Controller
             'servername' => $servername,
             'servertyp' => $servertyp,
             'dataset' => $this->getWaitDataset($servername,$dt),
+            'refreshTime' => $refreshTime,          
          ]);
     }
    
     public function actionDetail_agg($cntr,$id,$days)
     {
+        $refreshTime = 60;
+        
         $cntr = json_decode($cntr);
         $servername = $this->getServername($id);
         $servertyp = $this->getServertyp($id);
@@ -419,11 +462,14 @@ class ServerViewController extends \yii\web\Controller
             'servername' => $servername,
             'servertyp' => $servertyp,
             'dataset' => $this->getPerfmonDatasetAgg($servername,$cntr,$dt),
+            'refreshTime' => $refreshTime,          
         ]);
     }
     
     public function actionOver_disk($cntr='disk',$id=0,$days=7)
     {
+        $refreshTime = 60;
+        
 //        $cntr = json_decode($cntr);
 //        $servername = $this->getServername($id);
 
@@ -435,12 +481,15 @@ class ServerViewController extends \yii\web\Controller
             'cntr' => $cntr,
             'title' => 'OS:Physical I/O Rate (Kb/sec):_Total',
             'days' => $days,
+            'refreshTime' => $refreshTime,          
 //            'dataset' => $this->getPerfmonDatasetRep($cntr,$days),
         ]);
     }
     
     public function actionOver_net($cntr='net',$id=0,$days=3)
     {
+        $refreshTime = 60;
+        
 //        $cntr = json_decode($cntr);
 //        $servername = $this->getServername($id);
 
@@ -452,6 +501,7 @@ class ServerViewController extends \yii\web\Controller
             'cntr' => $cntr,
             'title' => 'BytesTotalPersec',
             'days' => $days,
+            'refreshTime' => $refreshTime,          
 //            'dataset' => $this->getPerfmonDatasetRep($cntr,$days),
         ]);
     }
@@ -935,7 +985,7 @@ class ServerViewController extends \yii\web\Controller
         $tooltips[$i] = $waittypes;     
       }
       
-      $labels = !empty($zeiten) ? array_map(function($val) {return (string)date_format($val,"d.m.Y H:i") //substr($val,0,16)
+      $labels = !empty($zeiten) ? array_map(function($val) {return /*(string)date_format($val,"d.m.Y H:i")*/ substr($val,0,16)
                                                             ;},
                                     array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0)
                           ) : [ 'No Data' ] ;   
@@ -1034,19 +1084,22 @@ class ServerViewController extends \yii\web\Controller
         $waittypes2 = ArrayHelper::getColumn($dataset,'w_value');
         $labels = ArrayHelper::getColumn($dataset,'w_value');
         $unique = array();
+        $colors = array();
 
         foreach ($waittypes as $key => $value) {
                   if ($value == 'k') {
-                      $unique[] = 0;                  
+                      $unique[] = 4;
+                      $colors[] = 'lightblue';                  
                   }
                   else {
                     $unique[] = 4;                                     
+                    $colors[] = 'green';                  
                   } 
             }
         unset($value); 
         $waittypes = $unique; 
         unset($unique);
-        
+/*        
         $unique = array();
 
         foreach ($waittypes2 as $key => $value) {
@@ -1060,9 +1113,9 @@ class ServerViewController extends \yii\web\Controller
         unset($value); 
         $waittypes2 = $unique; 
         unset($unique);
-        
+*/        
         \Yii::warning($waittypes);
-        \Yii::warning($waittypes2);
+//        \Yii::warning($waittypes2);
         \Yii::warning($labels);
   //      \yii\helpers\VarDumper::dump($waittypes, 10, true);
 //        $waittypes = array_filter($waittypes, function($e)  {
@@ -1160,15 +1213,17 @@ class ServerViewController extends \yii\web\Controller
             'options' => [
                 'grouping' => false, //'stacked',
                 'resizable' => true,
+                'xaxis' => false,
                 'yaxis' => false,
 //                'yaxisLabelsSpecific' => ['Wartung', 'Keine Wartung'],
                 'marginBottom' => 10,
                 'marginLeft' => 10,
-//                'marginInner' => 2,
+                'marginInner' => 0,
                 'backgroundGrid' => false,
   //              'id' => 'rgbar1_'.$id,
 //                'id' => 'rgbar1_'.$srvrId,
-                'colors' => ['green'],
+                'colors' => $colors, //['green'],
+                'colorsSequential' => true,
                 'textAngle' => 45,
                 'textSize' => 7,
                 'textFonts' => 'arial condensed',
@@ -1177,7 +1232,7 @@ class ServerViewController extends \yii\web\Controller
                 'labelsAboveSpecific' => $labels,
                 'tooltips' => $tooltips,
                 'tooltipsEvent' => 'onmousemove',
-                'key' => ['Wartung', 'keine Wartung'],
+//                'key' => ['Wartung', 'keine Wartung'],
                 'gutter' => ['left' => ($detail==0) ? 50 : 80, 'bottom' => ($detail==0) ? 80 : 100, 'top' => 50],
 //                'tickmarks' => 'none', //'circle',
 //                'xaxisTickmarksCount' => '10',
@@ -1197,7 +1252,8 @@ class ServerViewController extends \yii\web\Controller
   //                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $id ])."\");}") ],
                 ],
             ],
-        ]). RGraphBar::widget([
+        ])
+/*        . RGraphBar::widget([
             'data' => !empty($waittypes2) ? $waittypes2 : [ [0,0, 0] ],
             'allowDynamic' => true,
             'allowTooltips' => true,
@@ -1214,11 +1270,13 @@ class ServerViewController extends \yii\web\Controller
             'options' => [
                 'grouping' => false, //'stacked',
                 'resizable' => true,
+                'xaxis' => false,
                 'yaxis' => false,
 //                'yaxisLabelsSpecific' => ['Wartung', 'Keine Wartung'],
-//                'yaxisLabels' => false,                
+                'yaxisLabels' => false,                
                 'marginBottom' => 10,
                 'marginLeft' => 10,
+                'marginInner' => 0,
                 'backgroundGrid' => false,
   //              'linewidth' => 2,
   //              'textAccessible' => true,
@@ -1261,7 +1319,7 @@ class ServerViewController extends \yii\web\Controller
   //                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $id ])."\");}") ],
                 ],
             ],
-        ]);    
+        ]) */;    
 
 
     }
@@ -1368,7 +1426,8 @@ class ServerViewController extends \yii\web\Controller
       $tooltips = [];
      for ($i = 0; $i < count($zeiten); ++$i) {
 //        $tooltips[$i] = $tooltips[$i] . '<br>'. substr($zeiten[$i],0,16);     
-        $tooltips[$i] = (string)date_format($zeiten[$i],"d.m.Y H:i");
+//        $tooltips[$i] = (string)date_format($zeiten[$i],"d.m.Y H:i");
+          $tooltips[$i] = substr($zeiten[$i], 0, 16);
       } 
 //      $tooltips = $values + $zeiten;
 //  \Yii::warning($values);
@@ -1396,7 +1455,8 @@ class ServerViewController extends \yii\web\Controller
               'colors' => ['blue','green'], //    ,'orange'
 //              'filled' => true,
               'clearto' => ['white'],
-              'xaxisLabels' => !empty($dataset) ? array_map(function($val) /*use ($detail)*/ {return (string)date_format($val,"d.m.Y H:i");},
+              'xaxisLabels' => !empty($dataset) ? array_map(function($val) /*use ($detail)*/ {
+                                    return substr($val, 0, 16)/*(string)date_format($val,"d.m.Y H:i")*/;},
                                     array_column(array_chunk(ArrayHelper::getColumn($dataset,'CaptureDate'),count($zeiten)/$anzahl),0)
                           ) : [ 'No Data' ],
               'zeiten' => $tooltips,
@@ -1629,9 +1689,9 @@ class ServerViewController extends \yii\web\Controller
       $unique = array();
       foreach ($zeiten as $row) 
         if (!in_array($row, $unique)) {
-            $unique[] = (string)date_format($row,"d.m.Y H:i.v");
-//            if (date_create_from_format("Y-m-d H:i:s.u", $row))
-//                $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i:s.u", $row),"d.m.Y H:i");
+//            $unique[] = (string)date_format($row,"d.m.Y H:i.v");
+            if (date_create_from_format("Y-m-d H:i:s.u", $row))
+                $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i:s.u", $row),"d.m.Y H:i");
         }
       $zeiten = $unique;
       unset($unique);
@@ -1765,7 +1825,7 @@ class ServerViewController extends \yii\web\Controller
       foreach ($zeiten as $row) {
         if (empty($row)) return ''; 
 //        $unique[] = (string)date_format($row,"d.m.Y H:i");
-        $unique[] = (string)date_format($row,"d.m.Y");
+        $unique[] = substr(ServerViewController::myFormatDate($row), 0, 10)/*(string)date_format($row,"d.m.Y")*/;
       }
       $zeiten = $unique;
       unset($unique);
@@ -1895,6 +1955,15 @@ class ServerViewController extends \yii\web\Controller
       return $provider;
     }
     
+    public static function myFormatDate($dt) {
+      if (is_numeric($dt)) {
+        $ldt = (string)date_format($dt,"d.m.Y H:i:s.v");
+      } else $ldt = $dt;
+
+      return $ldt;
+    }
+
+
     public static function getBackground($stat = 'unknown') {
     
       switch ($stat) {
@@ -1969,7 +2038,9 @@ class ServerViewController extends \yii\web\Controller
       foreach ($labels as $row) {
 //                \Yii::warning(\yii\helpers\VarDumper::dump($row),'application');
                 if (!empty($row)) {
-                    $unique[] = (string)date_format($row,"d.m.Y H:i");
+//                    $unique[] = (string)date_format($row,"d.m.Y H:i");
+            if (date_create_from_format("Y-m-d H:i:s.u", $row))
+                $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i:s.u", $row),"d.m.Y H:i");
                 }
       }          
       $labels = $unique;

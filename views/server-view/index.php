@@ -25,7 +25,6 @@ $items = app\controllers\ServerViewController::getServersMenu("/index.php?r=serv
 ?>
 <div class="site-index">
 
-
     <div class="body-content">
 <?php echo Html::beginTag('div', ['class'=>'dropdown']); ?>
 <h4>Server:&nbsp; <?php
@@ -45,6 +44,7 @@ $overview = $this->render('_overview', ['id' => $id,
                                         'servertyp' => $servertyp,
                                         'dt' => $dt,
                                         'dtd' => $dtd,
+                                        'refreshTime' => $refreshTime,
 /*                                        'datasets' => $datasets,
                                         'dataset_as' => $dataset_as,
                                         'dataset_cpu' => $dataset_cpu,

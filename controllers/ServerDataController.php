@@ -59,12 +59,22 @@ class ServerDataController extends Controller
      */
     public function actionIndex()
     {
+        $session = \Yii::$app->session;
+        if ($session->has('refreshTime')) {
+          $refreshTime = $session->get('refreshTime');
+        } else {
+          $refreshTime = 60;
+          $session->set('refreshTime','60');          
+        }
+
+        
         $searchModel = new ServerDataSearch();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
+            'refreshTime' => $refreshTime,          
         ]);
     }
 

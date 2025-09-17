@@ -33,6 +33,7 @@ $this->params['breadcrumbs'][] = $this->title;
         'attributes' => [
             'id',
             'Server',
+            'sql_connect',
             'usertyp',
             'usr',
             [

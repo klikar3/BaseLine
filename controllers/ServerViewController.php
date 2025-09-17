@@ -140,10 +140,10 @@ class ServerViewController extends \yii\web\Controller
             'dataset_cpu' => $this->getPerfmonDataset($servername,'Instance: Cpu Utilization %',$dt),
             'dataset_pps' => $this->getPerfmonDataset($servername,'OS:Pages/Sec:_Total', $dt ),
             'dataset_dql' => $this->getPerfmonDataset($servername,'OS:Disk Queue Length:_Total', $dt ),
-            'dataset_net' => $this->getNetPerfDataset($servername,'BytesTotalPersec',$dt),*/
-            'dataset_waits' => $this->getWaitDataset($servername,$dt),
-//            'dataset_dbSizes' => $this->getDbSizesDataset($servername,date('Ymd',time() - 60 * 60 * 24 * 180)), 
-            'tabnum' => $tabnum, 
+            'dataset_net' => $this->getNetPerfDataset($servername,'BytesTotalPersec',$dt),
+            'dataset_waits' => $this->getWaitDataset($servername,$id,$dt),
+            'dataset_dbSizes' => $this->getDbSizesDataset($servername,date('Ymd',time() - 60 * 60 * 24 * 180)), 
+*/            'tabnum' => $tabnum, 
             'refreshTime' => $refreshTime,          
         ]);
     }
@@ -440,7 +440,7 @@ class ServerViewController extends \yii\web\Controller
             'cntr' => $cntr,
             'servername' => $servername,
             'servertyp' => $servertyp,
-            'dataset' => $this->getWaitDataset($servername,$dt),
+            'dataset' => $this->getWaitDataset($servername,$id,$dt),
             'refreshTime' => $refreshTime,          
          ]);
     }
@@ -554,7 +554,7 @@ class ServerViewController extends \yii\web\Controller
         return $pcid;
     }    
         
-    public static function getPerfCounterPerServerId($srvr,$cntr,$instance) 
+    public static function getPerfCounterPerServerId($srvr,$id,$cntr,$instance) 
     {    
  //       \Yii::warning("Counter:");
  //       \Yii::warning($cntr);
@@ -565,8 +565,8 @@ class ServerViewController extends \yii\web\Controller
 //        \Yii::warning($instance);
       try {
           $pcsid = (new \yii\db\Query())
-          ->select('id')->from('PerfCounterPerServer WITH (READPAST)')->where('Server=:srvr AND counter_name like :cntr AND instance = :inst', 
-            ['srvr' => $srvr, 'cntr' => $counter, 'inst' => $instance])
+          ->select('id')->from('PerfCounterPerServer WITH (READPAST)')->where('Server_id=:srvr_id AND counter_name like :cntr AND instance = :inst', 
+            ['srvr_id' => $id, 'cntr' => $counter, 'inst' => $instance])
           ->limit(1)
           ->scalar();
       } catch(\Exception $e) {
@@ -577,7 +577,7 @@ class ServerViewController extends \yii\web\Controller
     }    
     
 //    public static function getPerfmonDataset($srvr,$cntr,$dt)
-    public static function getPerfmonDataset($srvr,$pcid,$dt,$instance='_Total')    {
+    public static function getPerfmonDataset($srvr,$id,$pcid,$dt,$instance='_Total')    {
 //        $instance='_Total';
 //        if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
 //        else $counter = $cntr;
@@ -592,8 +592,8 @@ class ServerViewController extends \yii\web\Controller
       try {
         $dataset = /*new ActiveDataProvider([
             'query' =>*/ (new \yii\db\Query())
-        ->select('value, AvgValue, CaptureDate')->from('PerfMonData WITH (READPAST)')->where('Server=:srvr AND Counter_id=:pcid AND CaptureDate>:dt AND instance=:inst',
-        array('srvr' => $srvr, 'pcid' => $pcid, 'dt' => $dt, 'inst' => $instance ))
+        ->select('value, AvgValue, CaptureDate')->from('PerfMonData WITH (READPAST)')->where('Server_id=:srvr_id AND Counter_id=:pcid AND CaptureDate>:dt AND instance=:inst',
+        array('srvr_id' => $id, 'pcid' => $pcid, 'dt' => $dt, 'inst' => $instance ))
         ->orderBy('CaptureDate')
         ->all(); /*,
         ]);*/
@@ -712,12 +712,12 @@ class ServerViewController extends \yii\web\Controller
 
     }
 
-   public function getWaitDataset($srvr,$dt)
+   public static function getWaitDataset($id,$dt)
     {
         
-        $pcid = (new \yii\db\Query())
-        ->select('id')->from('ServerData WITH (NOLOCK)')->where('Server=:srvr', array('srvr' => $srvr))
-        ->scalar();
+//        $pcid = (new \yii\db\Query())
+//        ->select('id')->from('ServerData WITH (NOLOCK)')->where('Server=:srvr', array('srvr' => $srvr))
+//        ->scalar();
       
       try{  
         $dataset = (new \yii\db\Query())
@@ -726,7 +726,7 @@ class ServerViewController extends \yii\web\Controller
         ->join('INNER JOIN','WaitTypes WITH (NOLOCK)',
 				'WaitTypes.id = Waits.WaitTypeId')
         ->where('Waits.ServerId=:srvr AND Waits.CaptureEnd>:dt',
-        array('srvr' => $pcid, 'dt' => $dt ))  //->limit(50)
+        array('srvr' => $id, 'dt' => $dt ))  //->limit(50)
         ->orderBy('Waits.CaptureEnd, WaitTypes.WaitType,')
         ->distinct()
         ->all();
@@ -898,18 +898,19 @@ class ServerViewController extends \yii\web\Controller
    }
             
   
-    public static function getWaitBar($srvr,$dataset,$cntr,$id,$detail=0,$title='') {
+    public static function getWaitBar($srvr,$cntr,$id,$detail=0,$title='',$dt) {
         
-        $output = true;
-        $detail = 1;
-               
-        $stat = 'unknown'; 
-        
-        $title = 'Wait-Typen';
-        $cntr = 'Waits';
+      $output = true;
+      $detail = 1;
+             
+      $stat = 'unknown'; 
+      
+      $title = 'Wait-Typen';
+      $cntr = 'Waits';
                
       $bg = ServerViewController::getBackground($stat);
        
+      $dataset = ServerViewController::getWaitDataset($id,$dt); 
       if (empty($dataset)) return '';
       $waittypes = ArrayHelper::getColumn($dataset,'WaitType');
       $unique = array();
@@ -1344,7 +1345,7 @@ class ServerViewController extends \yii\web\Controller
         return $items;
     }
     
-    public static function getNetPerfDataset($srvr,$cntr,$dt,$adapter='_Total')
+    public static function getNetPerfDataset($srvr,$id=0,$cntr,$dt,$adapter='_Total')
     {
 /*        $instance='_Total';
         if (is_array($cntr)) {$counter = $cntr[0]; $instance = $cntr[1];}
@@ -1358,8 +1359,8 @@ class ServerViewController extends \yii\web\Controller
         
         try {
           $machine = (new \yii\db\Query())
-          ->select('Value')->from('ServerConfig WITH (READPAST)')->where('server=:sr AND Property=:prop', 
-              array('sr' => $srvr, 'prop' => 'MachineName'))
+          ->select('Value')->from('ServerConfig WITH (READPAST)')->where('server_id=:sr_id AND Property=:prop', 
+              array('sr_id' => $id, 'prop' => 'MachineName'))
           ->orderBy('CaptureDate desc')  
           ->limit(1)  
           ->scalar();
@@ -1375,8 +1376,8 @@ class ServerViewController extends \yii\web\Controller
         try {
           $dataset = /*new ActiveDataProvider([
             'query' =>*/ (new \yii\db\Query())
-          ->select($fields)->from('NetMonData')->where('Server=:srvr AND CaptureDate>:dt AND wmiNetAdapterName = :adapter',
-          array('srvr' => $machine, 'dt' => $dt, 'adapter' => $adapter ))
+          ->select($fields)->from('NetMonData')->where('Server_id=:srvr_id AND CaptureDate>:dt AND wmiNetAdapterName = :adapter',
+          array('srvr_id' => $id, 'dt' => $dt, 'adapter' => $adapter ))
           ->orderBy('CaptureDate')->all(); /*,
           ]);*/
         } catch(\Exception $e) {
@@ -1403,14 +1404,14 @@ class ServerViewController extends \yii\web\Controller
         }
 /*        $pcid = ServerViewController::getPerfCounterDefaultId($counter)
         
-        $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $counter, $instance);
+        $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $id,$counter, $instance);
 */
-        $dataset =  ServerViewController::getNetPerfDataset($srvr, $cntr, $dt);   
+        $dataset =  ServerViewController::getNetPerfDataset($srvr, $id, $cntr, $dt);   
              
         $stat = 'unknown';        
         $stat = (new \yii\db\Query())
-                ->select('status')->from('PerfCounterPerServer WITH (READPAST)')->where('Server=:srvr AND counter_name=:cntr AND instance = :inst', 
-          ['srvr' => $srvr, 'cntr' => $cntr/*"Network Utilization"*/, 'inst' => $instance])
+                ->select('status')->from('PerfCounterPerServer WITH (READPAST)')->where('Server_id=:srvr_id AND counter_name=:cntr AND instance = :inst', 
+          ['srvr_id' => $id, 'cntr' => $cntr/*"Network Utilization"*/, 'inst' => $instance])
         ->scalar();
 
       $bg = ServerViewController::getBackground($stat);
@@ -1498,7 +1499,7 @@ class ServerViewController extends \yii\web\Controller
         
         $pcid = ServerViewController::getPerfCounterDefaultId($counter);
         
-        $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $counter, $instance);
+        $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $id, $counter, $instance);
         
         $stat = 'unknown';        
         if (!empty($pcid)) $stat = (new \yii\db\Query())->select('status')->from('PerfMonData WITH (READPAST)')
@@ -2007,9 +2008,9 @@ class ServerViewController extends \yii\web\Controller
         $pcid = ServerViewController::getPerfCounterDefaultId($counter);
 //        \Yii::warning($pcid);        
        
-        $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $counter, $instance);
+        $pcsid = ServerViewController::getPerfCounterPerServerId($srvr, $id, $counter, $instance);
 //        $dataset = ServerViewController::getPerfmonDataset($srvr,$counter,$dt);
-        $dataset = ServerViewController::getPerfmonDataset($srvr,$pcid,$dt, $instance);
+        $dataset = ServerViewController::getPerfmonDataset($srvr,$id,$pcid,$dt, $instance);
 //        \Yii::warning($dataset);
         
         $stat = 'unknown';  

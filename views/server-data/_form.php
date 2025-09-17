@@ -22,6 +22,8 @@ use kartik\password\PasswordInput;
 
     <?php echo $form->field($model, 'Server')->textInput() ?>
 
+    <?php echo $form->field($model, 'sql_connect')->textInput() ?>
+    
     <?= $form->field($model, 'usertyp')->textInput() ?>
 
     <?php //echo $form->field($model, 'user')->textInput() ?>

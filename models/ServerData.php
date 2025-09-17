@@ -63,7 +63,7 @@ class ServerData extends \yii\db\ActiveRecord
             ['Server', 'unique'],
             [['paused'], 'integer'],
             [['lastEventlogSearch'], 'safe'],
-            [['User_Encrypted', 'Password_Encrypted', 'Description'], 'string'],
+            [['sql_connect', 'User_Encrypted', 'Password_Encrypted', 'Description'], 'string'],
             [['usr'], 'validateUser', 'skipOnEmpty' => false, 'skipOnError' => false],
 
         ];
@@ -72,7 +72,9 @@ class ServerData extends \yii\db\ActiveRecord
     public function validateUser($attribute, $params) 
     {   // Nur für nicht pausierte SQL-Server
         if (($this->typ != "sql") OR ($this->paused == 1)) return;
-        $dsn = "sqlsrv:Server=".$this->Server.";Database=master";
+//        Yii::warning($this->usr, 'application'); 
+//        Yii::warning($this->pwd, 'application');
+        $dsn = "sqlsrv:Server=".$this->sql_connect.";Database=master";
         $connection = new \yii\db\Connection([
             'dsn' => $dsn,
             'username' => $this->usr,
@@ -92,7 +94,7 @@ class ServerData extends \yii\db\ActiveRecord
             $this->addError($attribute, Yii::t('app', 'Berechtigung nicht ausreichend.'));
             }
         } catch (\yii\db\Exception $e) {
-            $this->addError($attribute, Yii::t('app', 'Datenbankverbindung nicht möglich.'));
+            $this->addError($attribute, Yii::t('app', 'Datenbankverbindung beim Validieren des Users nicht möglich.'));
         }        
 //       $this->Server = $srv; 
         

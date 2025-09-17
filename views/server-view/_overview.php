@@ -65,10 +65,10 @@ alert = function (str)
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_cpu,*/ ['Instance: Cpu Utilization %','_Total'], $id, 0, $dt, 1, 'Cpu Utilization %'); ?>
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_pps,*/ ['OS:Pages/Sec:','_Total'], $id, 0, $dt, 1); ?>
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_dql,*/ 'OS:Disk Queue Length:_Total', $id, 0, $dt, 1); ?>
-  <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getNetLine($servername, /*$dataset_net,*/ 'BytesTotalPersec', $id, 0); ?>
+  <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getNetLine($servername, /*$dataset_net,*/ 'BytesTotalPersec', $id, 0, $dt); ?>
 </div>
 <div class="row">
-  <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getWaitBar($servername, $dataset_waits, 'Waits', $id, 0); ?>
-  <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getPaintLineDbSize($servername, /*$dataset_dbSizes,*/ $id, 1,$dtd); ?>
+  <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getWaitBar($servername, 'Waits', $id, 0, '', $dt); ?>
+  <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getPaintLineDbSize($servername, /*$dataset_dbSizes,*/ $id, 1, $dt); ?>
         
 </div>

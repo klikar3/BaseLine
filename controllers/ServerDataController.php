@@ -107,6 +107,11 @@ class ServerDataController extends Controller
         
         $model = new ServerData();
         
+        if (empty($model->usr)) {$model->usr = 'ignite';}
+        if (empty($model->pwd)) {$model->pwd = trim(com_create_guid(), '{}');}
+//        Yii::warning($model->usr, 'application'); 
+//        Yii::warning($model->pwd, 'application');
+
         //$data = Yii::$app->request->post();
         //Yii::warning(\yii\helpers\VarDumper::dump($data, 10, true),'application');
         //\yii\helpers\VarDumper::dump($data, 10, true)
@@ -146,11 +151,6 @@ class ServerDataController extends Controller
 //            $model->setUsr('iii') ;//$data['ServerData']['usr'];
 //            $model->setPwd('ooo'); //$data['ServerData']['pwd'];
 //            Yii::error($model['usr'],'application');
-        $model->usr = 'ignite';
-        $model->pwd = trim(com_create_guid(), '{}');
-//        Yii::warning($model->usr, 'application'); 
-//        Yii::warning($model->pwd, 'application');
-
  
         return $this->render('create', [
             'model' => $model, 

@@ -49,13 +49,18 @@ $this->params['breadcrumbs'][] = $this->title;
               'value' => 'Server',
               'options' => [ 'width' => '200px;']
             ],
+            'sql_connect',
             'usertyp',
 //            'user',
 //            'usr',
 //            'password',
 //            'pwd',
             'snmp_pw',
-            'typ',
+            [ 'attribute' => 'typ',
+              'class' => 'yii\grid\DataColumn',
+              'value' => 'typ',
+              'options' => [ 'width' => '50px;']
+            ],
             'paused',
             'stat_wait',
 		        'stat_queries',
@@ -66,7 +71,7 @@ $this->params['breadcrumbs'][] = $this->title;
 		        'stat_net',
 //            'lastEventlogSearch',	
            ['class' => 'yii\grid\ActionColumn',
-              'options' => [ 'width' => '80px;']
+              'options' => [ 'width' => '120px;']
             ],
         ],
     ]); ?>

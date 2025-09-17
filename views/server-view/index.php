@@ -51,9 +51,9 @@ $overview = $this->render('_overview', ['id' => $id,
                                         'dataset_pps' => $dataset_pps,
                                         'dataset_dql' => $dataset_dql,
                                         'dataset_net' => $dataset_net,
-*/                                        'dataset_waits' => $dataset_waits
-//                                        , 'dataset_dbSizes' => $dataset_dbSizes
-                                        ,  'tabnum' => 1
+                                        'dataset_waits' => $dataset_waits
+                                        , 'dataset_dbSizes' => $dataset_dbSizes
+*/                                       'tabnum' => 1
                                         ]);  
 $items = array();                                        
 $items[] = [

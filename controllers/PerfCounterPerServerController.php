@@ -87,6 +87,7 @@ class PerfCounterPerServerController extends Controller
             case 'mem': $ziel = 'server-view/res_mem'; break;
             case 'net': $ziel = 'server-view/res_net'; break;
             case 'sess': $ziel = 'server-view/res_sess'; break;
+            default: $ziel = 'server-view/res_cpu';
         }
 
         if ($model->load(Yii::$app->request->post()) && $model->save()) {

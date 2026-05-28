@@ -33,6 +33,7 @@ if (!empty($dt)) {
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_8,*/ $cntrs[8], $id, 0, $dt, "Phys. Reads Per Sec"); ?>
   <?php echo app\controllers\ServerViewController::getPaintLine($servername, /*$dataset_9,*/ $cntrs[9], $id, 0, $dt, "Phys. Writes Per Sec"); ?>
   <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getPaintLineDrives($dataset_10, $id ); ?>
+  <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getDriveSpaceBar($id, $dt ); ?>
   <?php // echo app\controllers\ServerViewController::getPaintLine($servername, $dataset_11, $cntrs[11], $id, 0); ?>
 
 </div>

@@ -65,7 +65,7 @@ class ServerViewController extends \yii\web\Controller
           ]);
         } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $dataProvider = $this->emptyProvider();
+          $dataProvider = ServerviewController::emptyProvider();
         }
         
 //        \Yii::warning($dataProvider);          
@@ -84,7 +84,7 @@ class ServerViewController extends \yii\web\Controller
           ]);
         } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $dataProvider_sc = $this->emptyProvider();
+          $dataProvider_sc = ServerviewController::emptyProvider();
         }
         
 
@@ -106,7 +106,7 @@ class ServerViewController extends \yii\web\Controller
           ]);
         } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $dataProvider_db = $this->emptyProvider();
+          $dataProvider_db = ServerviewController::emptyProvider();
         }
         try {
           $dataProvider_event = new ActiveDataProvider([
@@ -115,7 +115,7 @@ class ServerViewController extends \yii\web\Controller
           ]);
         } catch(\Exception $e) {
           \Yii::trace("Error : ".$e);
-          $dataProvider_event = $this->emptyProvider();
+          $dataProvider_event = ServerviewController::emptyProvider();
         }
 
         // -- Datasets
@@ -440,7 +440,30 @@ class ServerViewController extends \yii\web\Controller
             'cntr' => $cntr,
             'servername' => $servername,
             'servertyp' => $servertyp,
+			'dt' => $dt,
             'dataset' => $this->getWaitDataset($servername,$id,$dt),
+            'refreshTime' => $refreshTime,          
+         ]);
+    }
+   
+     public function actionDetail_drivespace($cntr,$id,$days)
+    {
+        $refreshTime = 60;
+        
+        $cntr = json_decode($cntr);
+        $servername = $this->getServername($id);
+        $servertyp = $this->getServertyp($id);
+
+        date_default_timezone_set('Europe/Berlin'); 
+        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * $days);
+
+        return $this->render('detail_driveSpace', [
+            'id' => $id,
+            'cntr' => $cntr,
+            'servername' => $servername,
+            'servertyp' => $servertyp,
+			'dt' => $dt,
+//            'dataset' => $this->getWaitDataset($servername,$id,$dt),
             'refreshTime' => $refreshTime,          
          ]);
     }
@@ -630,7 +653,7 @@ class ServerViewController extends \yii\web\Controller
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
       } catch(\Exception $e) {
             \Yii::trace("Error : ".$e);
-            $dataset = $this->emptyProvider();
+            $dataset = ServerviewController::emptyProvider();
       }
         
         return !empty($dataset) ? $dataset : [ ['', 0, 0, 0, 0, 0] ];
@@ -650,7 +673,7 @@ class ServerViewController extends \yii\web\Controller
           }catch (\Exception $e) {
             \Yii::trace("Error : ".$e);
 //            throw new \Exception("Error : ".$e);
-            $dataset = $this->emptyProvider();
+            $dataset = ServerviewController::emptyProvider();
           }
         } 
                 
@@ -685,7 +708,7 @@ class ServerViewController extends \yii\web\Controller
           }
         } 
                 
-        return !empty($dataset) ? $dataset : $this->emptyProvider(); //[ [0, 0, 0, 0, 0] ];
+        return !empty($dataset) ? $dataset : ServerviewController::emptyProvider(); //[ [0, 0, 0, 0, 0] ];
 
     }
 
@@ -708,12 +731,59 @@ class ServerViewController extends \yii\web\Controller
 //        $pcsid = 0;
       }
         
-        return !empty($dataset) ? $dataset : $this->emptyProvider(); //[ ['', 0, ''] ];
+        return !empty($dataset) ? $dataset : ServerviewController::emptyProvider(); //[ ['', 0, ''] ];
 
     }
 
+/*     public function getDriveDataset($srvr,$srvrId,$dt)
+    {   
+//        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * 7);    
+        $pcid = (new \yii\db\Query())
+        ->select('id')->from('ServerData WITH (READPAST)')->where('Server=:srvr', array('srvr' => $srvr))
+        ->scalar();
+      
+      try {  
+        $dataset = (new \yii\db\Query())
+        ->select('DriveLetter, PercentFree, CaptureDate')->from('DriveData WITH (READPAST)')->where('ServerId=:srvrId AND CaptureDate>:dt',
+        array('srvrId' => $srvrId, 'dt' => $dt ))
+        ->orderBy('DriveLetter,CaptureDate')
+        ->all();
+//        \yii\helpers\VarDumper::dump($dataset, 10, true);
+      } catch(\Exception $e) {
+        \Yii::trace("Error : ".$e);
+//        $pcsid = 0;
+      }
+        
+        return !empty($dataset) ? $dataset : ServerviewController::emptyProvider(); //[ ['', 0, ''] ];
+     }
+*/
+
+    public static function getDriveSpaceDataset($srvrId, $dt)
+    {   
+//        \Yii::warning('$srvrId: '.$srvrId.', $dt: '.$dt);
+//        $dt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * 7);    
+/*         $pcid = (new \yii\db\Query())
+        ->select('id')->from('ServerData WITH (READPAST)')->where('Server=:srvr', array('srvr' => $srvr))
+        ->scalar();
+ */      
+      try {  
+        $dataset = (new \yii\db\Query())
+        ->select('DriveLetter, [Capacity],[FreeSpace], CaptureDate')->from('DriveData WITH (READPAST)')->where('ServerId=:srvrId AND CaptureDate>:dt',
+        array('srvrId' => $srvrId, 'dt' => $dt ))
+        ->orderBy('DriveLetter,CaptureDate')
+        ->all();
+//        \yii\helpers\VarDumper::dump($dataset, 10, true);
+      } catch(\Exception $e) {
+        \Yii::trace("Error : ".$e);
+//        $pcsid = 0;
+      }
+        
+        return !empty($dataset) ? $dataset : ServerviewController::emptyProvider(); //[ ['', 0, ''] ];
+
+    }
    public static function getWaitDataset($id,$dt)
     {
+        \Yii::warning('$id: '.$id.', $dt: '.$dt);
         
 //        $pcid = (new \yii\db\Query())
 //        ->select('id')->from('ServerData WITH (NOLOCK)')->where('Server=:srvr', array('srvr' => $srvr))
@@ -732,7 +802,7 @@ class ServerViewController extends \yii\web\Controller
         ->all();
 //        \yii\helpers\VarDumper::dump($dataset, 10, true);
       } catch(\Exception $e) {
-        $dataset = $this->emptyProvider();
+        $dataset = ServerviewController::emptyProvider();
       }
         
         
@@ -763,6 +833,7 @@ class ServerViewController extends \yii\web\Controller
 
        public static function getDbSizesDataset($srvr,$dt)
     {
+        \Yii::warning('$srvr: '.$srvr.', $dt: '.$dt);
         
         $pcid = (new \yii\db\Query())
         ->select('id')->from('ServerData WITH (NOLOCK)')->where('Server=:srvr', array('srvr' => $srvr))
@@ -794,7 +865,7 @@ class ServerViewController extends \yii\web\Controller
         }
 // */
 
-//        \yii\helpers\VarDumper::dump($dataset, 10, true);
+        \Yii::warning(\yii\helpers\VarDumper::dump($dataset, 10, true));
         
         
       $waittypes = ArrayHelper::getColumn($dataset,'db');
@@ -1052,6 +1123,148 @@ class ServerViewController extends \yii\web\Controller
           ],
       ]);    
     }
+
+    public static function getDriveSpaceBar($id=0, $dt, $detail = 0) {
+        
+      $output = true;
+ //     $detail = 1;
+             
+      $stat = 'unknown'; 
+      
+      $title = 'Laufwerke';
+      $cntr = 'Waits';
+               
+      $bg = ServerViewController::getBackground($stat);
+       
+      $dataset = ServerViewController::getDriveSpaceDataset($id,$dt); 
+//     \Yii::warning($dataset,'application');
+      if (empty($dataset)) return '';
+      $drives = ArrayHelper::getColumn($dataset,'DriveLetter');
+      $unique = array();
+      foreach ($drives as $key => $value) {
+                if (!in_array($value, $unique)) {
+                    $unique[] = $value;
+                }
+                else {
+                  $drives[$key] = "ttt";
+                }
+          }
+      unset($value);  
+      unset($unique);
+//      \yii\helpers\VarDumper::dump($drives, 10, true);
+      $drives = array_filter($drives, function($e)  {
+          return ($e !== "ttt");
+      });     
+      sort($drives);
+
+ //      \yii\helpers\VarDumper::dump($drives, 10, true);
+      $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
+      $unique = array();
+
+//        \Yii::warning($zeiten,'application');
+/*       foreach ($zeiten as $row) 
+        if (!in_array($row, $unique)) {
+//                $unique[] = (string)date_format(date_create_from_format("Y-m-d H:i:s.u", $row),"d.m.Y H:i");
+                if (!empty($row)) {
+                  $unique[] = $row;
+                }
+        }
+      $zeiten = $unique;  
+      unset($unique);
+      sort($zeiten);
+ */
+//      \yii\helpers\VarDumper::dump($zeiten, 10, true);
+//        \Yii::warning($zeiten,'application');       
+
+      // Breite berechnen
+      $xPixels = (count($zeiten)<200) ? 1200 : (count($zeiten) * 8);
+      
+      $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
+      $ymaxy = 0;
+      $daten = array();
+      $xaxisLabels = array();
+      for ($k = 0; $k < count($dataset); $k++) {  
+        $daten[$k] = [intval($dataset[$k]['Capacity'])-intval($dataset[$k]['FreeSpace']),intval($dataset[$k]['FreeSpace'])];
+		$xaxisLabels[$k] = [$dataset[$k]['DriveLetter']];
+        if (intval($dataset[$k]['Capacity']) > $ymaxy) $ymaxy = intval($dataset[$k]['Capacity']);       
+      }  
+      $ymaxy = intval($ymaxy * 1.2);  
+//     \Yii::warning($xaxisLabels,'application');
+
+      $tooltips = array();
+
+/*       for ($i = 0; $i < count($zeiten); ++$i) {
+        $tooltips[$i] = $drives;     
+      }
+ */      
+// /*       $labels = !empty($zeiten) ? array_map(function($val) {return (string)date_format($val,"d.m.Y H:i")*/ substr($val,0,16)
+                                                            // ;},
+                                    // array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0)
+                          // ) : [ 'No Data' ] ;   
+
+//      \Yii::warning(\yii\helpers\VarDumper::dumpAsString($daten),'application');
+//        \Yii::warning($daten,'application');
+        
+      if ($output) return RGraphBar::widget([
+          'data' => !empty($daten) ? $daten : [ [0,0, 0] ],
+          'allowDynamic' => true,
+          'allowTooltips' => true,
+//          'allowContext' => true,
+          'allowKeys' => true,
+          'allowResizing' => true,
+//          'allowEffects' => true,
+//          'allowAnnotate' => true,
+          'id' => 'rgbar_Waits',
+          'htmlOptions' => [
+              'height' => ($detail==0) ? '400px' : '800px',
+              'width' => ($detail==0) ? '500px' : '1200px',
+          ],
+          'options' => [
+              'grouping' => 'stacked',
+              'resizable' => true,
+//              'linewidth' => 2,
+//              'textAccessible' => true,
+//              'strokestyle' => 'white',
+              'marginInner' => 5,
+              'marginGrouped' => 2,
+//              'clearto' => 'white',              
+//              'height' => ($detail==0) ? '180px' : '700px',
+//              'width' => ($detail==0) ? '280px' : '1000px',
+//              'id' => 'rgbar1_'.$id,
+              'colors' => ['green','red'],
+//              'filled' => true,
+//              'textAngle' => 45,
+              'textSize' => 8,
+              'textFonts' => 'arial condensed',
+              'labelsAbove' => ($detail==0) ? true : false,
+              'labelsAboveDecimals' => 0,
+              'labelsAboveSize' => 8,
+              'xaxisLabels' => $xaxisLabels,
+			  'xaxisLabelsSize' => 10,
+              'tooltips' => $tooltips,
+              'key' => ['Free', 'Used'],
+              'keyInteractive' => true,
+              'gutter' => ['left' => ($detail==0) ? 50 : 80, 'bottom' => ($detail==0) ? 80 : 100, 'top' => 50, 'right' => 100],
+              'tickmarks' => 'none', //'circle',
+              'xaxisTickmarksCount' => '10',
+              'yaxisTickmarksCount' => '10',
+              'title' => !empty($title) ? $title : $cntr,
+              'titleSize' => 12,
+              'titleBold' => false,
+              'ymax' => $ymaxy,
+              'backgroundColor' => $bg,
+              'contextmenu' => [
+//                  ['24h', new JsExpression('function go() {window.location.assign("'.Url::toRoute(['detail_drivespace','cntr' => json_encode($cntr), 'id' => $id, 'days' => 1 ]).'");}') ],
+//                  ['7 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_drivespace','cntr' => json_encode($cntr), 'id' => $id, 'days' => 7 ])."\");}") ],
+//                  ['32 days',new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_drivespace','cntr' => json_encode($cntr), 'id' => $id, 'days' => 32 ])."\");}") ],
+//                  ['1 year', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 366 ])."\");}") ],
+//                  ['All', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['detail_agg','cntr' => json_encode($cntr), 'id' => $id, 'days' => 9999 ])."\");}") ],
+//                  ['Setting', new JsExpression("function go() {window.location.assign(\"".Url::toRoute(['perf-counter-per-server/update','id' => $id ])."\");}") ],
+              ],
+          ],
+      ]);    
+    }
+  
   
     public static function getWartungBar($srvrId,$wTyp='Mo-Fr') {
         

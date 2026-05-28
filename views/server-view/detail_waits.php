@@ -47,7 +47,7 @@ echo Html::endTag('div');
           ,10);
       \yii\helpers\VarDumper::dump($test, 10, true);
 */  ?>
-  <?=  app\controllers\ServerViewController::getWaitBar($servername, $dataset, $cntr, $id, 1);  ?>
+  <?=  app\controllers\ServerViewController::getWaitBar($servername, /*$dataset,*/ $cntr, $id, 1, '', $dt);  ?>
 
 </div>
    </div>

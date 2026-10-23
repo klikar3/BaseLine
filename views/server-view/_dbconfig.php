@@ -23,9 +23,9 @@ $dataProvider_db->setPagination(['pageSize' => '90']);
     'columns' => [
         ['class' => 'yii\grid\SerialColumn'],
         'db', 'Description', 'Contact', 'SLA', 'sizeMB',
-//        [ 'attribute' => 'CaptureDate'  ,
-//          'options' => [ 'width' => '300px;']
-//        ],
+        [ 'attribute' => 'CaptureDate'  ,
+          'options' => [ 'width' => '300px;']
+        ],
      ],   
     'responsive'=>true,
     'hover'=>true,

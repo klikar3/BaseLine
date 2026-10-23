@@ -183,5 +183,13 @@ WHERE session_id = ( SELECT MAX(session_id) FROM msdb.dbo.sysjobactivity) and sj
       return $provider;
     }
     
+    public static function getMachinename($srvr)
+    {
+          $mname =  \Yii::$app->db->createCommand("SELECT TOP 1 value from serverconfig where server = :srvr and property = 'ComputerNamePhysicalNetBios'
+																ORDER BY Capturedate DESC")
+                          ->bindValues([':srvr' => $srvr])->queryScalar();               
+          return $mname;
+    }    
+    
     
 }

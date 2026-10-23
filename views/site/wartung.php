@@ -59,7 +59,16 @@ $this->title = 'BaseLine';
                     'attribute' => 'usertyp',
                     'options' => [ 'width' => '80px;'],
                   ],
-*/                  [ 'class' => 'kartik\grid\DataColumn',
+*/
+                  [ 'class' => 'yii\grid\DataColumn',
+                    'attribute' => 'machinename',
+                    'value' => function($data){
+                                  return app\controllers\SiteController::getMachinename($data->Server);
+                               },
+                    'options' => [ 'width' => '80px;'],
+                  ],
+
+                  [ 'class' => 'kartik\grid\DataColumn',
                     'attribute' => 'typ',
                     'options' => [ 'width' => '80px;'],
                      'headerOptions' => ['style' => 'background-color: lightblue;'],

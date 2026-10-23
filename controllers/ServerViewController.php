@@ -58,7 +58,7 @@ class ServerViewController extends \yii\web\Controller
           $datum = $cmd->queryScalar(); 
           //$datum = (string)date_format($datum,"Y-m-d H:i:s.v");
           $dataProvider = new ActiveDataProvider([
-              'query' => ConfigData::find()->select('Name, Value, ValueInUse')->where(['ServerID' => $id])->andWhere(['CaptureDate' => $datum]),
+              'query' => ConfigData::find()->select('Name, Value, ValueInUse, CaptureDate')->where(['ServerID' => $id])->andWhere(['CaptureDate' => $datum]),
               'pagination' => [
                   'pageSize' => 22,
               ],
@@ -79,7 +79,7 @@ class ServerViewController extends \yii\web\Controller
           $datum = $cmd->queryScalar(); 
           //$datum = (string)date_format($datum,"Y-m-d H:i:s.v");
           $dataProvider_sc = new ActiveDataProvider([
-              'query' => ServerConfig::find()->select('Server,Property,Value')->where(['Server' => $servername])->andWhere('CaptureDate >= :datum',[ ':datum' => $datum]),
+              'query' => ServerConfig::find()->select('Server,Property,Value,CaptureDate')->where(['Server' => $servername])->andWhere('CaptureDate >= :datum',[ ':datum' => $datum]),
               'pagination' => [ 'pageSize' => 22],
           ]);
         } catch(\Exception $e) {
@@ -101,7 +101,7 @@ class ServerViewController extends \yii\web\Controller
           $datum = $cmd->queryScalar(); 
           //$datum = (string)date_format($datum,"Y-m-d H:i:s.v");
           $dataProvider_db = new ActiveDataProvider([
-              'query' => DbData::find()->select('db, Description, Contact, SLA, sizeMB')->where(['Server' => $servername, 'physicalFileName' => "_Total"])->andWhere(['CaptureDate' => $datum]),
+              'query' => DbData::find()->select('db, Description, Contact, SLA, sizeMB,CaptureDate')->where(['Server' => $servername, 'physicalFileName' => "_Total"])->andWhere(['CaptureDate' => $datum]),
               'pagination' => [ 'pageSize' => 22],
           ]);
         } catch(\Exception $e) {
@@ -1059,7 +1059,7 @@ class ServerViewController extends \yii\web\Controller
       
       $labels = !empty($zeiten) ? array_map(function($val) {return /*(string)date_format($val,"d.m.Y H:i")*/ substr($val,0,16)
                                                             ;},
-                                    array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0)
+                                    array_column(array_chunk($zeiten,(int)(count($zeiten)/$anzahl)),0)
                           ) : [ 'No Data' ] ;   
 
 //      \Yii::warning(\yii\helpers\VarDumper::dumpAsString($daten),'application');
@@ -1231,7 +1231,7 @@ class ServerViewController extends \yii\web\Controller
 //              'height' => ($detail==0) ? '180px' : '700px',
 //              'width' => ($detail==0) ? '280px' : '1000px',
 //              'id' => 'rgbar1_'.$id,
-              'colors' => ['green','red'],
+              'colors' => ['red','green'],
 //              'filled' => true,
 //              'textAngle' => 45,
               'textSize' => 8,
@@ -1242,7 +1242,7 @@ class ServerViewController extends \yii\web\Controller
               'xaxisLabels' => $xaxisLabels,
 			  'xaxisLabelsSize' => 10,
               'tooltips' => $tooltips,
-              'key' => ['Free', 'Used'],
+              'key' => ['Used', 'Free'],
               'keyInteractive' => true,
               'gutter' => ['left' => ($detail==0) ? 50 : 80, 'bottom' => ($detail==0) ? 80 : 100, 'top' => 50, 'right' => 100],
               'tickmarks' => 'none', //'circle',
@@ -1328,9 +1328,9 @@ class ServerViewController extends \yii\web\Controller
         $waittypes2 = $unique; 
         unset($unique);
 */        
-        \Yii::warning($waittypes);
+//        \Yii::warning($waittypes);
 //        \Yii::warning($waittypes2);
-        \Yii::warning($labels);
+//        \Yii::warning($labels);
   //      \yii\helpers\VarDumper::dump($waittypes, 10, true);
 //        $waittypes = array_filter($waittypes, function($e)  {
 //            return ($e !== "ttt");
@@ -1401,7 +1401,7 @@ class ServerViewController extends \yii\web\Controller
 
                 $tooltips[] = $hour_mins;
         }
-        \Yii::warning($tooltips);
+//        \Yii::warning($tooltips);
 //        for ($i = 0; $i < count($zeiten); ++$i) {
 //          $tooltips[$i] = '00:00' + $i * '00:15';     
 //        }
@@ -1806,7 +1806,7 @@ class ServerViewController extends \yii\web\Controller
       $labels = array();
       $colors = array();
       for ($i=1;$i<$anzahl;$i++) {
-        $labels[] = $zeiten[($i*count($zeiten))/$anzahl];
+        $labels[] = $zeiten[(int)($i*(count($zeiten))/$anzahl)];
       }
       $cols = array_keys($dataset[1]);
 //      \yii\helpers\VarDumper::dump($cols, 10, true);
@@ -1851,7 +1851,7 @@ class ServerViewController extends \yii\web\Controller
 //                                    ArrayHelper::getColumn($dataset,'CaptureDate')
 //                          ) : [ 'No Data' ],
              'labels' => !empty($dataset) ? array_map(function($val){return substr($val,0,16);},
-                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'TimeSlotStart'),count($zeiten)/$anzahl),0)
+                                    array_column(array_chunk(ArrayHelper::getColumn($dataset,'TimeSlotStart'),(int)(count($zeiten)/$anzahl)),0)
                           ) : [ 'No Data' ],
               'crosshairs' => false,
               'tooltips' => $tooltips,
@@ -1917,7 +1917,7 @@ class ServerViewController extends \yii\web\Controller
 //      for ($i=1;$i<$anzahl;$i++) {
 //        $labels[] = $zeiten[($i*count($zeiten))/$anzahl];
 //      }
-      $labels = array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0);
+      $labels = array_column(array_chunk($zeiten,(int)(count($zeiten)/$anzahl)),0);
       $cols = array_keys($dataset[1]);
 //      \yii\helpers\VarDumper::dump($cols, 10, true);
 
@@ -2246,7 +2246,7 @@ class ServerViewController extends \yii\web\Controller
       $avgvals = ArrayHelper::getColumn($dataset,'AvgValue');
       $zeiten = ArrayHelper::getColumn($dataset,'CaptureDate');
       $anzahl = (count($zeiten)>10) ? 10 : count($zeiten);
-      $labels = array_column(array_chunk($zeiten,count($zeiten)/$anzahl),0);
+      $labels = array_column(array_chunk($zeiten,(int)(count($zeiten)/$anzahl)),0);
 //        \Yii::warning($labels,'application');
       $unique = array();
       foreach ($labels as $row) {

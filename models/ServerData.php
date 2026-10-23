@@ -37,6 +37,7 @@ use Yii;
   * @property Wartungsfenster[] $wartungsfensters
   * @property Win32EventLog[] $win32EventLogs
   * @property string|null $lastEventlogSearch
+ * @property string $machinename
 */
 class ServerData extends \yii\db\ActiveRecord
 {
@@ -51,6 +52,7 @@ class ServerData extends \yii\db\ActiveRecord
 //    public $Server;
     public $usr;
     public $pwd;
+	public $machinename;
 
     /**
      * @inheritdoc
@@ -63,7 +65,7 @@ class ServerData extends \yii\db\ActiveRecord
             ['Server', 'unique'],
             [['paused'], 'integer'],
             [['lastEventlogSearch'], 'safe'],
-            [['sql_connect', 'User_Encrypted', 'Password_Encrypted', 'Description'], 'string'],
+            [['sql_connect', 'User_Encrypted', 'Password_Encrypted', 'Description','machinename'], 'string'],
             [['usr'], 'validateUser', 'skipOnEmpty' => false, 'skipOnError' => false],
 
         ];
@@ -222,6 +224,16 @@ class ServerData extends \yii\db\ActiveRecord
     {
         return $this->hasMany(PerfmonDataAgg1H::className(), ['Server' => 'Server']);
     } 
+    
+    public function getMachinename()
+    {
+//        return $this->hasOne(ServerConfig::className(), ['Server' => 'serverconfig_value'])
+//                    ->viaTable('serverconfig', ['Server' => 'Server', 'Property' => "ComputerNamePhysicalNetBios"]); 
+          $mname =  \Yii::$app->db->createCommand("SELECT TOP 1 value from serverconfig where server = :srvr and property = 'ComputerNamePhysicalNetBios'
+																ORDER BY Capturedate DESC")
+                          ->bindValues([':srvr' => $this->Server])->queryScalar();               
+          return $mname;
+    }    
     
      /**
       * @return \yii\db\ActiveQuery

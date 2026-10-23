@@ -15,7 +15,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require": {
-        "php": ">=5.6.30",
+        "php": ">=8.2.35",
         "yiisoft/yii2": "~2.0.43",
         "yiisoft/yii2-bootstrap": "*",
         "symfony/mailer": "*",
@@ -45,6 +45,9 @@
         "fxp-asset.installer-paths": {
             "npm-asset-library": "vendor/npm",
             "bower-asset-library": "vendor/bower"
+        },
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true
         }
     },
     "scripts": {

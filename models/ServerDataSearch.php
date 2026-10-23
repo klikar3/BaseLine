@@ -20,7 +20,7 @@ class ServerDataSearch extends ServerData
         return [
             [['id'], 'integer'],
             [['Server', 'usertyp', 'user', 'password', 'snmp_pw', 'typ', 'stat_event', 'stat_wait', 'stat_queries', 'stat_cpu', 
-                'stat_mem', 'stat_disk', 'stat_sess', 'stat_net', 'User_Encrypted', 'Password_Encrypted', 'Description', 'lastEventlogSearch'], 'safe'],
+                'stat_mem', 'stat_disk', 'stat_sess', 'stat_net', 'User_Encrypted', 'Password_Encrypted', 'Description', 'lastEventlogSearch','machinename'], 'safe'],
         ];
     }
 

@@ -97,7 +97,7 @@ $this->title = 'BaseLine';
                      },
                     'options' => [ 'width' => '20px;' ],
                     'headerOptions' => ['style' => 'background-color: lightblue;'],
-                    'contentOptions' => function ($model, $key, $index, $column) {
+                    'contentOptions' => function ($model) {
                             return ['style' => 'background-color:' 
                                 . ( strpos($model->stat_cpu,'U')>0 ? 'khaki' : 'white'), 'title' => strpos($model->stat_cpu,'U')>0 ? 'Ungewöhnlicher Wert' : '' ];
                         },
@@ -152,9 +152,9 @@ $this->title = 'BaseLine';
                        },
                       'options' => [ 'width' => '20px;'],
                      'headerOptions' => ['style' => 'background-color: lightblue;'],
-                     'contentOptions' => function ($model, $key, $index, $column) {
+                     'contentOptions' => function ($model) {
                             return ['style' => 'background-color:' 
-                                . ( strpos($model->stat_net,'U')>0 ? 'khaki' : 'white')];
+                                . ( strpos((string)$model->stat_net,'U')>0 ? 'khaki' : 'white')];
                         },
 
                     ],

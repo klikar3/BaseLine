@@ -50,11 +50,7 @@ $config = [
             // 'downloadAction' => 'gridview/export/download',
             // 'i18n' => []
         ],
-		'debug' =>	[
-			'class' => 'yii\debug\Module',
-			'allowedIPs' => ['127.0.0.1', '::1','172.16.55.240','10.3.193.174'],
-		],
-	/*        'utility' => [
+/*        'utility' => [
                 'class' => '\c006\utility\migration\Module',
         ],   */
     ],
@@ -65,7 +61,7 @@ if (YII_ENV_DEV) {
     $config['bootstrap'][] = 'debug';
     $config['modules']['debug'] = [
         'class' => 'yii\debug\Module',
-        'allowedIPs' => ['127.0.0.1', '::1','172.16.55.240'],
+        'allowedIPs' => ['127.0.0.1', '::1','172.16.55.240','10.3.193.174'],
     ];
 
     $config['bootstrap'][] = 'gii';

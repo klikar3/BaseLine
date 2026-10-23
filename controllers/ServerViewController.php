@@ -783,7 +783,7 @@ class ServerViewController extends \yii\web\Controller
     }
    public static function getWaitDataset($id,$dt)
     {
-        \Yii::warning('$id: '.$id.', $dt: '.$dt);
+//        \Yii::warning('$id: '.$id.', $dt: '.$dt);
         
 //        $pcid = (new \yii\db\Query())
 //        ->select('id')->from('ServerData WITH (NOLOCK)')->where('Server=:srvr', array('srvr' => $srvr))
@@ -833,7 +833,7 @@ class ServerViewController extends \yii\web\Controller
 
        public static function getDbSizesDataset($srvr,$dt)
     {
-        \Yii::warning('$srvr: '.$srvr.', $dt: '.$dt);
+//        \Yii::warning('$srvr: '.$srvr.', $dt: '.$dt);
         
         $pcid = (new \yii\db\Query())
         ->select('id')->from('ServerData WITH (NOLOCK)')->where('Server=:srvr', array('srvr' => $srvr))
@@ -849,15 +849,6 @@ class ServerViewController extends \yii\web\Controller
       } catch(\Exception $e) {
 //        $pcsid = 0;
       }
-		$q = (new \yii\db\Query())
-        ->select('db, sizeMB, [CaptureDate]')->from('DbData WITH (READPAST)')
-        ->where('server=:srvr AND CaptureDate>:dt AND PhysicalFileName = :p and ((DAY([CaptureDate]) = 1) or ([CaptureDate] > (GETDATE()-1 )))',
-        array('srvr' => $srvr, 'dt' => $dt, 'p' => '_total' )) ->orderBy('CaptureDate') //->limit(100)
-        //->orderBy('db, CaptureDate')
- //       ->all()
-			;
-//			$q->createCommand()->getRawSql();
-//        \Yii::warning(\yii\helpers\VarDumper::dump($q->createCommand()->getRawSql(), 10, true));
 		
 /*
         try {

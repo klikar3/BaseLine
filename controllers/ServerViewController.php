@@ -849,7 +849,16 @@ class ServerViewController extends \yii\web\Controller
       } catch(\Exception $e) {
 //        $pcsid = 0;
       }
-
+		$q = (new \yii\db\Query())
+        ->select('db, sizeMB, [CaptureDate]')->from('DbData WITH (READPAST)')
+        ->where('server=:srvr AND CaptureDate>:dt AND PhysicalFileName = :p and ((DAY([CaptureDate]) = 1) or ([CaptureDate] > (GETDATE()-1 )))',
+        array('srvr' => $srvr, 'dt' => $dt, 'p' => '_total' )) ->orderBy('CaptureDate') //->limit(100)
+        //->orderBy('db, CaptureDate')
+ //       ->all()
+			;
+//			$q->createCommand()->getRawSql();
+//        \Yii::warning(\yii\helpers\VarDumper::dump($q->createCommand()->getRawSql(), 10, true));
+		
 /*
         try {
           $cmd = \Yii::$app->db->createCommand('exec dbo.[usp_get_DB_Sizes] @srvr=:s, @dt=:d;');               
@@ -865,7 +874,7 @@ class ServerViewController extends \yii\web\Controller
         }
 // */
 
-        \Yii::warning(\yii\helpers\VarDumper::dump($dataset, 10, true));
+//        \Yii::warning(\yii\helpers\VarDumper::dump($dataset, 10, true));
         
         
       $waittypes = ArrayHelper::getColumn($dataset,'db');
@@ -2133,7 +2142,7 @@ class ServerViewController extends \yii\web\Controller
               'title' => !empty($title) ? $title : '',
               'titleSize' => 12,
               'titleBold' => false,
-              'tickmarksStyle' => 'circle',
+              'tickmarksStyle' => 'circle', //'circle',
               'key' => $keys,
               'keyPosition' => 'graph',
 //              'keyPositionX' => '100',

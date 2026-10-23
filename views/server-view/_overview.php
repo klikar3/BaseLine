@@ -17,6 +17,11 @@ if (empty($dt)) {
   date_default_timezone_set('Europe/Berlin'); 
   $dt = date('Y-m-d H:i:s',time() - 60 * 60);
 }
+if (empty($dtvt)) {
+  date_default_timezone_set('Europe/Berlin'); 
+  $dtvt = date('Y-m-d H:i:s',time() - 60 * 60 * 24 * 365);
+}
+
 if (empty($dtd)) {
   date_default_timezone_set('Europe/Berlin'); 
   $dtd = date('Ymd',time() - 60 * 60 * 24 * 180);
@@ -69,6 +74,6 @@ alert = function (str)
 </div>
 <div class="row">
   <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getWaitBar($servername, 'Waits', $id, 0, '', $dt); ?>
-  <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getPaintLineDbSize($servername, /*$dataset_dbSizes,*/ $id, 1, $dt); ?>
+  <?php echo ($servertyp <> 'sql') ? '' : app\controllers\ServerViewController::getPaintLineDbSize($servername, $id, 1, $dtvt); ?>
         
 </div>

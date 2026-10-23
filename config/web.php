@@ -50,7 +50,11 @@ $config = [
             // 'downloadAction' => 'gridview/export/download',
             // 'i18n' => []
         ],
-/*        'utility' => [
+		'debug' =>	[
+			'class' => 'yii\debug\Module',
+			'allowedIPs' => ['127.0.0.1', '::1','172.16.55.240','10.3.193.174'],
+		],
+	/*        'utility' => [
                 'class' => '\c006\utility\migration\Module',
         ],   */
     ],

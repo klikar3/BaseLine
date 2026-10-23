@@ -122,7 +122,7 @@ AppAsset::register($this);
 
 <footer class="footer">
     <div class="container">
-        <p class="pull-left">&copy; IT Services <?= date('Y') ?><?= Yii::getVersion() ?></p>
+        <p class="pull-left">Yii&nbsp;<?= Yii::getVersion() ?>&nbsp;&nbsp;&nbsp;&copy; IT Services <?= date('Y') ?></p>
 
         <p class="pull-right"><?= Yii::powered() ?> </p>
     </div>
